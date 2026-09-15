@@ -22,6 +22,11 @@
   let targetSteps = 5000;
   let ws = null;
 
+  // Make widget draggable on canvas / OBS preview
+  if (typeof makeDraggable === 'function' && widgetEl) {
+    makeDraggable(widgetEl);
+  }
+
   function applyActivityStatus(status) {
     const s = (status || 'IDLE').toUpperCase();
     activityTagEl.className = 'activity-badge';
@@ -96,15 +101,26 @@
 
     applyActivityStatus(data.activityStatus || (delta > 3 ? 'RUNNING' : (delta > 0 ? 'WALKING' : 'IDLE')));
 
-    if (data.bpm !== undefined && data.bpm > 0) {
+    if (data.bpm !== undefined) {
       if (hrChipEl) {
-        hrChipEl.style.display = 'inline-flex';
-        if (hrChipValEl) hrChipValEl.textContent = data.bpm;
-        const beatSec = Math.max(0.28, Math.min(1.5, 60 / data.bpm)).toFixed(2);
-        hrChipEl.style.setProperty('--chip-beat', `${beatSec}s`);
+        if (data.bpm > 0) {
+          hrChipEl.style.display = 'inline-flex';
+          if (hrChipValEl) hrChipValEl.textContent = data.bpm;
+          const beatSec = Math.max(0.28, Math.min(1.5, 60 / data.bpm)).toFixed(2);
+          hrChipEl.style.setProperty('--chip-beat', `${beatSec}s`);
+        } else {
+          if (params.get('show_hr') === 'true') {
+            hrChipEl.style.display = 'inline-flex';
+            if (hrChipValEl) hrChipValEl.textContent = '-';
+            hrChipEl.style.setProperty('--chip-beat', '0s');
+          } else {
+            hrChipEl.style.display = 'none';
+          }
+        }
       }
     } else if (params.get('show_hr') === 'true' && hrChipEl) {
       hrChipEl.style.display = 'inline-flex';
+      if (hrChipValEl) hrChipValEl.textContent = '-';
     }
 
     if (delta > 0) {
@@ -133,52 +149,51 @@
         const msg = JSON.parse(event.data);
         if (msg.type === 'init' && msg.data) {
           updateUI(msg.data, 0);
-        } else if (msg.type === 'step_update' && msg.data && msg.data.userId === userId) {
-          updateUI(msg.data, msg.data.delta || 0);
-        } else if (msg.type === 'heartrate_update' && msg.data && msg.data.userId === userId) {
-          if (hrChipEl) {
-            hrChipEl.style.display = 'inline-flex';
-            if (hrChipValEl) hrChipValEl.textContent = msg.data.bpm;
-            const beatSec = Math.max(0.28, Math.min(1.5, 60 / msg.data.bpm)).toFixed(2);
-            hrChipEl.style.setProperty('--chip-beat', `${beatSec}s`);
-          }
+        } else if (msg.type === 'step_update' && msg.userId === userId) {
+          updateUI(msg.data, msg.delta || 0);
         }
       } catch (err) {
-        console.error('[WS Data Error]', err);
+        console.error('[WS Parse Error]', err);
       }
     };
 
     ws.onclose = () => {
       statusDotEl.classList.remove('online');
-      setTimeout(connectWebSocket, 2500);
+      setTimeout(connectWebSocket, 3000);
     };
 
     ws.onerror = () => {
-      ws.close();
+      statusDotEl.classList.remove('online');
     };
   }
 
-  if (isTest) {
-    statusDotEl.classList.add('online');
-    let mockSteps = 980;
-    updateUI({ userId: 'Streamer (Test)', currentSteps: mockSteps, targetSteps: 2000, activityStatus: 'WALKING' });
+  // Initial Fetch & Connect
+  fetch(`/api/users/${encodeURIComponent(userId)}`)
+    .then(res => res.json())
+    .then(json => {
+      if (json.success && json.user) {
+        updateUI(json.user, 0);
+      }
+    })
+    .catch(() => {})
+    .finally(() => {
+      connectWebSocket();
+    });
 
-    let count = 0;
+  // Simulated test loop for Browser Preview test mode
+  if (isTest) {
+    let mockSteps = 1200;
     setInterval(() => {
-      count++;
-      const isFast = count % 4 === 0;
-      const delta = isFast ? 8 : 2;
-      mockSteps += delta;
-      const reachedMilestone = mockSteps >= 1000 && mockSteps < 1010 ? 1000 : null;
+      const stepGain = Math.floor(Math.random() * 4) + 1;
+      mockSteps += stepGain;
       updateUI({
-        userId: 'Streamer (Test)',
+        userId,
+        name: 'Streamer [DEMO]',
         currentSteps: mockSteps,
-        targetSteps: 2000,
-        activityStatus: isFast ? 'RUNNING' : 'WALKING',
-        milestone: reachedMilestone
-      }, delta);
-    }, 1600);
-  } else {
-    connectWebSocket();
+        targetSteps: 5000,
+        bpm: Math.floor(Math.random() * 40) + 110,
+        activityStatus: stepGain > 2 ? 'RUNNING' : 'WALKING'
+      }, stepGain);
+    }, 2500);
   }
 })();

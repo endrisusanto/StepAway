@@ -21,8 +21,9 @@ class StepAwayWidgetProvider : AppWidgetProvider() {
             val prefs = context.getSharedPreferences("StepAwayPrefs", Context.MODE_PRIVATE)
             val currentSteps = prefs.getInt("widget_steps", 0)
             val targetSteps = prefs.getInt("target_steps", 5000).coerceAtLeast(1)
-            val userId = prefs.getString("user_id", "Streamer") ?: "Streamer"
+            val userId = prefs.getString("display_name", "Streamer") ?: "Streamer"
             val activityStatus = prefs.getString("activity_status", "IDLE") ?: "IDLE"
+            val liveBpm = prefs.getInt("widget_bpm", 0)
 
             val percentage = ((currentSteps.toDouble() / targetSteps.toDouble()) * 100).toInt().coerceIn(0, 100)
 
@@ -30,21 +31,26 @@ class StepAwayWidgetProvider : AppWidgetProvider() {
 
             views.setTextViewText(R.id.widgetUserName, userId)
 
-            // Dynamic Pace Status
+            // Dynamic Pace Status (Clean antislop labels)
             when (activityStatus.uppercase()) {
                 "RUNNING" -> {
-                    views.setTextViewText(R.id.widgetTierBadge, "🏃 RUNNING")
-                    views.setTextColor(R.id.widgetTierBadge, 0xFFFF5252.toInt()) // Coral Red
+                    views.setTextViewText(R.id.widgetTierBadge, "RUNNING")
+                    views.setTextColor(R.id.widgetTierBadge, 0xFFF43F5E.toInt())
                 }
                 "WALKING" -> {
-                    views.setTextViewText(R.id.widgetTierBadge, "🚶 WALKING")
-                    views.setTextColor(R.id.widgetTierBadge, 0xFF10B981.toInt()) // Emerald Green
+                    views.setTextViewText(R.id.widgetTierBadge, "WALKING")
+                    views.setTextColor(R.id.widgetTierBadge, 0xFF10B981.toInt())
                 }
                 else -> {
-                    views.setTextViewText(R.id.widgetTierBadge, "🧘 IDLE")
-                    views.setTextColor(R.id.widgetTierBadge, 0xFF94A3B8.toInt()) // Slate
+                    views.setTextViewText(R.id.widgetTierBadge, "IDLE")
+                    views.setTextColor(R.id.widgetTierBadge, 0xFF9E9EA7.toInt())
                 }
             }
+
+            // Live HR Chip
+            val hrText = if (liveBpm > 0) "$liveBpm BPM" else "-- BPM"
+            views.setTextViewText(R.id.widgetHrChip, hrText)
+            views.setTextColor(R.id.widgetHrChip, if (liveBpm > 0) 0xFFF43F5E.toInt() else 0xFF9E9EA7.toInt())
 
             views.setTextViewText(R.id.widgetStepCount, "%,d".format(currentSteps))
             views.setTextViewText(R.id.widgetTargetInfo, "Goal: %,d".format(targetSteps))
@@ -62,20 +68,36 @@ class StepAwayWidgetProvider : AppWidgetProvider() {
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
 
-        fun sendUpdateBroadcast(context: Context, steps: Int, isTracking: Boolean, activityStatus: String = "IDLE") {
+        fun sendUpdateBroadcast(context: Context, steps: Int, isTracking: Boolean, activityStatus: String = "IDLE", bpm: Int = 0) {
             val prefs = context.getSharedPreferences("StepAwayPrefs", Context.MODE_PRIVATE)
-            prefs.edit()
+            val editor = prefs.edit()
                 .putInt("widget_steps", steps)
                 .putBoolean("is_tracking", isTracking)
                 .putString("activity_status", activityStatus)
-                .apply()
+
+            if (bpm >= 0) {
+                editor.putInt("widget_bpm", bpm)
+            }
+            editor.apply()
 
             val appWidgetManager = AppWidgetManager.getInstance(context)
-            val thisWidget = ComponentName(context, StepAwayWidgetProvider::class.java)
-            val allWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget)
 
-            for (widgetId in allWidgetIds) {
-                updateAppWidget(context, appWidgetManager, widgetId)
+            // Update Combo Widget
+            val comboWidget = ComponentName(context, StepAwayWidgetProvider::class.java)
+            for (id in appWidgetManager.getAppWidgetIds(comboWidget)) {
+                updateAppWidget(context, appWidgetManager, id)
+            }
+
+            // Update Compact Step Widget
+            val compactWidget = ComponentName(context, StepCompactWidgetProvider::class.java)
+            for (id in appWidgetManager.getAppWidgetIds(compactWidget)) {
+                StepCompactWidgetProvider.updateAppWidget(context, appWidgetManager, id)
+            }
+
+            // Update Heart Rate Widget
+            val hrWidget = ComponentName(context, HeartRateWidgetProvider::class.java)
+            for (id in appWidgetManager.getAppWidgetIds(hrWidget)) {
+                HeartRateWidgetProvider.updateAppWidget(context, appWidgetManager, id)
             }
         }
     }

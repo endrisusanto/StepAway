@@ -273,10 +273,14 @@ class MainActivity : AppCompatActivity() {
         bleManager.onBpmUpdated = { bpm ->
             StepSensorService.liveBpm = bpm
             updateHeartRateUI(bpm)
-
-            if (bpm > 0) {
-                syncHeartRateToServer(bpm)
-            }
+            syncHeartRateToServer(bpm)
+            StepAwayWidgetProvider.sendUpdateBroadcast(
+                this,
+                prefs.getInt("widget_steps", 0),
+                isTracking,
+                prefs.getString("activity_status", "IDLE") ?: "IDLE",
+                bpm
+            )
         }
 
         bleManager.onConnectionStateChanged = { isConnected, deviceName ->
@@ -294,6 +298,14 @@ class MainActivity : AppCompatActivity() {
                 btnDisconnectBle.visibility = View.GONE
                 btnScanBle.text = "Scan Smartband"
                 updateHeartRateUI(0)
+                syncHeartRateToServer(0)
+                StepAwayWidgetProvider.sendUpdateBroadcast(
+                    this,
+                    prefs.getInt("widget_steps", 0),
+                    isTracking,
+                    prefs.getString("activity_status", "IDLE") ?: "IDLE",
+                    0
+                )
             }
         }
 
@@ -362,6 +374,13 @@ class MainActivity : AppCompatActivity() {
     private fun simulateHeartRate(bpm: Int) {
         updateHeartRateUI(bpm)
         syncHeartRateToServer(bpm)
+        StepAwayWidgetProvider.sendUpdateBroadcast(
+            this,
+            prefs.getInt("widget_steps", 0),
+            isTracking,
+            prefs.getString("activity_status", "IDLE") ?: "IDLE",
+            bpm
+        )
         Toast.makeText(this, "Simulasi HR $bpm BPM terkirim ke OBS!", Toast.LENGTH_SHORT).show()
     }
 

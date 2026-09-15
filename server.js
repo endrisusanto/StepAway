@@ -276,8 +276,8 @@ app.post("/api/heartrate/sync", (req, res) => {
 
   if (typeof bpm === "number") {
     user.bpm = Math.max(0, Math.round(bpm));
-    user.bpmZone = getBpmZone(user.bpm);
-    user.lastBpmTimestamp = Date.now();
+    user.bpmZone = user.bpm > 0 ? getBpmZone(user.bpm) : "DISCONNECTED";
+    user.lastBpmTimestamp = user.bpm > 0 ? Date.now() : 0;
     user.lastUpdated = new Date().toISOString();
     saveDB();
 
@@ -286,6 +286,28 @@ app.post("/api/heartrate/sync", (req, res) => {
 
   res.json({ success: true, userId: user.userId, bpm: user.bpm, bpmZone: user.bpmZone });
 });
+
+// Periodic Heart Rate Timeout Watcher (7s without BLE packet => disconnects HR to 0)
+setInterval(() => {
+  const now = Date.now();
+  let changed = false;
+
+  for (const userId in db.users) {
+    const user = db.users[userId];
+    if (user.bpm > 0 && user.lastBpmTimestamp > 0 && (now - user.lastBpmTimestamp > 7000)) {
+      user.bpm = 0;
+      user.bpmZone = "DISCONNECTED";
+      user.lastBpmTimestamp = 0;
+      user.lastUpdated = new Date().toISOString();
+      changed = true;
+      broadcastUserUpdate(user, 0, null);
+    }
+  }
+
+  if (changed) {
+    saveDB();
+  }
+}, 3000);
 
 app.post("/api/users/:userId/target", (req, res) => {
   const { targetSteps } = req.body;
