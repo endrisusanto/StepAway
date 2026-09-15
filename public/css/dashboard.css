@@ -344,9 +344,20 @@ body {
   width: 100%;
 }
 
+/* ponytail: clean 2-column responsive form grid */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
 @media (max-width: 480px) {
   .form-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .form-grid-2 {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -643,4 +654,70 @@ body {
   font-size: 12px;
   color: var(--accent-cyan);
   word-break: break-all;
+}
+
+/* TipTap Donation & Webhook Styles */
+.btn-amber {
+  background: #f59e0b;
+  color: #121214;
+}
+
+.btn-amber:hover {
+  background: #d97706;
+}
+
+.donation-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.donation-history-table th,
+.donation-history-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.donation-history-table th {
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.donation-history-table td {
+  color: var(--text-main);
+}
+
+.badge-subathon {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.16);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 99px;
+  display: inline-block;
+}
+
+.badge-direct {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.16);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 99px;
+  display: inline-block;
+}
+
+.table-scroll-container {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.15);
 }

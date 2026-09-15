@@ -100,9 +100,31 @@ function getUser(userId) {
       activityStatus: "IDLE",
       lastStepTimestamp: Date.now(),
       recentPaces: [],
+      donationSettings: {
+        enabled: true,
+        secretToken: "",
+        conversionRate: 10, // 10 IDR = 1 step (Rp 10.000 = +1.000 steps)
+        mode: "subathon_target", // "subathon_target" | "direct_step"
+        minAmount: 1000
+      },
+      donations: [],
       lastUpdated: new Date().toISOString()
     };
     saveDB();
+  } else {
+    // Ensure default donation settings exist for legacy entries
+    if (!db.users[userId].donationSettings) {
+      db.users[userId].donationSettings = {
+        enabled: true,
+        secretToken: "",
+        conversionRate: 10,
+        mode: "subathon_target",
+        minAmount: 1000
+      };
+    }
+    if (!Array.isArray(db.users[userId].donations)) {
+      db.users[userId].donations = [];
+    }
   }
   return db.users[userId];
 }
@@ -159,6 +181,7 @@ function broadcastUserUpdate(user, delta = 0, milestone = null) {
   const percentage = Math.min(100, Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100));
   const payload = JSON.stringify({
     type: "step_update",
+    userId: user.userId,
     data: {
       userId: user.userId,
       name: user.name,
@@ -187,6 +210,30 @@ function broadcastUserUpdate(user, delta = 0, milestone = null) {
             break;
           }
         }
+      }
+    }
+  }
+}
+
+function broadcastDonationAlert(user, donationData) {
+  const percentage = Math.min(100, Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100));
+  const payload = JSON.stringify({
+    type: "donation_alert",
+    userId: user.userId,
+    data: {
+      userId: user.userId,
+      name: user.name,
+      currentSteps: user.currentSteps,
+      targetSteps: user.targetSteps,
+      percentage,
+      donation: donationData
+    }
+  });
+
+  for (const [, client] of clients) {
+    if (client.ws.readyState === WebSocket.OPEN) {
+      if (client.subscribedUsers.has(user.userId) || client.subscribedUsers.has("*")) {
+        client.ws.send(payload);
       }
     }
   }
@@ -337,6 +384,200 @@ app.post("/api/users/:userId/reset", (req, res) => {
 
   broadcastUserUpdate(user, 0, null);
   res.json({ success: true, user });
+});
+
+// Donation Settings & Webhook Endpoints (TipTap.gg & Generic Webhooks)
+app.get("/api/users/:userId/donations", (req, res) => {
+  const user = getUser(req.params.userId);
+  res.json({
+    success: true,
+    settings: user.donationSettings,
+    donations: user.donations || []
+  });
+});
+
+app.post("/api/users/:userId/donation-settings", (req, res) => {
+  const user = getUser(req.params.userId);
+  const { enabled, secretToken, conversionRate, mode, minAmount } = req.body;
+
+  if (typeof enabled === "boolean") {
+    user.donationSettings.enabled = enabled;
+  }
+  if (typeof secretToken === "string") {
+    user.donationSettings.secretToken = secretToken.trim();
+  }
+  if (typeof conversionRate === "number" && conversionRate > 0) {
+    user.donationSettings.conversionRate = conversionRate;
+  }
+  if (mode === "subathon_target" || mode === "direct_step") {
+    user.donationSettings.mode = mode;
+  }
+  if (typeof minAmount === "number" && minAmount >= 0) {
+    user.donationSettings.minAmount = minAmount;
+  }
+
+  user.lastUpdated = new Date().toISOString();
+  saveDB();
+
+  res.json({
+    success: true,
+    message: "Pengaturan donasi berhasil disimpan",
+    settings: user.donationSettings
+  });
+});
+
+// Webhook Endpoint for TipTap.gg / Saweria / Trakteer
+app.post(["/api/webhooks/tiptap", "/api/webhooks/donation"], (req, res) => {
+  const userId = req.query.userId || req.query.user || req.body.userId || "streamer";
+  const user = getUser(userId);
+
+  if (!user.donationSettings || user.donationSettings.enabled === false) {
+    return res.status(403).json({ success: false, message: "Integrasi donasi sedang dinonaktifkan untuk user ini" });
+  }
+
+  // Verify Secret Token if configured
+  const configuredSecret = (user.donationSettings.secretToken || "").trim();
+  if (configuredSecret) {
+    const providedSecret = 
+      req.headers["x-tiptap-signature"] ||
+      req.headers["x-webhook-secret"] ||
+      req.headers["x-signature"] ||
+      req.query.token ||
+      req.query.secret ||
+      req.body.token ||
+      req.body.secret;
+
+    if (!providedSecret || providedSecret !== configuredSecret) {
+      return res.status(401).json({ success: false, message: "Secret token webhook tidak valid" });
+    }
+  }
+
+  // Parse payload (Supports TipTap nested data object and flat payload structures)
+  const payload = req.body || {};
+  const data = payload.data || payload;
+
+  const rawAmount = data.amount || data.gross_amount || data.nominal || data.total || payload.amount || 0;
+  const amount = Number(rawAmount);
+
+  if (isNaN(amount) || amount <= 0) {
+    return res.status(400).json({ success: false, message: "Nominal donasi tidak valid" });
+  }
+
+  const minAmount = Number(user.donationSettings.minAmount) || 1000;
+  if (amount < minAmount) {
+    return res.json({
+      success: true,
+      message: `Donasi di bawah batas minimal (Rp ${minAmount.toLocaleString('id-ID')}), diabaikan dari step goal`,
+      processed: false
+    });
+  }
+
+  const donatorName = data.donator_name || data.name || data.supporter_name || data.from || data.author || payload.donator_name || "Anonim";
+  const message = data.message || data.comment || data.msg || payload.message || "";
+  const donationId = data.id || data.transaction_id || payload.id || `tip_${Date.now()}`;
+
+  // Conversion logic
+  const conversionRate = Number(user.donationSettings.conversionRate) || 10;
+  const stepsAdded = Math.max(1, Math.round(amount / conversionRate));
+  const mode = user.donationSettings.mode || "subathon_target";
+
+  if (mode === "subathon_target") {
+    user.targetSteps = (user.targetSteps || 5000) + stepsAdded;
+  } else {
+    user.currentSteps = (user.currentSteps || 0) + stepsAdded;
+  }
+
+  const donationRecord = {
+    id: String(donationId),
+    donatorName: String(donatorName).trim(),
+    amount,
+    formattedAmount: `Rp ${amount.toLocaleString("id-ID")}`,
+    message: String(message).trim(),
+    stepsAdded,
+    mode,
+    timestamp: new Date().toISOString()
+  };
+
+  if (!Array.isArray(user.donations)) {
+    user.donations = [];
+  }
+  user.donations.unshift(donationRecord);
+  if (user.donations.length > 50) {
+    user.donations = user.donations.slice(0, 50);
+  }
+
+  user.lastUpdated = new Date().toISOString();
+  saveDB();
+
+  // Broadcast WebSocket events
+  broadcastUserUpdate(user, mode === "direct_step" ? stepsAdded : 0, null);
+  broadcastDonationAlert(user, donationRecord);
+
+  console.log(`[TipTap Webhook] Donasi diterima dari ${donationRecord.donatorName}: ${donationRecord.formattedAmount} -> +${stepsAdded} steps (${mode}) untuk ${user.userId}`);
+
+  res.json({
+    success: true,
+    message: "Donasi berhasil diproses dan dikonversi ke step goal",
+    donation: donationRecord,
+    userState: {
+      userId: user.userId,
+      currentSteps: user.currentSteps,
+      targetSteps: user.targetSteps
+    }
+  });
+});
+
+// Test Donation Endpoint (Direct Simulator from Dashboard)
+app.post("/api/users/:userId/test-donation", (req, res) => {
+  const user = getUser(req.params.userId);
+  const { amount = 10000, donatorName = "Tester TipTap", message = "Semangat jalannya! +Target Steps" } = req.body;
+
+  const validAmount = Math.max(1000, Number(amount) || 10000);
+  const conversionRate = Number(user.donationSettings?.conversionRate) || 10;
+  const stepsAdded = Math.max(1, Math.round(validAmount / conversionRate));
+  const mode = user.donationSettings?.mode || "subathon_target";
+
+  if (mode === "subathon_target") {
+    user.targetSteps = (user.targetSteps || 5000) + stepsAdded;
+  } else {
+    user.currentSteps = (user.currentSteps || 0) + stepsAdded;
+  }
+
+  const donationRecord = {
+    id: `test_${Date.now()}`,
+    donatorName: donatorName || "Tester TipTap",
+    amount: validAmount,
+    formattedAmount: `Rp ${validAmount.toLocaleString("id-ID")}`,
+    message: message || "Simulasi donasi berhasil!",
+    stepsAdded,
+    mode,
+    timestamp: new Date().toISOString()
+  };
+
+  if (!Array.isArray(user.donations)) {
+    user.donations = [];
+  }
+  user.donations.unshift(donationRecord);
+  if (user.donations.length > 50) {
+    user.donations = user.donations.slice(0, 50);
+  }
+
+  user.lastUpdated = new Date().toISOString();
+  saveDB();
+
+  broadcastUserUpdate(user, mode === "direct_step" ? stepsAdded : 0, null);
+  broadcastDonationAlert(user, donationRecord);
+
+  res.json({
+    success: true,
+    message: "Simulasi donasi berhasil dikirim",
+    donation: donationRecord,
+    userState: {
+      userId: user.userId,
+      currentSteps: user.currentSteps,
+      targetSteps: user.targetSteps
+    }
+  });
 });
 
 // Room APIs

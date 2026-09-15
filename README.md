@@ -146,6 +146,30 @@ Tambahkan Browser Source baru di OBS Studio dengan tautan berikut:
 
 ---
 
+## Integrasi Donasi TipTap.gg (Subathon Step Goal)
+
+StepAway mendukung integrasi webhook donasi dari platform **TipTap.gg**, Saweria, Trakteer, dan Sociabuzz untuk mengonversi nominal donasi menjadi penambahan target langkah (*step goal*) atau bonus langkah dengan alert realtime di OBS.
+
+### 1. Cara Mengatur Webhook di TipTap.gg
+1. Buka dashboard akun [TipTap.gg](https://docs.tiptap.gg/en/webhook) dan masuk ke menu **Settings > Webhook**.
+2. Masukkan **Webhook URL** Anda:
+   ```text
+   https://stepaway.endrisusanto.my.id/api/webhooks/tiptap?userId=streamer
+   ```
+3. Pilih event **Donation** (atau centang semua event transaksi donasi).
+4. (Opsional) Salin Webhook Secret Token dan masukkan ke form pengaturan donasi di Web Dashboard StepAway.
+
+### 2. Mode Konversi Langkah
+- **Subathon Goal Booster (Default)**: Setiap donasi masuk menambah target langkah yang harus diselesaikan streamer (contoh: Rp 10 = 1 Step. Donasi Rp 50.000 menambah +5.000 Target Langkah).
+- **Community Step Booster**: Setiap donasi masuk langsung menambahkan akumulasi jumlah langkah saat ini.
+
+### 3. Fitur Alert OBS & Simulator
+- **Visual Alert Pop-up**: Menampilkan kartu pop-up donatur, nominal, pesan donasi, dan badge tambahan target (`+N Goal`).
+- **Audio Chime**: Sintesis suara lembut (Web Audio API) otomatis berbunyi saat donasi masuk.
+- **Simulator Uji Coba**: Tersedia tombol test donasi cepat (+Rp 10.000, +Rp 50.000, +Rp 100.000) di Web Dashboard untuk menguji respons visual tanpa perlu transaksi riil.
+
+---
+
 ## Panduan Penggunaan Aplikasi Android
 
 1. Download dan instal file APK StepAway (`StepAway-vX.X.X.apk`) dari halaman Releases GitHub.

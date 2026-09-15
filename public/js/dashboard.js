@@ -16,12 +16,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const urlCombo = document.getElementById('urlCombo');
   const urlRoom = document.getElementById('urlRoom');
   const urlTest = document.getElementById('urlTest');
+  const urlWebhookTipTap = document.getElementById('urlWebhookTipTap');
 
   const inputUserId = document.getElementById('inputUserId');
   const inputDisplayName = document.getElementById('inputDisplayName');
   const inputTarget = document.getElementById('inputTarget');
   const btnSaveSettings = document.getElementById('btnSaveSettings');
   const presetBtns = document.querySelectorAll('.preset-btn');
+
+  // TipTap Donation Elements
+  const chkDonationEnabled = document.getElementById('chkDonationEnabled');
+  const donationStatusBadge = document.getElementById('donationStatusBadge');
+  const selectDonationMode = document.getElementById('selectDonationMode');
+  const inputDonationRate = document.getElementById('inputDonationRate');
+  const inputDonationMin = document.getElementById('inputDonationMin');
+  const inputDonationSecret = document.getElementById('inputDonationSecret');
+  const btnSaveDonationSettings = document.getElementById('btnSaveDonationSettings');
+  const btnTestDonation10k = document.getElementById('btnTestDonation10k');
+  const btnTestDonation50k = document.getElementById('btnTestDonation50k');
+  const btnTestDonation100k = document.getElementById('btnTestDonation100k');
+  const btnRefreshDonations = document.getElementById('btnRefreshDonations');
+  const donationHistoryTbody = document.getElementById('donationHistoryTbody');
 
   const btnSim1 = document.getElementById('btnSim1');
   const btnSim10 = document.getElementById('btnSim10');
@@ -71,12 +86,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const combo = `${origin}/overlay?user=${encodeURIComponent(currentUserId)}&show_hr=true`;
     const room = `${origin}/overlay/multi?room=${encodeURIComponent(activeRoomId)}`;
     const test = `${origin}/overlay?user=${encodeURIComponent(currentUserId)}&test=true`;
+    const webhook = `${origin}/api/webhooks/tiptap?userId=${encodeURIComponent(currentUserId)}`;
 
     urlSingle.textContent = single;
     urlHeartrate.textContent = heartrate;
     urlCombo.textContent = combo;
     urlRoom.textContent = room;
     urlTest.textContent = test;
+    if (urlWebhookTipTap) urlWebhookTipTap.textContent = webhook;
     guideUserId.textContent = currentUserId;
 
     updatePreviewIframe();
@@ -304,6 +321,19 @@ document.addEventListener('DOMContentLoaded', () => {
               }
             }
           }
+        } else if (msg.type === 'donation_alert' && msg.userId === currentUserId) {
+          if (msg.data) {
+            if (msg.data.targetSteps !== undefined) {
+              liveTarget.textContent = msg.data.targetSteps.toLocaleString();
+            }
+            if (msg.data.currentSteps !== undefined) {
+              liveSteps.textContent = msg.data.currentSteps.toLocaleString();
+            }
+            const pct = Math.min(100, Math.round(((msg.data.currentSteps || 0) / Math.max(1, msg.data.targetSteps || 5000)) * 100));
+            livePercent.textContent = `${pct}%`;
+            if (metricProgressBar) metricProgressBar.style.width = `${pct}%`;
+            fetchDonations();
+          }
         }
       } catch (e) {}
     };
@@ -312,6 +342,121 @@ document.addEventListener('DOMContentLoaded', () => {
       setWsStatus(false);
       setTimeout(connectLiveWebSocket, 3000);
     };
+  }
+
+  // TipTap Donation Integration Logic
+  function renderDonations(donations = []) {
+    if (!donationHistoryTbody) return;
+    if (!donations || donations.length === 0) {
+      donationHistoryTbody.innerHTML = `
+        <tr>
+          <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 14px;">Belum ada donasi masuk</td>
+        </tr>
+      `;
+      return;
+    }
+
+    donationHistoryTbody.innerHTML = donations.map(d => {
+      const modeBadge = d.mode === 'direct_step' 
+        ? `<span class="badge-direct">+${Number(d.stepsAdded || 0).toLocaleString()} Steps</span>`
+        : `<span class="badge-subathon">+${Number(d.stepsAdded || 0).toLocaleString()} Goal</span>`;
+
+      return `
+        <tr>
+          <td><strong>${escapeHtml(d.donatorName || 'Anonim')}</strong></td>
+          <td style="font-family: var(--font-mono); color: #fbbf24;">${d.formattedAmount || ('Rp ' + Number(d.amount || 0).toLocaleString('id-ID'))}</td>
+          <td>${modeBadge}</td>
+          <td style="color: var(--text-muted); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(d.message || '')}">
+            ${escapeHtml(d.message || '-')}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  async function fetchDonations() {
+    try {
+      const res = await fetch(`/api/users/${encodeURIComponent(currentUserId)}/donations`);
+      const data = await res.json();
+      if (data.success) {
+        if (data.settings) {
+          if (chkDonationEnabled) chkDonationEnabled.checked = data.settings.enabled !== false;
+          if (selectDonationMode) selectDonationMode.value = data.settings.mode || 'subathon_target';
+          if (inputDonationRate) inputDonationRate.value = data.settings.conversionRate || 10;
+          if (inputDonationMin) inputDonationMin.value = data.settings.minAmount || 1000;
+          if (inputDonationSecret) inputDonationSecret.value = data.settings.secretToken || '';
+          updateDonationBadge(data.settings.mode);
+        }
+        renderDonations(data.donations || []);
+      }
+    } catch (e) {
+      console.error('[Fetch Donations Error]', e);
+    }
+  }
+
+  function updateDonationBadge(mode) {
+    if (!donationStatusBadge) return;
+    if (mode === 'direct_step') {
+      donationStatusBadge.textContent = 'Community Boost';
+      donationStatusBadge.className = 'badge-direct';
+    } else {
+      donationStatusBadge.textContent = 'Subathon Mode';
+      donationStatusBadge.className = 'badge-subathon';
+    }
+  }
+
+  async function saveDonationSettings() {
+    const enabled = chkDonationEnabled ? chkDonationEnabled.checked : true;
+    const mode = selectDonationMode ? selectDonationMode.value : 'subathon_target';
+    const conversionRate = parseInt(inputDonationRate.value, 10) || 10;
+    const minAmount = parseInt(inputDonationMin.value, 10) || 1000;
+    const secretToken = inputDonationSecret ? inputDonationSecret.value.trim() : '';
+
+    try {
+      const res = await fetch(`/api/users/${encodeURIComponent(currentUserId)}/donation-settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled, mode, conversionRate, minAmount, secretToken })
+      });
+      const data = await res.json();
+      if (data.success) {
+        updateDonationBadge(mode);
+        const originalText = btnSaveDonationSettings.textContent;
+        btnSaveDonationSettings.textContent = 'Tersimpan!';
+        setTimeout(() => btnSaveDonationSettings.textContent = originalText, 1500);
+      } else {
+        alert(data.message || 'Gagal menyimpan setting donasi');
+      }
+    } catch (e) {
+      alert('Terjadi kesalahan: ' + e.message);
+    }
+  }
+
+  async function triggerTestDonation(amount, donatorName, message) {
+    try {
+      const res = await fetch(`/api/users/${encodeURIComponent(currentUserId)}/test-donation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, donatorName, message })
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchUserStats();
+        fetchDonations();
+      } else {
+        alert(data.message || 'Gagal mengirim simulasi donasi');
+      }
+    } catch (e) {
+      alert('Gagal mengirim simulasi donasi: ' + e.message);
+    }
   }
 
   // Preview tab switcher
@@ -399,11 +544,21 @@ document.addEventListener('DOMContentLoaded', () => {
   btnCreateRoom.addEventListener('click', createRoom);
   btnJoinRoom.addEventListener('click', joinRoom);
 
+  // Donation Event Listeners
+  if (btnSaveDonationSettings) btnSaveDonationSettings.addEventListener('click', saveDonationSettings);
+  if (selectDonationMode) selectDonationMode.addEventListener('change', (e) => updateDonationBadge(e.target.value));
+  if (btnTestDonation10k) btnTestDonation10k.addEventListener('click', () => triggerTestDonation(10000, 'Budi TipTap', 'Semangat bang! +1.000 Target'));
+  if (btnTestDonation50k) btnTestDonation50k.addEventListener('click', () => triggerTestDonation(50000, 'Sultan Santai', 'Gaspol maraton jalannya!'));
+  if (btnTestDonation100k) btnTestDonation100k.addEventListener('click', () => triggerTestDonation(100000, 'Top Donatur', 'Bonus 10.000 steps subathon!'));
+  if (btnRefreshDonations) btnRefreshDonations.addEventListener('click', fetchDonations);
+
   // Copy Buttons
   document.querySelectorAll('.copy-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const targetId = btn.dataset.target;
-      const textToCopy = document.getElementById(targetId).textContent;
+      const targetEl = document.getElementById(targetId);
+      if (!targetEl) return;
+      const textToCopy = targetEl.textContent;
       navigator.clipboard.writeText(textToCopy).then(() => {
         const originalText = btn.textContent;
         btn.textContent = 'Tersalin!';
@@ -419,5 +574,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Init
   updateUrls();
   fetchUserStats();
+  fetchDonations();
   connectLiveWebSocket();
 });

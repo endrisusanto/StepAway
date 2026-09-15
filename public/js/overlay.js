@@ -18,9 +18,17 @@
   const hrChipEl = document.getElementById('hrChip');
   const hrChipValEl = document.getElementById('hrChipVal');
 
+  // Donation Alert Elements
+  const donationBannerEl = document.getElementById('donationBanner');
+  const donationAmountEl = document.getElementById('donationAmount');
+  const donationSenderEl = document.getElementById('donationSender');
+  const donationStepsBadgeEl = document.getElementById('donationStepsBadge');
+  const donationMsgEl = document.getElementById('donationMsg');
+
   let currentSteps = 0;
   let targetSteps = 5000;
   let ws = null;
+  let donationTimer = null;
 
   // Make widget draggable on canvas / OBS preview
   if (typeof makeDraggable === 'function' && widgetEl) {
@@ -87,6 +95,50 @@
     }, 3200);
   }
 
+  function triggerDonationAlert(donation) {
+    if (!donationBannerEl || !donation) return;
+
+    if (donationAmountEl) donationAmountEl.textContent = donation.formattedAmount || `Rp ${Number(donation.amount || 0).toLocaleString('id-ID')}`;
+    if (donationSenderEl) donationSenderEl.textContent = donation.donatorName || 'Donatur Anonim';
+    
+    const label = donation.mode === 'direct_step' ? 'Steps' : 'Goal';
+    if (donationStepsBadgeEl) donationStepsBadgeEl.textContent = `+${Number(donation.stepsAdded || 0).toLocaleString()} ${label}`;
+    
+    if (donationMsgEl) {
+      if (donation.message && donation.message.trim()) {
+        donationMsgEl.textContent = `"${donation.message.trim()}"`;
+        donationMsgEl.style.display = 'block';
+      } else {
+        donationMsgEl.style.display = 'none';
+      }
+    }
+
+    donationBannerEl.classList.add('show');
+
+    // Subtle synthesizer chime
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const freqs = [587.33, 739.99, 880.00]; // D5, F#5, A5 major chord
+      freqs.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.08);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.08 + 0.45);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + idx * 0.08);
+        osc.stop(audioCtx.currentTime + idx * 0.08 + 0.45);
+      });
+    } catch (e) {}
+
+    if (donationTimer) clearTimeout(donationTimer);
+    donationTimer = setTimeout(() => {
+      donationBannerEl.classList.remove('show');
+    }, 5500);
+  }
+
   function updateUI(data, delta = 0) {
     userNameEl.textContent = data.name || data.userId || userId;
     currentSteps = data.currentSteps || 0;
@@ -151,6 +203,13 @@
           updateUI(msg.data, 0);
         } else if (msg.type === 'step_update' && msg.userId === userId) {
           updateUI(msg.data, msg.delta || 0);
+        } else if (msg.type === 'donation_alert' && msg.userId === userId) {
+          if (msg.data) {
+            updateUI(msg.data, 0);
+            if (msg.data.donation) {
+              triggerDonationAlert(msg.data.donation);
+            }
+          }
         }
       } catch (err) {
         console.error('[WS Parse Error]', err);

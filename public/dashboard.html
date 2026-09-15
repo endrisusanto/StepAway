@@ -141,6 +141,96 @@
           <button id="btnSaveSettings" class="btn btn-primary" style="width: 100%; margin-top: 6px;">Simpan Pengaturan ke Database</button>
         </section>
 
+        <!-- TipTap.gg / Donation Webhook Integration -->
+        <section class="card">
+          <h2 class="card-title">Integrasi Donasi (TipTap.gg / Webhook)</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: -6px;">
+            Otomatis konversi nominal donasi menjadi penambahan target langkah (*Subathon Goal*) atau bonus langkah dengan alert realtime di OBS.
+          </p>
+
+          <!-- Webhook URL Box -->
+          <div class="form-group" style="margin-top: 10px;">
+            <label class="form-label">Webhook URL (Paste ke Dashboard TipTap.gg)</label>
+            <div class="url-box">
+              <span id="urlWebhookTipTap" class="url-text">Loading...</span>
+              <button class="btn btn-secondary copy-btn" data-target="urlWebhookTipTap">Salin</button>
+            </div>
+          </div>
+
+          <!-- Donation Configuration -->
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <label style="font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="chkDonationEnabled" checked> Aktifkan Webhook Donasi
+              </label>
+              <span id="donationStatusBadge" class="badge-subathon">Subathon Mode</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="selectDonationMode">Mode Penambahan Steps</label>
+              <select id="selectDonationMode" class="input-text" style="height: 38px; cursor: pointer;">
+                <option value="subathon_target">Subathon Goal Booster (Menambah Target Langkah)</option>
+                <option value="direct_step">Community Step Booster (Menambah Langkah Saat Ini)</option>
+              </select>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label" for="inputDonationRate" style="white-space: nowrap;">Rasio (Rp / Step)</label>
+                <input type="number" id="inputDonationRate" class="input-text" value="10" min="1" step="1" placeholder="Contoh: 10">
+                <span style="font-size: 11px; color: var(--text-muted); margin-top: 2px; white-space: nowrap;">Rp 10.000 = +1.000 Steps</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="inputDonationMin" style="white-space: nowrap;">Minimal Donasi (Rp)</label>
+                <input type="number" id="inputDonationMin" class="input-text" value="1000" min="0" step="500" placeholder="1000">
+                <span style="font-size: 11px; color: var(--text-muted); margin-top: 2px; white-space: nowrap;">Batas minimal diproses</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inputDonationSecret">Webhook Secret Token (Opsional)</label>
+              <input type="password" id="inputDonationSecret" class="input-text" placeholder="Masukkan token rahasia (jika diaktifkan di TipTap)">
+            </div>
+
+            <button id="btnSaveDonationSettings" class="btn btn-primary" style="width: 100%;">Simpan Pengaturan Donasi</button>
+          </div>
+
+          <!-- Simulator Test Donasi -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 16px;">
+            <label class="form-label">Simulasi Uji Coba Donasi (Kirim ke OBS)</label>
+            <div class="sim-btn-group">
+              <button id="btnTestDonation10k" class="btn btn-amber">+Rp 10.000</button>
+              <button id="btnTestDonation50k" class="btn btn-amber">+Rp 50.000</button>
+              <button id="btnTestDonation100k" class="btn btn-amber">+Rp 100.000</button>
+            </div>
+          </div>
+
+          <!-- Riwayat Donasi Terakhir -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <label class="form-label" style="margin: 0;">Riwayat Donasi Masuk</label>
+              <button id="btnRefreshDonations" class="btn btn-secondary" style="padding: 2px 8px; font-size: 11px;">Refresh</button>
+            </div>
+            <div class="table-scroll-container" style="margin-top: 8px;">
+              <table class="donation-history-table">
+                <thead>
+                  <tr>
+                    <th>Donatur</th>
+                    <th>Nominal</th>
+                    <th>Steps</th>
+                    <th>Pesan</th>
+                  </tr>
+                </thead>
+                <tbody id="donationHistoryTbody">
+                  <tr>
+                    <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 14px;">Belum ada donasi masuk</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
         <!-- Multi-User Room System -->
         <section class="card">
           <h2 class="card-title">Room System (Co-op / Battle)</h2>
