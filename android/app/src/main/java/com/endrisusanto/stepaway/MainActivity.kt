@@ -114,6 +114,7 @@ class MainActivity : AppCompatActivity() {
         initViews()
         loadSavedPreferences()
         setupBleCallbacks()
+        setupLiveStepCallback()
         checkPermissions()
         setupListeners()
         fetchRemoteStats()
@@ -121,12 +122,41 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        setupLiveStepCallback()
         updateLiveUIFromPrefs()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        StepSensorService.onLiveStepUpdated = null
         bleManager.disconnect()
+    }
+
+    private fun setupLiveStepCallback() {
+        StepSensorService.onLiveStepUpdated = { steps, pace ->
+            runOnUiThread {
+                val target = prefs.getInt("target_steps", 5000).coerceAtLeast(1)
+                val pct = ((steps.toDouble() / target.toDouble()) * 100).toInt().coerceIn(0, 100)
+                tvLiveSteps.text = "%,d".format(steps)
+                pbStepProgress.progress = pct
+                tvLivePercent.text = "$pct%"
+
+                when (pace.uppercase()) {
+                    "RUNNING" -> {
+                        tvCardPaceStatus.text = "RUNNING"
+                        tvCardPaceStatus.setTextColor(0xFFF43F5E.toInt())
+                    }
+                    "WALKING" -> {
+                        tvCardPaceStatus.text = "WALKING"
+                        tvCardPaceStatus.setTextColor(0xFF10B981.toInt())
+                    }
+                    else -> {
+                        tvCardPaceStatus.text = "IDLE"
+                        tvCardPaceStatus.setTextColor(0xFF9E9EA7.toInt())
+                    }
+                }
+            }
+        }
     }
 
     private fun initViews() {
