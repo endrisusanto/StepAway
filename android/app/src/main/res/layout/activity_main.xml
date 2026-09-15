@@ -602,6 +602,152 @@
                 android:fontFamily="sans-serif-rounded" />
         </LinearLayout>
 
+        <!-- Smartband BLE Heart Rate (0x180D) Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/card_bg"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="❤️ Smartband Heart Rate (BLE)"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvBleStatusBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/widget_tier_bg"
+                    android:paddingStart="8dp"
+                    android:paddingTop="3dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="3dp"
+                    android:text="● DISCONNECTED"
+                    android:textColor="#94A3B8"
+                    android:textSize="10sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Standar GATT 0x180D (Pulsoid / HypeRate style broadcast)"
+                android:textColor="#94A3B8"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-rounded" />
+
+            <!-- Live BPM Display -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:gravity="bottom">
+
+                <TextView
+                    android:id="@+id/tvLiveBpm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textColor="#FF5252"
+                    android:textSize="44sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginBottom="6dp"
+                    android:text="BPM"
+                    android:textColor="#94A3B8"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/tvBleZoneBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:background="@drawable/widget_tier_bg"
+                    android:paddingStart="10dp"
+                    android:paddingTop="3dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="3dp"
+                    android:text="Idle"
+                    android:textColor="#94A3B8"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvConnectedBleDevice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Tidak ada smartband terhubung"
+                android:textColor="#64748B"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-rounded" />
+
+            <!-- BLE Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnScanBle"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#00D2D3"
+                    android:text="🔍 Scan Smartband"
+                    android:textAllCaps="false"
+                    android:textColor="#0B0F19"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnDisconnectBle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="#1E293B"
+                    android:text="Putus"
+                    android:textAllCaps="false"
+                    android:textColor="#FF6B6B"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </LinearLayout>
+
         <!-- OBS Overlay Links Card -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -615,7 +761,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="📺 Salin Link OBS Overlay"
+                android:text="📺 Salin Link OBS Overlay Instan"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:fontFamily="sans-serif-rounded"
@@ -630,10 +776,10 @@
                 <Button
                     android:id="@+id/btnCopySingle"
                     android:layout_width="0dp"
-                    android:layout_height="44dp"
+                    android:layout_height="42dp"
                     android:layout_weight="1"
                     android:backgroundTint="#1E293B"
-                    android:text="Single OBS Link"
+                    android:text="Step Overlay"
                     android:textAllCaps="false"
                     android:textColor="#00D2D3"
                     android:textSize="12sp"
@@ -641,15 +787,49 @@
                     android:textStyle="bold" />
 
                 <Button
-                    android:id="@+id/btnCopyRoom"
+                    android:id="@+id/btnCopyHeartrate"
                     android:layout_width="0dp"
-                    android:layout_height="44dp"
+                    android:layout_height="42dp"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
                     android:backgroundTint="#1E293B"
-                    android:text="Room OBS Link"
+                    android:text="❤️ HR Overlay"
                     android:textAllCaps="false"
-                    android:textColor="#00D2D3"
+                    android:textColor="#FF6B6B"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnCopyCombo"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#1E293B"
+                    android:text="Step + HR Combo"
+                    android:textAllCaps="false"
+                    android:textColor="#FECA57"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnCopyRoom"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="#1E293B"
+                    android:text="Room Overlay"
+                    android:textAllCaps="false"
+                    android:textColor="#A29BFE"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />

@@ -12,6 +12,10 @@
   --pulse-color: rgba(6, 182, 212, 0.6);
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* Heart Rate Dynamic Colors */
+  --hr-color: #ff5252;
+  --hr-glow: rgba(255, 82, 82, 0.45);
 }
 
 /* Light Mode Device Support */
@@ -24,11 +28,11 @@
     --bar-bg: rgba(0, 0, 0, 0.06);
     --bar-fill: linear-gradient(90deg, #10b981, #0284c7);
   }
-  .current-step-val {
+  .current-step-val, .bpm-val {
     color: #0f172a !important;
     text-shadow: none !important;
   }
-  .target-val {
+  .target-val, .bpm-zone-label {
     color: #334155 !important;
   }
   .percent-display {
@@ -80,6 +84,27 @@
   100% { transform: scale(1.05); opacity: 1; }
 }
 
+/* Heart Rate Zones */
+.zone-rest {
+  --hr-color: #00D2D3;
+  --hr-glow: rgba(0, 210, 211, 0.4);
+}
+
+.zone-aerobic {
+  --hr-color: #FECA57;
+  --hr-glow: rgba(254, 202, 87, 0.45);
+}
+
+.zone-anaerobic {
+  --hr-color: #FF9F43;
+  --hr-glow: rgba(255, 159, 67, 0.5);
+}
+
+.zone-peak {
+  --hr-color: #FF5252;
+  --hr-glow: rgba(255, 82, 82, 0.6);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -99,7 +124,7 @@ body {
   padding: 20px;
 }
 
-/* Single Overlay Container */
+/* Single Step Widget Container */
 .step-widget {
   position: relative;
   width: 380px;
@@ -147,7 +172,7 @@ body {
   color: #f1f5f9;
 }
 
-/* Main Step Counter Display */
+/* Counter Display */
 .counter-box {
   position: relative;
   display: flex;
@@ -191,7 +216,7 @@ body {
   font-family: var(--font-mono);
 }
 
-/* Floating Step Animation (+1, +N) */
+/* Floating Step Animation */
 .particles-layer {
   position: absolute;
   top: 0;
@@ -213,22 +238,10 @@ body {
 }
 
 @keyframes floatUpAndFade {
-  0% {
-    opacity: 0;
-    transform: translateY(12px) scale(0.6);
-  }
-  20% {
-    opacity: 1;
-    transform: translateY(-2px) scale(1.2);
-  }
-  60% {
-    opacity: 0.9;
-    transform: translateY(-22px) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-38px) scale(0.85);
-  }
+  0% { opacity: 0; transform: translateY(12px) scale(0.6); }
+  20% { opacity: 1; transform: translateY(-2px) scale(1.2); }
+  60% { opacity: 0.9; transform: translateY(-22px) scale(1); }
+  100% { opacity: 0; transform: translateY(-38px) scale(0.85); }
 }
 
 /* Progress Bar & Pulse */
@@ -260,26 +273,15 @@ body {
 .progress-fill.pulse-active::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   border-radius: 99px;
   background: var(--pulse-color);
   animation: barPulse 0.8s ease-out;
 }
 
 @keyframes barPulse {
-  0% {
-    opacity: 0.9;
-    transform: scaleY(1.3);
-    box-shadow: 0 0 14px var(--pulse-color);
-  }
-  100% {
-    opacity: 0;
-    transform: scaleY(1);
-    box-shadow: none;
-  }
+  0% { opacity: 0.9; transform: scaleY(1.3); box-shadow: 0 0 14px var(--pulse-color); }
+  100% { opacity: 0; transform: scaleY(1); box-shadow: none; }
 }
 
 .percent-display {
@@ -329,6 +331,111 @@ body {
   font-weight: 900;
   margin-top: 2px;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* =======================================================
+   HEART RATE OVERLAY WIDGET (Pulsoid / HypeRate Style)
+   ======================================================= */
+.hr-widget {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-widget);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-widget);
+  border-radius: 20px;
+  padding: 14px 22px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px var(--hr-glow);
+  transition: all 0.3s ease;
+}
+
+/* Pulsing Heart Vector */
+.heart-icon-wrapper {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heart-svg {
+  width: 100%;
+  height: 100%;
+  fill: var(--hr-color);
+  filter: drop-shadow(0 0 10px var(--hr-glow));
+  animation: heartBeating var(--beat-duration, 0.8s) infinite ease-in-out;
+  transform-origin: center center;
+}
+
+@keyframes heartBeating {
+  0% { transform: scale(1); }
+  15% { transform: scale(1.22); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.15); }
+  60% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+.hr-data-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.hr-numbers {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.bpm-val {
+  font-family: var(--font-sans);
+  font-size: 46px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--hr-color);
+  letter-spacing: -0.03em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  transition: color 0.3s ease;
+}
+
+.bpm-label {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bpm-zone-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Heartrate embedded chip for step overlay */
+.hr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 82, 82, 0.14);
+  border: 1px solid rgba(255, 82, 82, 0.35);
+  padding: 3px 8px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #ff5252;
+}
+
+.hr-chip svg {
+  width: 13px;
+  height: 13px;
+  fill: #ff5252;
+  animation: heartBeating var(--chip-beat, 0.8s) infinite ease-in-out;
 }
 
 /* Multi-User Grid Overlay */

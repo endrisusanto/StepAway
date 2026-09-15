@@ -131,15 +131,42 @@
       </div>
     </section>
 
+    <!-- Live Heart Rate Simulator & Monitor -->
+    <section class="card">
+      <h2 class="card-title">❤️ Heart Rate (BLE / Pulsoid / HypeRate Style)</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-top: -8px;">
+        Monitor atau simulasi detak jantung (BPM). Sensor smartband di APK Android (0x180D) akan otomatis menyuplai data live ke sini.
+      </p>
+
+      <div class="stat-card" style="margin-top: 10px;">
+        <div class="stat-label">Live Heart Rate</div>
+        <div style="display: flex; align-items: baseline; gap: 10px;">
+          <div id="liveBpm" class="stat-val" style="color: #ff5252;">--</div>
+          <span style="font-size: 14px; font-weight: 800; color: var(--text-muted);">BPM</span>
+          <span id="liveBpmZone" class="activity-badge" style="background: rgba(255,82,82,0.12); color: #ff5252; border: 1px solid rgba(255,82,82,0.3);">Idle</span>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 14px;">
+        <label class="form-label">Simulasi BPM Cepat</label>
+        <div class="form-row">
+          <button id="btnHrRest" class="btn btn-secondary preset-btn" data-bpm="75">75 (Rest)</button>
+          <button id="btnHrAerobic" class="btn btn-secondary preset-btn" data-bpm="125">125 (Aerobic)</button>
+          <button id="btnHrAnaerobic" class="btn btn-secondary preset-btn" data-bpm="155">155 (Cardio)</button>
+          <button id="btnHrPeak" class="btn btn-secondary preset-btn" data-bpm="180">180 (Peak)</button>
+        </div>
+      </div>
+    </section>
+
     <!-- OBS Links Section -->
     <section class="card">
-      <h2 class="card-title">📺 Link OBS Browser Source</h2>
+      <h2 class="card-title">📺 Link OBS Browser Source (Instan)</h2>
       <p style="font-size: 13px; color: var(--text-muted); margin-top: -8px;">
-        Copy link di bawah ini dan paste ke dalam <strong>Browser Source</strong> di OBS Studio (Resolusi: <strong>420 x 140</strong> px, transparan otomatis).
+        Copy link berikut dan paste ke dalam <strong>Browser Source</strong> di OBS Studio (Background transparan otomatis).
       </p>
 
       <div class="form-group">
-        <label class="form-label">1. Single User Overlay</label>
+        <label class="form-label">1. Step Counter Overlay (420 x 140 px)</label>
         <div class="url-box">
           <span id="urlSingle" class="url-text">Loading...</span>
           <button class="btn btn-secondary copy-btn" data-target="urlSingle">Copy</button>
@@ -147,7 +174,23 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">2. Room Overlay (Multi-User Otomatis)</label>
+        <label class="form-label">2. Standalone Heart Rate Overlay (240 x 90 px)</label>
+        <div class="url-box">
+          <span id="urlHeartrate" class="url-text">Loading...</span>
+          <button class="btn btn-secondary copy-btn" data-target="urlHeartrate">Copy</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">3. Combo Step + Heart Rate Badge (420 x 140 px)</label>
+        <div class="url-box">
+          <span id="urlCombo" class="url-text">Loading...</span>
+          <button class="btn btn-secondary copy-btn" data-target="urlCombo">Copy</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">4. Multi-User Room Overlay (420 x 360 px)</label>
         <div class="url-box">
           <span id="urlRoom" class="url-text">Loading...</span>
           <button class="btn btn-secondary copy-btn" data-target="urlRoom">Copy</button>
@@ -155,7 +198,7 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">3. Live Test Demo Link (Buka langsung di tab baru)</label>
+        <label class="form-label">5. Live Test Demo Link (Buka tab baru)</label>
         <div class="url-box">
           <span id="urlTest" class="url-text">Loading...</span>
           <button id="btnOpenTest" class="btn btn-primary">Buka Test Preview</button>

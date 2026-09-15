@@ -17,6 +17,14 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
+function getBpmZone(bpm) {
+  if (!bpm || bpm <= 0) return "REST";
+  if (bpm >= 170) return "PEAK";
+  if (bpm >= 140) return "ANAEROBIC";
+  if (bpm >= 100) return "AEROBIC";
+  return "REST";
+}
+
 let db = {
   users: {
     streamer: {
@@ -24,9 +32,12 @@ let db = {
       name: "Streamer",
       currentSteps: 0,
       targetSteps: 5000,
+      bpm: 0,
+      bpmZone: "REST",
+      lastBpmTimestamp: 0,
       todayStart: new Date().toISOString().split("T")[0],
       lastMilestone: 0,
-      activityStatus: "IDLE", // IDLE, WALKING, RUNNING
+      activityStatus: "IDLE",
       lastStepTimestamp: Date.now(),
       recentPaces: [],
       lastUpdated: new Date().toISOString()
@@ -81,6 +92,9 @@ function getUser(userId) {
       name: userId,
       currentSteps: 0,
       targetSteps: 5000,
+      bpm: 0,
+      bpmZone: "REST",
+      lastBpmTimestamp: 0,
       todayStart: new Date().toISOString().split("T")[0],
       lastMilestone: 0,
       activityStatus: "IDLE",
@@ -97,21 +111,19 @@ function calculateActivityStatus(user, delta) {
   const now = Date.now();
   if (!user.recentPaces) user.recentPaces = [];
 
-  // Record step event with timestamp
   user.recentPaces.push({ time: now, delta: Math.max(1, delta) });
-  // Keep only events within last 4 seconds
   user.recentPaces = user.recentPaces.filter(p => now - p.time <= 4000);
 
   const totalStepsInWindow = user.recentPaces.reduce((sum, p) => sum + p.delta, 0);
-  const stepsPerSec = totalStepsInWindow / 4.0; // steps per second
-  const spm = stepsPerSec * 60; // steps per minute
+  const stepsPerSec = totalStepsInWindow / 4.0;
+  const spm = stepsPerSec * 60;
 
   if (spm >= 130) {
-    user.activityStatus = "RUNNING"; // Lari
+    user.activityStatus = "RUNNING";
   } else if (spm >= 25) {
-    user.activityStatus = "WALKING"; // Jalan
+    user.activityStatus = "WALKING";
   } else {
-    user.activityStatus = "IDLE"; // Santai/Diam
+    user.activityStatus = "IDLE";
   }
 
   user.lastStepTimestamp = now;
@@ -152,6 +164,8 @@ function broadcastUserUpdate(user, delta = 0, milestone = null) {
       name: user.name,
       currentSteps: user.currentSteps,
       targetSteps: user.targetSteps,
+      bpm: user.bpm || 0,
+      bpmZone: user.bpmZone || "REST",
       activityStatus: user.activityStatus || "IDLE",
       percentage,
       delta,
@@ -165,7 +179,6 @@ function broadcastUserUpdate(user, delta = 0, milestone = null) {
       if (client.subscribedUsers.has(user.userId) || client.subscribedUsers.has("*")) {
         client.ws.send(payload);
       }
-      // Broadcast to room subscribers if user is member
       if (client.subscribedRooms.size > 0) {
         for (const roomId of client.subscribedRooms) {
           const room = db.rooms[roomId];
@@ -179,7 +192,7 @@ function broadcastUserUpdate(user, delta = 0, milestone = null) {
   }
 }
 
-// REST APIs - User & Settings
+// REST APIs
 app.get("/api/users", (req, res) => {
   res.json({ success: true, users: Object.values(db.users) });
 });
@@ -190,7 +203,6 @@ app.get("/api/users/:userId", (req, res) => {
   res.json({ success: true, user: { ...user, percentage } });
 });
 
-// Save permanent settings
 app.post("/api/users/:userId/settings", (req, res) => {
   const { name, targetSteps } = req.body;
   const user = getUser(req.params.userId);
@@ -204,11 +216,12 @@ app.post("/api/users/:userId/settings", (req, res) => {
   saveDB();
 
   broadcastUserUpdate(user, 0, null);
-  res.json({ success: true, message: "Pengaturan berhasil disimpan di database", user });
+  res.json({ success: true, message: "Pengaturan berhasil disimpan", user });
 });
 
+// Unified Steps & Heart Rate Sync Endpoint
 app.post("/api/steps/sync", (req, res) => {
-  const { userId = "streamer", steps, delta = 1, name } = req.body;
+  const { userId = "streamer", steps, delta = 0, name, bpm } = req.body;
   const user = getUser(userId);
   if (name && user.name !== name) {
     user.name = name;
@@ -217,12 +230,20 @@ app.post("/api/steps/sync", (req, res) => {
   const prevSteps = user.currentSteps;
   if (typeof steps === "number") {
     user.currentSteps = Math.max(0, steps);
-  } else {
-    user.currentSteps += Math.max(1, Number(delta) || 1);
+  } else if (delta > 0) {
+    user.currentSteps += Math.max(1, Number(delta));
+  }
+
+  if (typeof bpm === "number") {
+    user.bpm = Math.max(0, Math.round(bpm));
+    user.bpmZone = getBpmZone(user.bpm);
+    user.lastBpmTimestamp = Date.now();
   }
 
   const effectiveDelta = user.currentSteps - prevSteps;
-  calculateActivityStatus(user, effectiveDelta > 0 ? effectiveDelta : 1);
+  if (effectiveDelta > 0) {
+    calculateActivityStatus(user, effectiveDelta);
+  }
 
   const reachedMilestone = checkMilestone(prevSteps, user.currentSteps);
   if (reachedMilestone) {
@@ -240,10 +261,30 @@ app.post("/api/steps/sync", (req, res) => {
       name: user.name,
       currentSteps: user.currentSteps,
       targetSteps: user.targetSteps,
+      bpm: user.bpm,
+      bpmZone: user.bpmZone,
       activityStatus: user.activityStatus,
       milestone: reachedMilestone
     }
   });
+});
+
+// Dedicated Heart Rate update endpoint (for rapid BLE notification sync)
+app.post("/api/heartrate/sync", (req, res) => {
+  const { userId = "streamer", bpm } = req.body;
+  const user = getUser(userId);
+
+  if (typeof bpm === "number") {
+    user.bpm = Math.max(0, Math.round(bpm));
+    user.bpmZone = getBpmZone(user.bpm);
+    user.lastBpmTimestamp = Date.now();
+    user.lastUpdated = new Date().toISOString();
+    saveDB();
+
+    broadcastUserUpdate(user, 0, null);
+  }
+
+  res.json({ success: true, userId: user.userId, bpm: user.bpm, bpmZone: user.bpmZone });
 });
 
 app.post("/api/users/:userId/target", (req, res) => {
@@ -265,6 +306,8 @@ app.post("/api/users/:userId/reset", (req, res) => {
   const user = getUser(req.params.userId);
   user.currentSteps = 0;
   user.lastMilestone = 0;
+  user.bpm = 0;
+  user.bpmZone = "REST";
   user.activityStatus = "IDLE";
   user.recentPaces = [];
   user.lastUpdated = new Date().toISOString();
@@ -274,7 +317,7 @@ app.post("/api/users/:userId/reset", (req, res) => {
   res.json({ success: true, user });
 });
 
-// Room Management APIs (Public & Private Multi-User Rooms)
+// Room APIs
 app.get("/api/rooms", (req, res) => {
   const publicRooms = Object.values(db.rooms).map(r => ({
     roomId: r.roomId,
@@ -357,7 +400,7 @@ app.post("/api/rooms/:roomId/leave", (req, res) => {
   res.json({ success: true, message: "Berhasil keluar dari room" });
 });
 
-// WebSocket Connection Management
+// WebSocket Handling
 wss.on("connection", (ws) => {
   const clientId = ++clientCounter;
   const clientInfo = {
@@ -423,9 +466,13 @@ wss.on("connection", (ws) => {
   });
 });
 
-// Routes redirect for friendly OBS browser URLs
+// OBS Overlay Route Aliases
 app.get("/overlay", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "overlay.html"));
+});
+
+app.get("/overlay/heartrate", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "overlay-heartrate.html"));
 });
 
 app.get("/overlay/multi", (req, res) => {

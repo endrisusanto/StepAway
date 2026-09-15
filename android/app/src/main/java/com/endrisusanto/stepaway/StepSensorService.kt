@@ -53,6 +53,9 @@ class StepSensorService : Service(), SensorEventListener {
         const val ACTION_STOP = "ACTION_STOP"
         const val EXTRA_SERVER_URL = "EXTRA_SERVER_URL"
         const val EXTRA_USER_ID = "EXTRA_USER_ID"
+
+        @Volatile
+        var liveBpm: Int = 0
     }
 
     override fun onCreate() {
@@ -179,6 +182,9 @@ class StepSensorService : Service(), SensorEventListener {
                 put("userId", userId)
                 put("steps", steps)
                 put("delta", delta)
+                if (liveBpm > 0) {
+                    put("bpm", liveBpm)
+                }
             }
 
             OutputStreamWriter(conn.outputStream).use { writer ->

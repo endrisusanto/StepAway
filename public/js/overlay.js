@@ -15,6 +15,8 @@
   const particlesLayerEl = document.getElementById('particlesLayer');
   const milestoneBannerEl = document.getElementById('milestoneBanner');
   const milestoneValueEl = document.getElementById('milestoneValue');
+  const hrChipEl = document.getElementById('hrChip');
+  const hrChipValEl = document.getElementById('hrChipVal');
 
   let currentSteps = 0;
   let targetSteps = 5000;
@@ -94,6 +96,17 @@
 
     applyActivityStatus(data.activityStatus || (delta > 3 ? 'RUNNING' : (delta > 0 ? 'WALKING' : 'IDLE')));
 
+    if (data.bpm !== undefined && data.bpm > 0) {
+      if (hrChipEl) {
+        hrChipEl.style.display = 'inline-flex';
+        if (hrChipValEl) hrChipValEl.textContent = data.bpm;
+        const beatSec = Math.max(0.28, Math.min(1.5, 60 / data.bpm)).toFixed(2);
+        hrChipEl.style.setProperty('--chip-beat', `${beatSec}s`);
+      }
+    } else if (params.get('show_hr') === 'true' && hrChipEl) {
+      hrChipEl.style.display = 'inline-flex';
+    }
+
     if (delta > 0) {
       spawnStepParticle(delta);
       triggerPulse();
@@ -122,6 +135,13 @@
           updateUI(msg.data, 0);
         } else if (msg.type === 'step_update' && msg.data && msg.data.userId === userId) {
           updateUI(msg.data, msg.data.delta || 0);
+        } else if (msg.type === 'heartrate_update' && msg.data && msg.data.userId === userId) {
+          if (hrChipEl) {
+            hrChipEl.style.display = 'inline-flex';
+            if (hrChipValEl) hrChipValEl.textContent = msg.data.bpm;
+            const beatSec = Math.max(0.28, Math.min(1.5, 60 / msg.data.bpm)).toFixed(2);
+            hrChipEl.style.setProperty('--chip-beat', `${beatSec}s`);
+          }
         }
       } catch (err) {
         console.error('[WS Data Error]', err);

@@ -9,8 +9,13 @@
   const livePaceBadge = document.getElementById('livePaceBadge');
   const guideUserId = document.getElementById('guideUserId');
   const urlSingle = document.getElementById('urlSingle');
+  const urlHeartrate = document.getElementById('urlHeartrate');
+  const urlCombo = document.getElementById('urlCombo');
   const urlRoom = document.getElementById('urlRoom');
   const urlTest = document.getElementById('urlTest');
+
+  const liveBpm = document.getElementById('liveBpm');
+  const liveBpmZone = document.getElementById('liveBpmZone');
 
   const btnSaveSettings = document.getElementById('btnSaveSettings');
   const btnSim1 = document.getElementById('btnSim1');
@@ -21,6 +26,11 @@
   const btnOpenTest = document.getElementById('btnOpenTest');
   const presetBtns = document.querySelectorAll('.preset-btn');
   const copyBtns = document.querySelectorAll('.copy-btn');
+
+  const btnHrRest = document.getElementById('btnHrRest');
+  const btnHrAerobic = document.getElementById('btnHrAerobic');
+  const btnHrAnaerobic = document.getElementById('btnHrAnaerobic');
+  const btnHrPeak = document.getElementById('btnHrPeak');
 
   // Room Management
   const inputRoomId = document.getElementById('inputRoomId');
@@ -46,10 +56,14 @@
   function updateUrls() {
     const origin = window.location.origin;
     const single = `${origin}/overlay?user=${encodeURIComponent(currentUserId)}`;
+    const hr = `${origin}/overlay/heartrate?user=${encodeURIComponent(currentUserId)}`;
+    const combo = `${origin}/overlay?user=${encodeURIComponent(currentUserId)}&show_hr=true`;
     const room = `${origin}/overlay/multi?room=${encodeURIComponent(activeRoomId)}`;
     const test = `${origin}/overlay?user=${encodeURIComponent(currentUserId)}&test=true`;
 
     urlSingle.textContent = single;
+    if (urlHeartrate) urlHeartrate.textContent = hr;
+    if (urlCombo) urlCombo.textContent = combo;
     urlRoom.textContent = room;
     urlTest.textContent = test;
     guideUserId.textContent = currentUserId;
@@ -206,6 +220,28 @@
     }
   }
 
+  async function sendSimulatedBpm(bpm) {
+    try {
+      const res = await fetch('/api/heartrate/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: currentUserId,
+          bpm: Number(bpm)
+        })
+      });
+      const json = await res.json();
+      if (json.success) {
+        if (liveBpm) liveBpm.textContent = bpm;
+        if (liveBpmZone) {
+          liveBpmZone.textContent = bpm >= 170 ? 'Peak' : (bpm >= 140 ? 'Anaerobic' : (bpm >= 100 ? 'Aerobic' : 'Rest'));
+        }
+      }
+    } catch (e) {
+      alert('Gagal mengirim simulasi BPM: ' + e.message);
+    }
+  }
+
   function connectLiveWebSocket() {
     if (ws) ws.close();
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -225,6 +261,20 @@
             const pct = Math.min(100, Math.round((msg.data.currentSteps / Math.max(1, msg.data.targetSteps)) * 100));
             livePercent.textContent = `${pct}%`;
             applyPaceBadge(msg.data.activityStatus);
+
+            if (msg.data.bpm !== undefined && liveBpm) {
+              liveBpm.textContent = msg.data.bpm > 0 ? msg.data.bpm : '--';
+              if (liveBpmZone) {
+                const bpm = msg.data.bpm;
+                liveBpmZone.textContent = bpm >= 170 ? 'Peak' : (bpm >= 140 ? 'Anaerobic' : (bpm >= 100 ? 'Aerobic' : (bpm > 0 ? 'Rest' : 'Idle')));
+              }
+            }
+          }
+        } else if (msg.type === 'heartrate_update' && msg.data && msg.data.userId === currentUserId) {
+          if (liveBpm) liveBpm.textContent = msg.data.bpm;
+          if (liveBpmZone) {
+            const bpm = msg.data.bpm;
+            liveBpmZone.textContent = bpm >= 170 ? 'Peak' : (bpm >= 140 ? 'Anaerobic' : (bpm >= 100 ? 'Aerobic' : (bpm > 0 ? 'Rest' : 'Idle')));
           }
         }
       } catch (err) {}
@@ -253,6 +303,11 @@
   btnSim100.addEventListener('click', () => sendSimulatedSteps(100));
   btnSim1000.addEventListener('click', () => sendSimulatedSteps(1000));
   btnReset.addEventListener('click', resetSteps);
+
+  if (btnHrRest) btnHrRest.addEventListener('click', () => sendSimulatedBpm(75));
+  if (btnHrAerobic) btnHrAerobic.addEventListener('click', () => sendSimulatedBpm(125));
+  if (btnHrAnaerobic) btnHrAnaerobic.addEventListener('click', () => sendSimulatedBpm(155));
+  if (btnHrPeak) btnHrPeak.addEventListener('click', () => sendSimulatedBpm(180));
 
   presetBtns.forEach(btn => {
     btn.addEventListener('click', () => {
