@@ -24,24 +24,24 @@ if [ "$CURRENT_BRANCH" != "main" ]; then
   git branch -M main
 fi
 
-# Tarik perubahan terbaru dari remote jika ada commit dari GitHub Actions
-echo "🔄 Menyelaraskan dengan remote origin..."
-git pull --rebase origin main 2>/dev/null || true
-
 # Stage semua perubahan
 git add .
 
 # Cek apakah ada perubahan untuk dicommit
 if git diff --cached --quiet; then
-  echo "ℹ️  Tidak ada perubahan file baru. Tetap melakukan push untuk memicu workflow jika ada commit tertunda..."
+  echo "ℹ️  Tidak ada perubahan file baru untuk dicommit."
 else
   echo "📦 Melakukan commit: '$COMMIT_MSG'"
   git commit -m "$COMMIT_MSG"
 fi
+
+# Tarik commit otomatis terbaru dari GitHub Actions bot jika ada
+echo "🔄 Menyelaraskan dengan remote origin (rebase)..."
+git pull --rebase origin main
 
 # Push ke origin main
 echo "⬆️  Mendorong commit ke GitHub (origin main)..."
 git push -u origin main
 
 echo "✅ Berhasil didorong ke https://github.com/endrisusanto/StepAway !"
-echo "⚡ GitHub Action akan otomatis membuat version tag baru, changelog, dan release."
+echo "⚡ GitHub Action akan otomatis meng-compile Android APK, membuat version tag baru, changelog, dan release."
