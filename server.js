@@ -292,7 +292,11 @@ function broadcastUserUpdate(user, delta = 0, milestone = null) {
 
   for (const [, client] of clients) {
     if (client.ws.readyState === WebSocket.OPEN) {
-      if (client.subscribedUsers.has(user.userId) || client.subscribedUsers.has("*")) {
+      if (
+        client.subscribedUsers.has(user.userId) ||
+        (user.streamKey && client.subscribedUsers.has(user.streamKey)) ||
+        client.subscribedUsers.has("*")
+      ) {
         client.ws.send(payload);
       }
       if (client.subscribedRooms.size > 0) {
@@ -1222,6 +1226,9 @@ wss.on("connection", (ws) => {
         }
 
         clientInfo.subscribedUsers.add(userId);
+        if (msg.userId) clientInfo.subscribedUsers.add(msg.userId);
+        if (msg.key) clientInfo.subscribedUsers.add(msg.key);
+
         const user = getUser(userId);
         const percentage = Math.min(100, Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100));
         ws.send(JSON.stringify({

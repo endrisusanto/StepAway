@@ -850,11 +850,23 @@ class MainActivity : AppCompatActivity() {
                             updateHeartRateUI(bpm)
                             updateLiveUIFromPrefs()
                             StepAwayWidgetProvider.sendUpdateBroadcast(this@MainActivity, steps, isTracking, pace)
+                            if (isTracking) {
+                                tvLiveStatusBadge.text = "● LIVE TRACKING"
+                                tvLiveStatusBadge.setTextColor(0xFF10B981.toInt())
+                            } else {
+                                tvLiveStatusBadge.text = "● READY (ONLINE)"
+                                tvLiveStatusBadge.setTextColor(0xFF10B981.toInt())
+                            }
                         }
                     }
                 }
                 conn.disconnect()
-            } catch (e: Exception) {}
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    tvLiveStatusBadge.text = "● OFFLINE (CEK SERVER)"
+                    tvLiveStatusBadge.setTextColor(0xFFEF4444.toInt())
+                }
+            }
         }
     }
 

@@ -346,20 +346,41 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function connectLiveWebSocket() {
-    if (ws) ws.close();
+    if (ws) {
+      try { ws.close(); } catch (e) {}
+    }
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
 
     ws.onopen = () => {
       setWsStatus(true);
-      ws.send(JSON.stringify({ type: 'subscribe', userId: currentUserId }));
+      ws.send(JSON.stringify({ type: 'subscribe', userId: currentUserId, key: currentStreamKey }));
     };
 
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-        if (msg.type === 'step_update' && msg.userId === currentUserId) {
-          if (msg.data) {
+        if (msg.type === 'init' && msg.data) {
+          liveSteps.textContent = (msg.data.currentSteps || 0).toLocaleString();
+          liveTarget.textContent = (msg.data.targetSteps || 5000).toLocaleString();
+          const pct = Math.min(100, Math.round(((msg.data.currentSteps || 0) / Math.max(1, msg.data.targetSteps || 5000)) * 100));
+          livePercent.textContent = `${pct}%`;
+          if (metricProgressBar) metricProgressBar.style.width = `${pct}%`;
+          applyPaceBadge(msg.data.activityStatus);
+
+          if (msg.data.bpm !== undefined && liveBpm) {
+            liveBpm.textContent = msg.data.bpm > 0 ? msg.data.bpm : '--';
+            if (liveBpmZone) {
+              const bpm = msg.data.bpm;
+              liveBpmZone.textContent = bpm >= 170 ? 'Peak' : (bpm >= 140 ? 'Anaerobic' : (bpm >= 100 ? 'Aerobic' : (bpm > 0 ? 'Rest' : 'Idle')));
+            }
+          }
+        } else if (msg.type === 'step_update') {
+          const isTargetUser = msg.userId === currentUserId ||
+            msg.userId === currentStreamKey ||
+            (currentUserAccount && (msg.userId === currentUserAccount.id || msg.userId === currentUserAccount.streamKey));
+
+          if (isTargetUser && msg.data) {
             liveSteps.textContent = (msg.data.currentSteps || 0).toLocaleString();
             liveTarget.textContent = (msg.data.targetSteps || 5000).toLocaleString();
             const pct = Math.min(100, Math.round((msg.data.currentSteps / Math.max(1, msg.data.targetSteps)) * 100));
@@ -375,8 +396,12 @@ document.addEventListener('DOMContentLoaded', () => {
               }
             }
           }
-        } else if (msg.type === 'donation_alert' && msg.userId === currentUserId) {
-          if (msg.data) {
+        } else if (msg.type === 'donation_alert') {
+          const isTargetUser = msg.userId === currentUserId ||
+            msg.userId === currentStreamKey ||
+            (currentUserAccount && (msg.userId === currentUserAccount.id || msg.userId === currentUserAccount.streamKey));
+
+          if (isTargetUser && msg.data) {
             if (msg.data.targetSteps !== undefined) {
               liveTarget.textContent = msg.data.targetSteps.toLocaleString();
             }
@@ -396,7 +421,19 @@ document.addEventListener('DOMContentLoaded', () => {
       setWsStatus(false);
       setTimeout(connectLiveWebSocket, 3000);
     };
+
+    ws.onerror = () => {
+      setWsStatus(false);
+    };
   }
+
+  // Periodic Keep-Alive Ping
+  if (window._wsHeartbeat) clearInterval(window._wsHeartbeat);
+  window._wsHeartbeat = setInterval(() => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'ping' }));
+    }
+  }, 25000);
 
   // Donation Modal & Batch Action Elements
   const donationBatchBar = document.getElementById('donationBatchBar');
