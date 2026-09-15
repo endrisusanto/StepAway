@@ -105,27 +105,56 @@ body {
   gap: 14px;
 }
 
-/* Solid Logo without Gradient */
+/* Brand Icon as Connection Status Indicator */
 .brand-icon {
   width: 44px;
   height: 44px;
-  background: var(--accent-green);
-  border-radius: 12px;
+  background: #334155; /* Default / Connecting */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  cursor: help;
+}
+
+.brand-icon.online {
+  background: #059669; /* Connected Emerald */
+  border-color: #10b981;
+}
+
+.brand-icon.offline {
+  background: #dc2626; /* Disconnected Red */
+  border-color: #ef4444;
+}
+
+.brand-icon svg path {
+  fill: #ffffff;
 }
 
 .brand-title {
   font-size: clamp(20px, 2.2vw, 26px);
   font-weight: 800;
   letter-spacing: -0.02em;
+  color: #ffffff;
+  line-height: 1.1;
 }
 
 .brand-subtitle {
   font-size: clamp(12px, 1.2vw, 13px);
   color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.domain-sublabel {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #38bdf8;
+  letter-spacing: 0.02em;
+  margin-top: 2px;
 }
 
 .header-status-group {
@@ -133,17 +162,6 @@ body {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-}
-
-.domain-pill {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--accent-cyan);
-  background: rgba(6, 182, 212, 0.1);
-  border: 1px solid rgba(6, 182, 212, 0.3);
-  padding: 5px 12px;
-  border-radius: 6px;
-  white-space: nowrap;
 }
 
 /* Status Indicator */

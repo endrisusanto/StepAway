@@ -13,8 +13,8 @@
     <!-- Header -->
     <header class="dashboard-header">
       <div class="brand-badge">
-        <div class="brand-icon">
-          <svg viewBox="0 0 512 512" width="24" height="24" fill="#121214">
+        <div id="brandLogoIcon" class="brand-icon" title="Koneksi: Menghubungkan...">
+          <svg viewBox="0 0 512 512" width="24" height="24" fill="#ffffff">
             <g transform="rotate(-6 160 300)">
               <path d="M 115,185 C 90,230 85,310 115,355 C 135,385 185,385 205,345 C 230,295 235,215 195,160 C 165,120 135,145 115,185 Z" />
               <path d="M 120,405 C 110,435 125,475 160,475 C 195,475 210,435 200,405 C 190,395 130,395 120,405 Z" />
@@ -28,14 +28,10 @@
         <div>
           <h1 class="brand-title">StepAway</h1>
           <p class="brand-subtitle">Real-time Step Counter &amp; Heart Rate OBS Overlay</p>
+          <span class="domain-sublabel">stepaway.endrisusanto.my.id</span>
         </div>
       </div>
       <div class="header-status-group">
-        <div id="wsStatusDot" class="status-indicator">
-          <span class="status-dot"></span>
-          <span id="wsStatusText" class="status-text">Menghubungkan...</span>
-        </div>
-
         <!-- SaaS Auth User State -->
         <div id="authGuestBox" style="display: flex; gap: 8px;">
           <button id="btnOpenLoginModal" class="btn btn-primary" style="padding: 6px 14px; font-size: 12px;">Masuk / Daftar Akun</button>
@@ -46,8 +42,6 @@
           <button id="btnOpenQrModal" class="btn btn-secondary" style="padding: 3px 8px; font-size: 11px;">Scan QR Android</button>
           <button id="btnLogout" class="btn btn-danger" style="padding: 3px 8px; font-size: 11px;">Keluar</button>
         </div>
-
-        <div class="domain-pill">stepaway.endrisusanto.my.id</div>
       </div>
     </header>
 

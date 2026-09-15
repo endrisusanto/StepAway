@@ -7,8 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const liveBpm = document.getElementById('liveBpm');
   const liveBpmZone = document.getElementById('liveBpmZone');
   const metricProgressBar = document.getElementById('metricProgressBar');
-  const wsStatusDot = document.getElementById('wsStatusDot');
-  const wsStatusText = document.getElementById('wsStatusText');
+  const brandLogoIcon = document.getElementById('brandLogoIcon');
   const guideUserId = document.getElementById('guideUserId');
 
   const urlSingle = document.getElementById('urlSingle');
@@ -334,13 +333,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setWsStatus(online) {
-    if (wsStatusDot) {
+    const brandLogoIcon = document.getElementById('brandLogoIcon');
+    if (brandLogoIcon) {
       if (online) {
-        wsStatusDot.classList.add('online');
-        if (wsStatusText) wsStatusText.textContent = 'Live Sync';
+        brandLogoIcon.className = 'brand-icon online';
+        brandLogoIcon.setAttribute('title', 'Koneksi: Live Sync Terhubung');
       } else {
-        wsStatusDot.classList.remove('online');
-        if (wsStatusText) wsStatusText.textContent = 'Terputus';
+        brandLogoIcon.className = 'brand-icon offline';
+        brandLogoIcon.setAttribute('title', 'Koneksi: Terputus (Mencoba menghubungkan kembali...)');
       }
     }
   }
