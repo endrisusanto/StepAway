@@ -75,6 +75,8 @@ class StepSensorService : Service(), SensorEventListener {
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, buildNotification("Sensor langkah aktif...", 0))
 
+        StepAwayWidgetProvider.sendUpdateBroadcast(this, sessionSteps, true)
+
         registerSensors()
         startSyncLoop()
 
@@ -110,6 +112,7 @@ class StepSensorService : Service(), SensorEventListener {
     private fun updateNotificationLive() {
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(NOTIFICATION_ID, buildNotification("Berjalan aktif: $sessionSteps langkah", sessionSteps))
+        StepAwayWidgetProvider.sendUpdateBroadcast(this, sessionSteps, true)
     }
 
     private fun startSyncLoop() {
@@ -196,6 +199,7 @@ class StepSensorService : Service(), SensorEventListener {
             if (it.isHeld) it.release()
         }
         serviceJob.cancel()
+        StepAwayWidgetProvider.sendUpdateBroadcast(this, sessionSteps, false)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

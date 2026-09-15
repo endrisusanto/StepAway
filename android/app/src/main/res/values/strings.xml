@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">StepAway</string>
+    <string name="widget_description">Pantau langkah kaki dan status koneksi StepAway secara langsung di Homescreen.</string>
+</resources>
