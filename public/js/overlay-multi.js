@@ -170,7 +170,36 @@
       updateCard({ userId: 'Streamer 1', currentSteps: s1, targetSteps: 5000, activityStatus: 'WALKING' }, 2);
       updateCard({ userId: 'Streamer 2', currentSteps: s2, targetSteps: 5000, activityStatus: 'RUNNING' }, 6);
     }, 1800);
-  } else {
+    function pollMultiFallback() {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        if (roomId) {
+          fetch(`/api/rooms/${encodeURIComponent(roomId)}`)
+            .then(res => res.json())
+            .then(json => {
+              if (json.success && json.room && Array.isArray(json.room.members)) {
+                json.room.members.forEach(u => updateCard(u, 0));
+              }
+            })
+            .catch(() => {});
+        } else {
+          targetUserIds.forEach(uId => {
+            fetch(`/api/users/${encodeURIComponent(uId)}`)
+              .then(res => res.json())
+              .then(json => {
+                if (json.success && json.user) {
+                  updateCard(json.user, 0);
+                }
+              })
+              .catch(() => {});
+          });
+        }
+      }
+    }
+
+    pollMultiFallback();
     connectWebSocket();
+
+    // ponytail: periodic poll fallback (every 3s)
+    setInterval(pollMultiFallback, 3000);
   }
 })();

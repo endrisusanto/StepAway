@@ -233,17 +233,27 @@
   }
 
   // Initial Fetch & Connect
-  fetch(`/api/users/${encodeURIComponent(initialUserKey)}`)
-    .then(res => res.json())
-    .then(json => {
-      if (json.success && json.user) {
-        updateUI(json.user, 0);
-      }
-    })
-    .catch(() => {})
-    .finally(() => {
-      connectWebSocket();
-    });
+  function fetchStats() {
+    fetch(`/api/users/${encodeURIComponent(initialUserKey)}`)
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && json.user) {
+          updateUI(json.user, 0);
+          if (statusDotEl) statusDotEl.classList.add('online');
+        }
+      })
+      .catch(() => {});
+  }
+
+  fetchStats();
+  connectWebSocket();
+
+  // ponytail: periodic poll fallback (every 3s) if WebSocket is not open
+  setInterval(() => {
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      fetchStats();
+    }
+  }, 3000);
 
   // Simulated test loop for Browser Preview test mode
   if (isTest) {

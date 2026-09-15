@@ -85,18 +85,27 @@
   }
 
   // Initial Fetch & Connect
-  fetch(`/api/users/${encodeURIComponent(initialUserKey)}`)
-    .then(res => res.json())
-    .then(json => {
-      if (json.success && json.user) {
-        if (json.user.userId) resolvedUserId = json.user.userId;
-        updateHeartRate(json.user.bpm || 0, json.user.bpmZone);
-      }
-    })
-    .catch(() => {})
-    .finally(() => {
-      connectWebSocket();
-    });
+  function fetchStats() {
+    fetch(`/api/users/${encodeURIComponent(initialUserKey)}`)
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && json.user) {
+          if (json.user.userId) resolvedUserId = json.user.userId;
+          updateHeartRate(json.user.bpm || 0, json.user.bpmZone);
+        }
+      })
+      .catch(() => {});
+  }
+
+  fetchStats();
+  connectWebSocket();
+
+  // ponytail: periodic poll fallback (every 3s) if WebSocket is not open
+  setInterval(() => {
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      fetchStats();
+    }
+  }, 3000);
 
   // Simulated test loop for Demo
   if (isTest) {

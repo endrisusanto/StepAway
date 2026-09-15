@@ -177,11 +177,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  let lastSuccessfulHttpSync = 0;
+
   async function fetchUserStats() {
     try {
       const res = await fetch(`/api/users/${encodeURIComponent(currentUserId)}`);
       const json = await res.json();
       if (json.success && json.user) {
+        lastSuccessfulHttpSync = Date.now();
         liveSteps.textContent = (json.user.currentSteps || 0).toLocaleString();
         liveTarget.textContent = (json.user.targetSteps || 5000).toLocaleString();
         inputTarget.value = json.user.targetSteps || 5000;
@@ -191,10 +194,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (metricProgressBar) metricProgressBar.style.width = `${pct}%`;
         applyPaceBadge(json.user.activityStatus);
 
-        const isRecent = json.user.lastStepTimestamp && (Date.now() - json.user.lastStepTimestamp < 25000);
+        const isRecent = json.user.lastStepTimestamp && (Date.now() - json.user.lastStepTimestamp < 35000);
         if (json.user.activityStatus !== 'IDLE' || isRecent) {
           setWsStatus(true, 'ACTIVE SYNC');
         } else if (ws && ws.readyState === WebSocket.OPEN) {
+          setWsStatus(true, 'LIVE SYNC');
+        } else {
           setWsStatus(true, 'LIVE SYNC');
         }
 
@@ -441,12 +446,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     ws.onclose = () => {
-      setWsStatus(false, 'RECONNECTING');
-      setTimeout(connectLiveWebSocket, 3000);
+      if (Date.now() - lastSuccessfulHttpSync < 15000) {
+        setWsStatus(true, 'LIVE SYNC');
+      } else {
+        setWsStatus(false, 'RECONNECTING');
+      }
+      setTimeout(connectLiveWebSocket, 5000);
     };
 
     ws.onerror = () => {
-      setWsStatus(false, 'OFFLINE');
+      if (Date.now() - lastSuccessfulHttpSync < 15000) {
+        setWsStatus(true, 'LIVE SYNC');
+      } else {
+        setWsStatus(false, 'OFFLINE');
+      }
     };
   }
 
