@@ -344,34 +344,307 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  // Donation Modal & Batch Action Elements
+  const donationBatchBar = document.getElementById('donationBatchBar');
+  const selectedDonationsCount = document.getElementById('selectedDonationsCount');
+  const btnBatchRetrigger = document.getElementById('btnBatchRetrigger');
+  const btnBatchDelete = document.getElementById('btnBatchDelete');
+  const chkSelectAllDonations = document.getElementById('chkSelectAllDonations');
+
+  const donationDetailModal = document.getElementById('donationDetailModal');
+  const modalDonatorName = document.getElementById('modalDonatorName');
+  const modalDonationAmount = document.getElementById('modalDonationAmount');
+  const modalStepsBadge = document.getElementById('modalStepsBadge');
+  const modalTimestamp = document.getElementById('modalTimestamp');
+  const modalMessage = document.getElementById('modalMessage');
+  const modalDonationId = document.getElementById('modalDonationId');
+  const btnCloseDonationModal = document.getElementById('btnCloseDonationModal');
+  const btnModalClose = document.getElementById('btnModalClose');
+  const btnModalRetrigger = document.getElementById('btnModalRetrigger');
+  const btnModalDelete = document.getElementById('btnModalDelete');
+
+  let currentDonationsList = [];
+  let selectedDonationIds = new Set();
+  let activeModalDonation = null;
+
   // TipTap Donation Integration Logic
   function renderDonations(donations = []) {
+    currentDonationsList = Array.isArray(donations) ? donations : [];
     if (!donationHistoryTbody) return;
-    if (!donations || donations.length === 0) {
+
+    // Prune selections that no longer exist
+    const currentIdSet = new Set(currentDonationsList.map(d => String(d.id)));
+    for (const id of selectedDonationIds) {
+      if (!currentIdSet.has(id)) {
+        selectedDonationIds.delete(id);
+      }
+    }
+    updateBatchBar();
+
+    if (currentDonationsList.length === 0) {
       donationHistoryTbody.innerHTML = `
         <tr>
-          <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 14px;">Belum ada donasi masuk</td>
+          <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 14px;">Belum ada donasi masuk</td>
         </tr>
       `;
+      if (chkSelectAllDonations) {
+        chkSelectAllDonations.checked = false;
+        chkSelectAllDonations.disabled = true;
+      }
       return;
     }
 
-    donationHistoryTbody.innerHTML = donations.map(d => {
+    if (chkSelectAllDonations) chkSelectAllDonations.disabled = false;
+
+    donationHistoryTbody.innerHTML = currentDonationsList.map(d => {
       const modeBadge = d.mode === 'direct_step' 
         ? `<span class="badge-direct">+${Number(d.stepsAdded || 0).toLocaleString()} Steps</span>`
         : `<span class="badge-subathon">+${Number(d.stepsAdded || 0).toLocaleString()} Goal</span>`;
 
+      const isChecked = selectedDonationIds.has(String(d.id)) ? 'checked' : '';
+
       return `
-        <tr>
+        <tr class="clickable-row" data-id="${escapeHtml(d.id)}">
+          <td style="text-align: center;" onclick="event.stopPropagation();">
+            <input type="checkbox" class="chk-donation-row" data-id="${escapeHtml(d.id)}" ${isChecked} style="cursor: pointer;">
+          </td>
           <td><strong>${escapeHtml(d.donatorName || 'Anonim')}</strong></td>
           <td style="font-family: var(--font-mono); color: #fbbf24;">${d.formattedAmount || ('Rp ' + Number(d.amount || 0).toLocaleString('id-ID'))}</td>
           <td>${modeBadge}</td>
-          <td style="color: var(--text-muted); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(d.message || '')}">
+          <td style="color: var(--text-muted); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(d.message || '')}">
             ${escapeHtml(d.message || '-')}
+          </td>
+          <td style="text-align: right;" onclick="event.stopPropagation();">
+            <div class="row-actions">
+              <button class="row-btn row-btn-retrigger" data-action="retrigger" data-id="${escapeHtml(d.id)}" title="Retrigger alert ke OBS">Show</button>
+              <button class="row-btn row-btn-delete" data-action="delete" data-id="${escapeHtml(d.id)}" title="Hapus donasi">&times;</button>
+            </div>
           </td>
         </tr>
       `;
     }).join('');
+
+    // Attach row events
+    donationHistoryTbody.querySelectorAll('.clickable-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const id = row.dataset.id;
+        const donation = currentDonationsList.find(d => String(d.id) === String(id));
+        if (donation) openDonationModal(donation);
+      });
+    });
+
+    donationHistoryTbody.querySelectorAll('.chk-donation-row').forEach(chk => {
+      chk.addEventListener('change', (e) => {
+        const id = String(e.target.dataset.id);
+        if (e.target.checked) {
+          selectedDonationIds.add(id);
+        } else {
+          selectedDonationIds.delete(id);
+        }
+        updateBatchBar();
+      });
+    });
+
+    donationHistoryTbody.querySelectorAll('.row-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const action = btn.dataset.action;
+        const id = btn.dataset.id;
+        if (action === 'retrigger') {
+          retriggerSingleDonation(id);
+        } else if (action === 'delete') {
+          deleteSingleDonation(id);
+        }
+      });
+    });
+  }
+
+  function updateBatchBar() {
+    const count = selectedDonationIds.size;
+    if (selectedDonationsCount) selectedDonationsCount.textContent = `${count} donasi terpilih`;
+
+    if (donationBatchBar) {
+      donationBatchBar.style.display = count > 0 ? 'flex' : 'none';
+    }
+
+    if (chkSelectAllDonations) {
+      const total = currentDonationsList.length;
+      chkSelectAllDonations.checked = total > 0 && count === total;
+      chkSelectAllDonations.indeterminate = count > 0 && count < total;
+    }
+  }
+
+  if (chkSelectAllDonations) {
+    chkSelectAllDonations.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        currentDonationsList.forEach(d => selectedDonationIds.add(String(d.id)));
+      } else {
+        selectedDonationIds.clear();
+      }
+      renderDonations(currentDonationsList);
+    });
+  }
+
+  function openDonationModal(donation) {
+    activeModalDonation = donation;
+    if (!donationDetailModal) return;
+
+    if (modalDonatorName) modalDonatorName.textContent = donation.donatorName || 'Anonim';
+    if (modalDonationAmount) modalDonationAmount.textContent = donation.formattedAmount || `Rp ${Number(donation.amount || 0).toLocaleString('id-ID')}`;
+    
+    if (modalStepsBadge) {
+      if (donation.mode === 'direct_step') {
+        modalStepsBadge.textContent = `+${Number(donation.stepsAdded || 0).toLocaleString()} Steps (Community)`;
+        modalStepsBadge.className = 'badge-direct';
+      } else {
+        modalStepsBadge.textContent = `+${Number(donation.stepsAdded || 0).toLocaleString()} Goal (Subathon)`;
+        modalStepsBadge.className = 'badge-subathon';
+      }
+    }
+
+    if (modalTimestamp) {
+      try {
+        const date = new Date(donation.timestamp);
+        modalTimestamp.textContent = date.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'medium' });
+      } catch (e) {
+        modalTimestamp.textContent = donation.timestamp || '-';
+      }
+    }
+
+    if (modalMessage) {
+      modalMessage.textContent = donation.message && donation.message.trim() ? donation.message.trim() : '(Tanpa pesan donasi)';
+    }
+
+    if (modalDonationId) {
+      modalDonationId.textContent = donation.id || '-';
+    }
+
+    donationDetailModal.style.display = 'flex';
+  }
+
+  function closeDonationModal() {
+    if (donationDetailModal) donationDetailModal.style.display = 'none';
+    activeModalDonation = null;
+  }
+
+  if (btnCloseDonationModal) btnCloseDonationModal.addEventListener('click', closeDonationModal);
+  if (btnModalClose) btnModalClose.addEventListener('click', closeDonationModal);
+  if (donationDetailModal) {
+    donationDetailModal.addEventListener('click', (e) => {
+      if (e.target === donationDetailModal) closeDonationModal();
+    });
+  }
+
+  async function retriggerSingleDonation(donationId) {
+    try {
+      const res = await fetch(`/api/users/${encodeURIComponent(currentUserId)}/donations/${encodeURIComponent(donationId)}/retrigger`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Feedback
+        const toast = document.createElement('div');
+        toast.className = 'badge-subathon';
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.right = '20px';
+        toast.style.zIndex = '99999';
+        toast.style.padding = '8px 14px';
+        toast.textContent = 'Alert donasi disiarkan ulang ke OBS!';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+      } else {
+        alert(data.message || 'Gagal retrigger alert');
+      }
+    } catch (e) {
+      alert('Terjadi kesalahan: ' + e.message);
+    }
+  }
+
+  async function deleteSingleDonation(donationId) {
+    if (!confirm('Hapus riwayat donasi ini?')) return;
+    try {
+      const res = await fetch(`/api/users/${encodeURIComponent(currentUserId)}/donations/${encodeURIComponent(donationId)}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (data.success) {
+        selectedDonationIds.delete(String(donationId));
+        renderDonations(data.donations);
+        if (activeModalDonation && String(activeModalDonation.id) === String(donationId)) {
+          closeDonationModal();
+        }
+      } else {
+        alert(data.message || 'Gagal menghapus donasi');
+      }
+    } catch (e) {
+      alert('Terjadi kesalahan: ' + e.message);
+    }
+  }
+
+  if (btnModalRetrigger) {
+    btnModalRetrigger.addEventListener('click', () => {
+      if (activeModalDonation) {
+        retriggerSingleDonation(activeModalDonation.id);
+        closeDonationModal();
+      }
+    });
+  }
+
+  if (btnModalDelete) {
+    btnModalDelete.addEventListener('click', () => {
+      if (activeModalDonation) {
+        deleteSingleDonation(activeModalDonation.id);
+      }
+    });
+  }
+
+  // Batch Handlers
+  if (btnBatchRetrigger) {
+    btnBatchRetrigger.addEventListener('click', async () => {
+      const ids = Array.from(selectedDonationIds);
+      if (ids.length === 0) return;
+
+      try {
+        const res = await fetch(`/api/users/${encodeURIComponent(currentUserId)}/donations/batch-action`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'retrigger', donationIds: ids })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(`${ids.length} alert donasi berhasil disiarkan ulang ke OBS.`);
+        } else {
+          alert(data.message || 'Gagal menyiarkan ulang batch donasi');
+        }
+      } catch (e) {
+        alert('Terjadi kesalahan: ' + e.message);
+      }
+    });
+  }
+
+  if (btnBatchDelete) {
+    btnBatchDelete.addEventListener('click', async () => {
+      const ids = Array.from(selectedDonationIds);
+      if (ids.length === 0) return;
+      if (!confirm(`Yakin ingin menghapus ${ids.length} donasi yang dipilih?`)) return;
+
+      try {
+        const res = await fetch(`/api/users/${encodeURIComponent(currentUserId)}/donations/batch-action`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', donationIds: ids })
+        });
+        const data = await res.json();
+        if (data.success) {
+          selectedDonationIds.clear();
+          renderDonations(data.donations);
+        } else {
+          alert(data.message || 'Gagal menghapus batch donasi');
+        }
+      } catch (e) {
+        alert('Terjadi kesalahan: ' + e.message);
+      }
+    });
   }
 
   function escapeHtml(str) {

@@ -580,6 +580,90 @@ app.post("/api/users/:userId/test-donation", (req, res) => {
   });
 });
 
+// Retrigger Single Donation Alert to OBS
+app.post("/api/users/:userId/donations/:donationId/retrigger", (req, res) => {
+  const user = getUser(req.params.userId);
+  const donation = (user.donations || []).find(d => String(d.id) === String(req.params.donationId));
+  if (!donation) {
+    return res.status(404).json({ success: false, message: "Data donasi tidak ditemukan" });
+  }
+
+  broadcastDonationAlert(user, donation);
+  res.json({
+    success: true,
+    message: `Alert donasi dari ${donation.donatorName} berhasil disiarkan ulang ke OBS`,
+    donation
+  });
+});
+
+// Delete Single Donation Record
+app.delete("/api/users/:userId/donations/:donationId", (req, res) => {
+  const user = getUser(req.params.userId);
+  const initialLength = (user.donations || []).length;
+  user.donations = (user.donations || []).filter(d => String(d.id) !== String(req.params.donationId));
+
+  if (user.donations.length === initialLength) {
+    return res.status(404).json({ success: false, message: "Data donasi tidak ditemukan" });
+  }
+
+  user.lastUpdated = new Date().toISOString();
+  saveDB();
+
+  res.json({
+    success: true,
+    message: "Data donasi berhasil dihapus",
+    donations: user.donations
+  });
+});
+
+// Batch Actions: Multiple Delete or Multiple Retrigger
+app.post("/api/users/:userId/donations/batch-action", (req, res) => {
+  const user = getUser(req.params.userId);
+  const { action, donationIds } = req.body;
+
+  if (!Array.isArray(donationIds) || donationIds.length === 0) {
+    return res.status(400).json({ success: false, message: "Pilih setidaknya satu donasi" });
+  }
+
+  const idSet = new Set(donationIds.map(String));
+
+  if (action === "delete") {
+    const beforeCount = (user.donations || []).length;
+    user.donations = (user.donations || []).filter(d => !idSet.has(String(d.id)));
+    const deletedCount = beforeCount - user.donations.length;
+
+    user.lastUpdated = new Date().toISOString();
+    saveDB();
+
+    return res.json({
+      success: true,
+      message: `${deletedCount} donasi berhasil dihapus`,
+      donations: user.donations
+    });
+  }
+
+  if (action === "retrigger") {
+    const matched = (user.donations || []).filter(d => idSet.has(String(d.id)));
+    if (matched.length === 0) {
+      return res.status(404).json({ success: false, message: "Tidak ada donasi yang cocok untuk disiarkan ulang" });
+    }
+
+    // Sequence trigger with staggered delays if multiple
+    matched.forEach((donation, index) => {
+      setTimeout(() => {
+        broadcastDonationAlert(user, donation);
+      }, index * 1200);
+    });
+
+    return res.json({
+      success: true,
+      message: `${matched.length} alert donasi berhasil disiarkan ulang secara berurutan ke OBS`
+    });
+  }
+
+  res.status(400).json({ success: false, message: "Action tidak dikenali (gunakan 'delete' atau 'retrigger')" });
+});
+
 // Room APIs
 app.get("/api/rooms", (req, res) => {
   const publicRooms = Object.values(db.rooms).map(r => ({

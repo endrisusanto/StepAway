@@ -207,23 +207,39 @@
 
           <!-- Riwayat Donasi Terakhir -->
           <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 16px;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
               <label class="form-label" style="margin: 0;">Riwayat Donasi Masuk</label>
-              <button id="btnRefreshDonations" class="btn btn-secondary" style="padding: 2px 8px; font-size: 11px;">Refresh</button>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button id="btnRefreshDonations" class="btn btn-secondary" style="padding: 3px 10px; font-size: 11px;">Refresh</button>
+              </div>
             </div>
+
+            <!-- Batch Action Bar (Multiple Select) -->
+            <div id="donationBatchBar" class="batch-action-bar" style="display: none; margin-top: 10px;">
+              <span id="selectedDonationsCount" class="batch-count">0 terpilih</span>
+              <div class="batch-btn-group">
+                <button id="btnBatchRetrigger" class="btn btn-amber batch-btn">Retrigger Terpilih</button>
+                <button id="btnBatchDelete" class="btn btn-danger batch-btn">Hapus Terpilih</button>
+              </div>
+            </div>
+
             <div class="table-scroll-container" style="margin-top: 8px;">
               <table class="donation-history-table">
                 <thead>
                   <tr>
+                    <th style="width: 28px; text-align: center;">
+                      <input type="checkbox" id="chkSelectAllDonations" title="Pilih Semua" style="cursor: pointer;">
+                    </th>
                     <th>Donatur</th>
                     <th>Nominal</th>
                     <th>Steps</th>
                     <th>Pesan</th>
+                    <th style="text-align: right; width: 90px;">Aksi</th>
                   </tr>
                 </thead>
                 <tbody id="donationHistoryTbody">
                   <tr>
-                    <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 14px;">Belum ada donasi masuk</td>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 14px;">Belum ada donasi masuk</td>
                   </tr>
                 </tbody>
               </table>
@@ -359,6 +375,47 @@
           </ol>
         </section>
 
+      </div>
+    </div>
+  <!-- Donation Detail & Action Modal -->
+  <div id="donationDetailModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Detail Donasi Masuk</h3>
+        <button id="btnCloseDonationModal" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Nama Donatur</span>
+            <strong id="modalDonatorName" class="detail-value">-</strong>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Nominal Donasi</span>
+            <strong id="modalDonationAmount" class="detail-value" style="color: #fbbf24; font-family: var(--font-mono);">-</strong>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Penambahan Langkah</span>
+            <span id="modalStepsBadge" class="badge-subathon">-</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Waktu Transaksi</span>
+            <span id="modalTimestamp" class="detail-value" style="font-size: 12px; color: var(--text-muted);">-</span>
+          </div>
+          <div class="detail-item fullwidth">
+            <span class="detail-label">Pesan Donatur</span>
+            <div id="modalMessage" class="detail-box">-</div>
+          </div>
+          <div class="detail-item fullwidth">
+            <span class="detail-label">ID Transaksi / Webhook</span>
+            <span id="modalDonationId" class="code-inline">-</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnModalRetrigger" class="btn btn-amber">Retrigger ke OBS</button>
+        <button id="btnModalDelete" class="btn btn-danger">Hapus Donasi</button>
+        <button id="btnModalClose" class="btn btn-secondary">Tutup</button>
       </div>
     </div>
   </div>
