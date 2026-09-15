@@ -900,6 +900,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // SaaS Authentication & Account Management
   async function checkAuthSession() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('auth') === 'google_success') {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (urlParams.get('auth_error')) {
+      alert('Google Login Gagal: ' + decodeURIComponent(urlParams.get('auth_error')));
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     try {
       const res = await fetch('/api/auth/me');
       const data = await res.json();

@@ -332,7 +332,159 @@ function broadcastDonationAlert(user, donationData) {
   }
 }
 
+function getGoogleRedirectUri(req) {
+  if (process.env.GOOGLE_REDIRECT_URI) return process.env.GOOGLE_REDIRECT_URI;
+  const protocol = req.headers["x-forwarded-proto"] || req.protocol || "http";
+  const host = req.headers["x-forwarded-host"] || req.get("host");
+  return `${protocol}://${host}/api/auth/google/callback`;
+}
+
 // REST APIs: Authentication & Multi-Tenant SaaS
+app.get("/api/auth/google/status", (req, res) => {
+  res.json({
+    enabled: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+  });
+});
+
+app.get("/api/auth/google", (req, res) => {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (!clientId) {
+    return res.status(500).send(`
+      <!DOCTYPE html>
+      <html>
+      <head><meta charset="utf-8"><title>Google OAuth Belum Dikonfigurasi</title></head>
+      <body style="background:#0b0f19; color:#f8fafc; font-family:sans-serif; padding:40px; text-align:center;">
+        <h2 style="color:#ef4444;">Google OAuth Belum Dikonfigurasi</h2>
+        <p style="color:#94a3b8; max-width:520px; margin:0 auto 20px; line-height: 1.6;">
+          Variabel <code>GOOGLE_CLIENT_ID</code> dan <code>GOOGLE_CLIENT_SECRET</code> belum diset pada server environment.
+        </p>
+        <a href="/dashboard" style="display:inline-block; padding:10px 22px; background:#6366f1; color:#fff; text-decoration:none; border-radius:8px; font-weight:600;">Kembali ke Dashboard</a>
+      </body>
+      </html>
+    `);
+  }
+
+  const redirectUri = getGoogleRedirectUri(req);
+  const state = crypto.randomBytes(16).toString("hex");
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` + new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    response_type: "code",
+    scope: "openid email profile",
+    access_type: "online",
+    prompt: "select_account",
+    state
+  }).toString();
+
+  res.redirect(authUrl);
+});
+
+app.get("/api/auth/google/callback", async (req, res) => {
+  const { code, error } = req.query;
+  if (error || !code) {
+    return res.redirect(`/dashboard?auth_error=${encodeURIComponent(error || "Akses Google dibatalkan")}`);
+  }
+
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const redirectUri = getGoogleRedirectUri(req);
+
+  if (!clientId || !clientSecret) {
+    return res.redirect(`/dashboard?auth_error=${encodeURIComponent("Kredensial Google OAuth server belum lengkap")}`);
+  }
+
+  try {
+    // 1. Exchange code for access token (ponytail: native standard fetch)
+    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code: String(code),
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: "authorization_code"
+      })
+    });
+
+    const tokenData = await tokenRes.json();
+    if (!tokenRes.ok || !tokenData.access_token) {
+      console.error("[Google OAuth Token Error]", tokenData);
+      return res.redirect(`/dashboard?auth_error=${encodeURIComponent(tokenData.error_description || "Gagal verifikasi token Google")}`);
+    }
+
+    // 2. Fetch User Profile (ponytail: native standard fetch)
+    const profileRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+    const profile = await profileRes.json();
+
+    if (!profileRes.ok || !profile.email) {
+      return res.redirect(`/dashboard?auth_error=${encodeURIComponent("Gagal membaca profil Google")}`);
+    }
+
+    const cleanEmail = profile.email.trim().toLowerCase();
+    const googleSub = profile.sub;
+    const name = profile.name || profile.given_name || cleanEmail.split("@")[0];
+
+    // 3. Find or Create Account
+    let foundAccount = null;
+    for (const accId in db.accounts) {
+      const acc = db.accounts[accId];
+      if (acc.googleId === googleSub || acc.email === cleanEmail) {
+        foundAccount = acc;
+        break;
+      }
+    }
+
+    if (!foundAccount) {
+      const accountId = "usr_" + crypto.randomBytes(6).toString("hex");
+      const streamKey = generateStreamKey();
+      foundAccount = {
+        id: accountId,
+        email: cleanEmail,
+        name: name,
+        googleId: googleSub,
+        avatar: profile.picture || "",
+        passwordHash: null,
+        salt: null,
+        streamKey,
+        plan: "creator_free",
+        createdAt: new Date().toISOString()
+      };
+      db.accounts[accountId] = foundAccount;
+
+      const userObj = getUser(accountId);
+      userObj.name = name;
+      userObj.streamKey = streamKey;
+      saveDB();
+    } else {
+      if (!foundAccount.googleId) {
+        foundAccount.googleId = googleSub;
+      }
+      if (profile.picture && !foundAccount.avatar) {
+        foundAccount.avatar = profile.picture;
+      }
+      saveDB();
+    }
+
+    // 4. Create Session
+    const sessionToken = "sess_" + crypto.randomBytes(32).toString("hex");
+    db.sessions[sessionToken] = {
+      accountId: foundAccount.id,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000
+    };
+    saveDB();
+
+    res.setHeader("Set-Cookie", `stepaway_session=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}`);
+    return res.redirect("/dashboard?auth=google_success");
+  } catch (err) {
+    console.error("[Google OAuth Callback Error]", err);
+    return res.redirect(`/dashboard?auth_error=${encodeURIComponent(err.message || "Terjadi kesalahan sistem")}`);
+  }
+});
+
 app.post("/api/auth/register", (req, res) => {
   const { email, password, name } = req.body;
   if (!email || !email.includes("@")) {
