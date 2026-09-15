@@ -81,9 +81,9 @@ jobs:
           echo "" >> changelog.md
           echo "### 📝 Commit Log" >> changelog.md
           if git rev-parse "$LATEST_TAG" >/dev/null 2>&1; then
-            git log "$LATEST_TAG..HEAD" --pretty=format:"* %s ([%h](https://github.com/${{ github.repository }}/commit/%H)) - @%an" >> changelog.md
+            git log "$LATEST_TAG..HEAD" --pretty=format:"* %s ([%h](https://github.com/${{ github.repository }}/commit/%H)) by @endrisusanto" >> changelog.md
           else
-            git log -n 10 --pretty=format:"* %s ([%h](https://github.com/${{ github.repository }}/commit/%H)) - @%an" >> changelog.md
+            git log -n 10 --pretty=format:"* %s ([%h](https://github.com/${{ github.repository }}/commit/%H)) by @endrisusanto" >> changelog.md
           fi
           echo "" >> changelog.md
 
