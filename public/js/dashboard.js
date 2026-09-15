@@ -7,7 +7,11 @@
   const liveTarget = document.getElementById('liveTarget');
   const livePercent = document.getElementById('livePercent');
   const livePaceBadge = document.getElementById('livePaceBadge');
+  const metricProgressBar = document.getElementById('metricProgressBar');
+  const wsStatusDot = document.getElementById('wsStatusDot');
+  const wsStatusText = document.getElementById('wsStatusText');
   const guideUserId = document.getElementById('guideUserId');
+
   const urlSingle = document.getElementById('urlSingle');
   const urlHeartrate = document.getElementById('urlHeartrate');
   const urlCombo = document.getElementById('urlCombo');
@@ -32,6 +36,12 @@
   const btnHrAnaerobic = document.getElementById('btnHrAnaerobic');
   const btnHrPeak = document.getElementById('btnHrPeak');
 
+  // Preview Switcher
+  const previewIframe = document.getElementById('previewIframe');
+  const tabPreviewStep = document.getElementById('tabPreviewStep');
+  const tabPreviewHr = document.getElementById('tabPreviewHr');
+  const tabPreviewCombo = document.getElementById('tabPreviewCombo');
+
   // Room Management
   const inputRoomId = document.getElementById('inputRoomId');
   const inputRoomName = document.getElementById('inputRoomName');
@@ -46,6 +56,7 @@
   inputUserId.value = currentUserId;
 
   let activeRoomId = localStorage.getItem('stepaway_roomid') || 'global';
+  let activePreviewMode = 'step';
 
   let ws = null;
 
@@ -67,6 +78,19 @@
     urlRoom.textContent = room;
     urlTest.textContent = test;
     guideUserId.textContent = currentUserId;
+
+    updatePreviewIframe();
+  }
+
+  function updatePreviewIframe() {
+    if (!previewIframe) return;
+    if (activePreviewMode === 'hr') {
+      previewIframe.src = `/overlay/heartrate?user=${encodeURIComponent(currentUserId)}`;
+    } else if (activePreviewMode === 'combo') {
+      previewIframe.src = `/overlay?user=${encodeURIComponent(currentUserId)}&show_hr=true`;
+    } else {
+      previewIframe.src = `/overlay?user=${encodeURIComponent(currentUserId)}`;
+    }
   }
 
   function applyPaceBadge(status) {
@@ -95,7 +119,16 @@
         inputDisplayName.value = json.user.name || currentUserId;
         const pct = Math.min(100, Math.round((json.user.currentSteps / Math.max(1, json.user.targetSteps)) * 100));
         livePercent.textContent = `${pct}%`;
+        if (metricProgressBar) metricProgressBar.style.width = `${pct}%`;
         applyPaceBadge(json.user.activityStatus);
+
+        if (json.user.bpm !== undefined && liveBpm) {
+          liveBpm.textContent = json.user.bpm > 0 ? json.user.bpm : '--';
+          if (liveBpmZone) {
+            const bpm = json.user.bpm;
+            liveBpmZone.textContent = bpm >= 170 ? 'Peak' : (bpm >= 140 ? 'Anaerobic' : (bpm >= 100 ? 'Aerobic' : (bpm > 0 ? 'Rest' : 'Idle')));
+          }
+        }
       }
     } catch (e) {
       console.error('[Fetch Stats Error]', e);
@@ -242,12 +275,25 @@
     }
   }
 
+  function setWsStatus(online) {
+    if (wsStatusDot) {
+      if (online) {
+        wsStatusDot.classList.add('online');
+        if (wsStatusText) wsStatusText.textContent = 'Live Sync';
+      } else {
+        wsStatusDot.classList.remove('online');
+        if (wsStatusText) wsStatusText.textContent = 'Disconnected';
+      }
+    }
+  }
+
   function connectLiveWebSocket() {
     if (ws) ws.close();
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
 
     ws.onopen = () => {
+      setWsStatus(true);
       ws.send(JSON.stringify({ type: 'subscribe', userId: currentUserId }));
     };
 
@@ -260,6 +306,7 @@
             liveTarget.textContent = (msg.data.targetSteps || 5000).toLocaleString();
             const pct = Math.min(100, Math.round((msg.data.currentSteps / Math.max(1, msg.data.targetSteps)) * 100));
             livePercent.textContent = `${pct}%`;
+            if (metricProgressBar) metricProgressBar.style.width = `${pct}%`;
             applyPaceBadge(msg.data.activityStatus);
 
             if (msg.data.bpm !== undefined && liveBpm) {
@@ -281,9 +328,22 @@
     };
 
     ws.onclose = () => {
+      setWsStatus(false);
       setTimeout(connectLiveWebSocket, 3000);
     };
   }
+
+  // Preview tab switcher
+  function switchPreviewTab(mode, activeBtn) {
+    activePreviewMode = mode;
+    document.querySelectorAll('.preview-tab').forEach(b => b.classList.remove('active'));
+    activeBtn.classList.add('active');
+    updatePreviewIframe();
+  }
+
+  if (tabPreviewStep) tabPreviewStep.addEventListener('click', () => switchPreviewTab('step', tabPreviewStep));
+  if (tabPreviewHr) tabPreviewHr.addEventListener('click', () => switchPreviewTab('hr', tabPreviewHr));
+  if (tabPreviewCombo) tabPreviewCombo.addEventListener('click', () => switchPreviewTab('combo', tabPreviewCombo));
 
   // Event Listeners
   inputUserId.addEventListener('change', () => {
@@ -322,7 +382,7 @@
       const textToCopy = document.getElementById(targetId).textContent;
       navigator.clipboard.writeText(textToCopy).then(() => {
         const originalText = btn.textContent;
-        btn.textContent = 'Copied!';
+        btn.textContent = 'Tersalin!';
         setTimeout(() => btn.textContent = originalText, 1500);
       });
     });

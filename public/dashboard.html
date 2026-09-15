@@ -27,195 +27,234 @@
         </div>
         <div>
           <h1 class="brand-title">StepAway</h1>
-          <p class="brand-subtitle">Real-time Step Counter OBS Overlay System</p>
+          <p class="brand-subtitle">Real-time Step Counter &amp; Heart Rate OBS Overlay</p>
         </div>
       </div>
-      <div class="domain-pill">stepaway.endrisusanto.my.id</div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div id="wsStatusDot" class="status-indicator">
+          <span class="status-dot"></span>
+          <span id="wsStatusText" class="status-text">Connecting...</span>
+        </div>
+        <div class="domain-pill">stepaway.endrisusanto.my.id</div>
+      </div>
     </header>
+
+    <!-- Top Key Metrics Bar -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">CURRENT STEPS</div>
+        <div class="metric-value-row">
+          <span id="liveSteps" class="metric-number">0</span>
+          <span class="metric-unit">steps</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-label">CADENCE PACE</div>
+        <div class="metric-value-row">
+          <span id="livePaceBadge" class="activity-badge activity-idle">IDLE</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-label">TARGET PROGRESS</div>
+        <div class="metric-value-row">
+          <span id="livePercent" class="metric-number">0%</span>
+          <span class="metric-unit">of <span id="liveTarget">5,000</span></span>
+        </div>
+        <div class="metric-progress-track">
+          <div id="metricProgressBar" class="metric-progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-label">LIVE HEART RATE</div>
+        <div class="metric-value-row">
+          <span id="liveBpm" class="metric-number metric-bpm">--</span>
+          <span class="metric-unit">BPM</span>
+          <span id="liveBpmZone" class="activity-badge" style="margin-left: auto;">Idle</span>
+        </div>
+      </div>
+    </div>
 
     <!-- Main Grid -->
     <div class="dashboard-grid">
-      <!-- Live Status & Simulator Card -->
-      <section class="card">
-        <h2 class="card-title">Live Status &amp; Test Simulator</h2>
+      <!-- Left Column: Controls & Settings -->
+      <div style="display: flex; flex-direction: column; gap: 24px;">
         
-        <div class="stat-row">
-          <div>
-            <div class="form-label">CURRENT STEPS</div>
-            <div id="liveSteps" class="big-stat">0</div>
-          </div>
-          <div class="target-badge">
-            <span id="livePaceBadge" class="activity-badge activity-idle">IDLE</span><br>
-            Target: <span id="liveTarget">5,000</span> (<span id="livePercent">0%</span>)
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Simulasi Langkah (Kirim ke OBS Widget)</label>
-          <div class="sim-btn-group">
-            <button id="btnSim1" class="btn btn-secondary">+1 Step</button>
-            <button id="btnSim10" class="btn btn-secondary">+10</button>
-            <button id="btnSim100" class="btn btn-secondary">+100</button>
-            <button id="btnSim1000" class="btn btn-secondary">+1000</button>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <button id="btnReset" class="btn btn-danger" style="width: 100%;">Reset Langkah Hari Ini</button>
-        </div>
-      </section>
-
-      <!-- Target Settings & User Config -->
-      <section class="card">
-        <h2 class="card-title">Profil &amp; Target Goal</h2>
-        
-        <div class="form-group">
-          <label class="form-label" for="inputUserId">User ID (Key Unik)</label>
-          <input type="text" id="inputUserId" class="input-text" value="streamer">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="inputDisplayName">Nama Tampilan (Display Name)</label>
-          <input type="text" id="inputDisplayName" class="input-text" value="Streamer">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="inputTarget">Target Langkah (Goal)</label>
-          <input type="number" id="inputTarget" class="input-text" value="5000" min="100" step="500">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Preset Cepat Target</label>
-          <div class="form-row">
-            <button class="btn btn-secondary preset-btn" data-target="3000">3,000</button>
-            <button class="btn btn-secondary preset-btn" data-target="5000">5,000</button>
-            <button class="btn btn-secondary preset-btn" data-target="10000">10,000</button>
-            <button class="btn btn-secondary preset-btn" data-target="20000">20,000</button>
-          </div>
-        </div>
-
-        <button id="btnSaveSettings" class="btn btn-primary" style="width: 100%; margin-top: 4px;">Simpan ke Database</button>
-      </section>
-    </div>
-
-    <!-- Multi-User Room Management Section -->
-    <section class="card">
-      <h2 class="card-title">Room System (Co-op / Battle)</h2>
-      <p style="font-size: 13px; color: var(--text-muted); margin-top: -8px;">
-        Buat atau gabung ke Room bersama streamer lain. Overlay room akan otomatis menampilkan seluruh member yang bergabung.
-      </p>
-
-      <div class="dashboard-grid" style="margin-top: 8px;">
-        <!-- Create Room -->
-        <div class="form-group">
-          <label class="form-label" for="inputRoomId">Buat Room Baru</label>
-          <input type="text" id="inputRoomId" class="input-text" placeholder="ID Room (contoh: walk-squad)">
-          <input type="text" id="inputRoomName" class="input-text" placeholder="Nama Room (contoh: Squad Jalan Sehat)" style="margin-top: 6px;">
+        <!-- Live Simulator Card -->
+        <section class="card">
+          <h2 class="card-title">Test Simulator</h2>
           
-          <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px;">
-            <label style="font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <input type="checkbox" id="chkPrivateRoom"> Private Room
-            </label>
-            <input type="password" id="inputRoomPasscode" class="input-text" placeholder="Passcode (jika private)" style="display: none;">
+          <div class="form-group">
+            <label class="form-label">Simulasi Langkah (Sync ke OBS)</label>
+            <div class="sim-btn-group">
+              <button id="btnSim1" class="btn btn-secondary">+1 Step</button>
+              <button id="btnSim10" class="btn btn-secondary">+10</button>
+              <button id="btnSim100" class="btn btn-secondary">+100</button>
+              <button id="btnSim1000" class="btn btn-secondary">+1000</button>
+            </div>
           </div>
-          <button id="btnCreateRoom" class="btn btn-purple" style="margin-top: 8px;">Buat Room</button>
-        </div>
 
-        <!-- Join Room -->
-        <div class="form-group">
-          <label class="form-label" for="inputJoinRoomId">Gabung ke Room Lain</label>
-          <input type="text" id="inputJoinRoomId" class="input-text" placeholder="ID Room yang dituju">
-          <input type="password" id="inputJoinPasscode" class="input-text" placeholder="Passcode (jika private)" style="margin-top: 6px;">
-          <button id="btnJoinRoom" class="btn btn-secondary" style="margin-top: 8px;">Gabung Room</button>
-        </div>
+          <div class="form-group" style="margin-top: 4px;">
+            <label class="form-label">Simulasi Detak Jantung (BPM)</label>
+            <div class="sim-btn-group">
+              <button id="btnHrRest" class="btn btn-secondary" data-bpm="75">75 (Rest)</button>
+              <button id="btnHrAerobic" class="btn btn-secondary" data-bpm="125">125 (Aerobic)</button>
+              <button id="btnHrAnaerobic" class="btn btn-secondary" data-bpm="155">155 (Cardio)</button>
+              <button id="btnHrPeak" class="btn btn-secondary" data-bpm="180">180 (Peak)</button>
+            </div>
+          </div>
+
+          <button id="btnReset" class="btn btn-danger" style="width: 100%; margin-top: 4px;">Reset Langkah Hari Ini</button>
+        </section>
+
+        <!-- Profile & Target Goal -->
+        <section class="card">
+          <h2 class="card-title">Profil &amp; Target Goal</h2>
+          
+          <div class="form-group">
+            <label class="form-label" for="inputUserId">User ID (Key Unik)</label>
+            <input type="text" id="inputUserId" class="input-text" value="streamer">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inputDisplayName">Nama Tampilan (Display Name)</label>
+            <input type="text" id="inputDisplayName" class="input-text" value="Streamer">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inputTarget">Target Langkah (Goal)</label>
+            <input type="number" id="inputTarget" class="input-text" value="5000" min="100" step="500">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Preset Cepat Target</label>
+            <div class="form-row">
+              <button class="btn btn-secondary preset-btn" data-target="3000">3,000</button>
+              <button class="btn btn-secondary preset-btn" data-target="5000">5,000</button>
+              <button class="btn btn-secondary preset-btn" data-target="10000">10,000</button>
+              <button class="btn btn-secondary preset-btn" data-target="20000">20,000</button>
+            </div>
+          </div>
+
+          <button id="btnSaveSettings" class="btn btn-primary" style="width: 100%; margin-top: 6px;">Simpan Pengaturan ke Database</button>
+        </section>
+
+        <!-- Multi-User Room System -->
+        <section class="card">
+          <h2 class="card-title">Room System (Co-op / Battle)</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: -6px;">
+            Buat atau gabung ke Room bersama streamer lain. Overlay room otomatis menampilkan seluruh member yang bergabung.
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 6px;">
+            <!-- Create Room -->
+            <div class="form-group">
+              <label class="form-label" for="inputRoomId">Buat Room Baru</label>
+              <input type="text" id="inputRoomId" class="input-text" placeholder="ID Room (contoh: walk-squad)">
+              <input type="text" id="inputRoomName" class="input-text" placeholder="Nama Room (contoh: Squad Jalan Sehat)" style="margin-top: 6px;">
+              
+              <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px;">
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="checkbox" id="chkPrivateRoom"> Private Room
+                </label>
+                <input type="password" id="inputRoomPasscode" class="input-text" placeholder="Passcode (jika private)" style="display: none;">
+              </div>
+              <button id="btnCreateRoom" class="btn btn-purple" style="margin-top: 8px;">Buat Room</button>
+            </div>
+
+            <!-- Join Room -->
+            <div class="form-group" style="border-top: 1px solid var(--border-color); padding-top: 14px;">
+              <label class="form-label" for="inputJoinRoomId">Gabung ke Room Lain</label>
+              <input type="text" id="inputJoinRoomId" class="input-text" placeholder="ID Room yang dituju">
+              <input type="password" id="inputJoinPasscode" class="input-text" placeholder="Passcode (jika private)" style="margin-top: 6px;">
+              <button id="btnJoinRoom" class="btn btn-secondary" style="margin-top: 8px;">Gabung Room</button>
+            </div>
+          </div>
+        </section>
+
       </div>
-    </section>
 
-    <!-- Live Heart Rate Simulator & Monitor -->
-    <section class="card">
-      <h2 class="card-title">Heart Rate Monitor (BLE 0x180D)</h2>
-      <p style="font-size: 13px; color: var(--text-muted); margin-top: -8px;">
-        Monitor atau simulasi detak jantung (BPM). Sensor smartband di APK Android (0x180D) akan otomatis menyuplai data live ke sini.
-      </p>
+      <!-- Right Column: OBS Links & Live Preview -->
+      <div style="display: flex; flex-direction: column; gap: 24px;">
 
-      <div class="stat-card" style="margin-top: 10px;">
-        <div class="stat-label">Live Heart Rate</div>
-        <div style="display: flex; align-items: baseline; gap: 10px;">
-          <div id="liveBpm" class="stat-val" style="color: #ff5252;">--</div>
-          <span style="font-size: 14px; font-weight: 800; color: var(--text-muted);">BPM</span>
-          <span id="liveBpmZone" class="activity-badge" style="background: rgba(255,82,82,0.12); color: #ff5252; border: 1px solid rgba(255,82,82,0.3);">Idle</span>
-        </div>
+        <!-- OBS Links Card -->
+        <section class="card">
+          <h2 class="card-title">Link OBS Browser Source</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: -6px;">
+            Salin link berikut dan paste ke dalam Browser Source di OBS Studio. Background transparan otomatis.
+          </p>
+
+          <div class="form-group">
+            <label class="form-label">1. Step Counter Overlay (420 x 140 px)</label>
+            <div class="url-box">
+              <span id="urlSingle" class="url-text">Loading...</span>
+              <button class="btn btn-secondary copy-btn" data-target="urlSingle">Salin</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">2. Standalone Heart Rate (240 x 90 px)</label>
+            <div class="url-box">
+              <span id="urlHeartrate" class="url-text">Loading...</span>
+              <button class="btn btn-secondary copy-btn" data-target="urlHeartrate">Salin</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">3. Combo Step + Heart Rate (420 x 140 px)</label>
+            <div class="url-box">
+              <span id="urlCombo" class="url-text">Loading...</span>
+              <button class="btn btn-secondary copy-btn" data-target="urlCombo">Salin</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">4. Multi-User Room Overlay (420 x 360 px)</label>
+            <div class="url-box">
+              <span id="urlRoom" class="url-text">Loading...</span>
+              <button class="btn btn-secondary copy-btn" data-target="urlRoom">Salin</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">5. Live Test Demo Link</label>
+            <div class="url-box">
+              <span id="urlTest" class="url-text">Loading...</span>
+              <button id="btnOpenTest" class="btn btn-primary">Buka Tab Baru</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Live Embedded Preview Card -->
+        <section class="card">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h2 class="card-title">Live Overlay Preview</h2>
+            <div class="preview-switcher">
+              <button id="tabPreviewStep" class="preview-tab active">Step</button>
+              <button id="tabPreviewHr" class="preview-tab">Heart Rate</button>
+              <button id="tabPreviewCombo" class="preview-tab">Combo</button>
+            </div>
+          </div>
+          <div class="preview-container">
+            <iframe id="previewIframe" src="/overlay?user=streamer" title="Live Overlay Preview" class="preview-frame"></iframe>
+          </div>
+        </section>
+
+        <!-- Android Integration Guide -->
+        <section class="card">
+          <h2 class="card-title">Panduan Integrasi Android APK</h2>
+          <ol class="instructions-list">
+            <li>Install aplikasi <strong>StepAway Android</strong> di smartphone Anda.</li>
+            <li>Buka aplikasi, masukkan Server URL: <span class="code-inline">https://stepaway.endrisusanto.my.id</span></li>
+            <li>Masukkan User ID: <span id="guideUserId" class="code-inline">streamer</span></li>
+            <li>Klik tombol <strong>Start Tracking</strong>. Sensor langkah HP dan Smartband BLE (0x180D) akan otomatis terhubung dan mengirim data real-time ke OBS.</li>
+          </ol>
+        </section>
+
       </div>
-
-      <div class="form-group" style="margin-top: 14px;">
-        <label class="form-label">Simulasi BPM Cepat</label>
-        <div class="form-row">
-          <button id="btnHrRest" class="btn btn-secondary preset-btn" data-bpm="75">75 (Rest)</button>
-          <button id="btnHrAerobic" class="btn btn-secondary preset-btn" data-bpm="125">125 (Aerobic)</button>
-          <button id="btnHrAnaerobic" class="btn btn-secondary preset-btn" data-bpm="155">155 (Cardio)</button>
-          <button id="btnHrPeak" class="btn btn-secondary preset-btn" data-bpm="180">180 (Peak)</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- OBS Links Section -->
-    <section class="card">
-      <h2 class="card-title">Link OBS Browser Source</h2>
-      <p style="font-size: 13px; color: var(--text-muted); margin-top: -8px;">
-        Salin link berikut dan paste ke dalam Browser Source di OBS Studio (Background transparan otomatis).
-      </p>
-
-      <div class="form-group">
-        <label class="form-label">1. Step Counter Overlay (420 x 140 px)</label>
-        <div class="url-box">
-          <span id="urlSingle" class="url-text">Loading...</span>
-          <button class="btn btn-secondary copy-btn" data-target="urlSingle">Salin</button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">2. Standalone Heart Rate Overlay (240 x 90 px)</label>
-        <div class="url-box">
-          <span id="urlHeartrate" class="url-text">Loading...</span>
-          <button class="btn btn-secondary copy-btn" data-target="urlHeartrate">Salin</button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">3. Combo Step + Heart Rate Badge (420 x 140 px)</label>
-        <div class="url-box">
-          <span id="urlCombo" class="url-text">Loading...</span>
-          <button class="btn btn-secondary copy-btn" data-target="urlCombo">Salin</button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">4. Multi-User Room Overlay (420 x 360 px)</label>
-        <div class="url-box">
-          <span id="urlRoom" class="url-text">Loading...</span>
-          <button class="btn btn-secondary copy-btn" data-target="urlRoom">Salin</button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">5. Live Test Demo Link (Buka tab baru)</label>
-        <div class="url-box">
-          <span id="urlTest" class="url-text">Loading...</span>
-          <button id="btnOpenTest" class="btn btn-primary">Buka Test Preview</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Android Integration Guide -->
-    <section class="card">
-      <h2 class="card-title">Panduan Integrasi Android APK</h2>
-      <ol class="instructions-list">
-        <li>Install aplikasi StepAway Android di smartphone Anda.</li>
-        <li>Buka aplikasi, masukkan Server URL: <span class="code-inline">https://stepaway.endrisusanto.my.id</span></li>
-        <li>Masukkan User ID: <span id="guideUserId" class="code-inline">streamer</span></li>
-        <li>Klik tombol Start Tracking. Sensor langkah bawaan HP akan aktif dan mengirim setiap langkah serta ritme kecepatan (jalan/lari) ke OBS secara otomatis.</li>
-      </ol>
-    </section>
+    </div>
   </div>
 
   <script src="/js/dashboard.js"></script>
