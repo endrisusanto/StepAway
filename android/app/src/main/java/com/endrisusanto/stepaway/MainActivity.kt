@@ -80,7 +80,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnSimHr125: Button
     private lateinit var btnSimHr155: Button
     private lateinit var btnSimHr180: Button
-    private lateinit var btnResetSteps: Button
 
     // Connection & OBS Views
     private lateinit var etServerUrl: EditText
@@ -200,8 +199,6 @@ class MainActivity : AppCompatActivity() {
         btnSimHr125 = findViewById(R.id.btnSimHr125)
         btnSimHr155 = findViewById(R.id.btnSimHr155)
         btnSimHr180 = findViewById(R.id.btnSimHr180)
-
-        btnResetSteps = findViewById(R.id.btnResetSteps)
 
         etServerUrl = findViewById(R.id.etServerUrl)
         etUserId = findViewById(R.id.etUserId)
@@ -392,8 +389,6 @@ class MainActivity : AppCompatActivity() {
         btnSimHr125.setOnClickListener { simulateHeartRate(125) }
         btnSimHr155.setOnClickListener { simulateHeartRate(155) }
         btnSimHr180.setOnClickListener { simulateHeartRate(180) }
-
-        btnResetSteps.setOnClickListener { resetTodaySteps() }
 
         btnCopySingle.setOnClickListener { copyObsLink(OverlayType.SINGLE) }
         btnCopyHeartrate.setOnClickListener { copyObsLink(OverlayType.HEARTRATE) }
