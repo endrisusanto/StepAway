@@ -1,15 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121214"
-    android:fillViewport="true">
+    android:background="#09090B">
 
-    <LinearLayout
+    <!-- 1. MAIN TRACKING DASHBOARD -->
+    <ScrollView
+        android:id="@+id/layoutMainDashboard"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:layout_height="match_parent"
+        android:background="#121214"
+        android:fillViewport="true"
+        android:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
 
         <!-- Header -->
         <LinearLayout
@@ -101,18 +109,38 @@
                     android:fontFamily="sans-serif-rounded" />
             </LinearLayout>
 
-            <Button
-                android:id="@+id/btnScanQrPairing"
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="38dp"
-                android:backgroundTint="#059669"
-                android:text="Scan QR"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                android:fontFamily="sans-serif-rounded"
-                android:textStyle="bold"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnScanQrPairing"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:backgroundTint="#059669"
+                    android:text="Scan QR"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp" />
+
+                <Button
+                    android:id="@+id/btnOpenGateFromDashboard"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:layout_marginStart="6dp"
+                    android:backgroundTint="#27272A"
+                    android:text="Ganti"
+                    android:textColor="#D4D4D8"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Live Step & Heart Rate Monitor Card -->
@@ -1147,4 +1175,240 @@
         </LinearLayout>
 
     </LinearLayout>
-</ScrollView>
+    </ScrollView>
+
+    <!-- 2. SETUP GATE SCREEN (Paywall / Endpoint Configuration) -->
+    <ScrollView
+        android:id="@+id/layoutSetupGate"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#09090B"
+        android:fillViewport="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:gravity="center_horizontal">
+
+            <!-- Top Header & Brand -->
+            <ImageView
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginTop="20dp"
+                android:src="@drawable/ic_launcher_foreground"
+                android:contentDescription="StepAway Logo" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="StepAway Mobile"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Real-time Step &amp; Heart Rate OBS Overlay"
+                android:textColor="#9E9EA7"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-rounded" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/gate_badge_bg"
+                android:paddingStart="14dp"
+                android:paddingTop="5dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="5dp"
+                android:text="SETUP GATE"
+                android:textColor="#10B981"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
+
+            <!-- Main Instruction Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:background="@drawable/card_bg"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hubungkan ke Web Dashboard"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Aplikasi ini menyiarkan langkah kaki &amp; sensor detak jantung secara langsung ke OBS. Hubungkan server dan akun Anda untuk mulai menggunakan aplikasi."
+                    android:textColor="#A1A1AA"
+                    android:textSize="12sp"
+                    android:lineSpacingExtra="3dp"
+                    android:fontFamily="sans-serif-rounded" />
+
+                <!-- Step Instructions -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/step_pill_bg"
+                        android:padding="12dp"
+                        android:text="1. Buka stepaway.endrisusanto.my.id di browser PC"
+                        android:textColor="#E4E4E7"
+                        android:textSize="12sp"
+                        android:fontFamily="sans-serif-rounded" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/step_pill_bg"
+                        android:padding="12dp"
+                        android:text="2. Klik tombol Scan QR Android di Header Web"
+                        android:textColor="#E4E4E7"
+                        android:textSize="12sp"
+                        android:fontFamily="sans-serif-rounded" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/step_pill_bg"
+                        android:padding="12dp"
+                        android:text="3. Tekan tombol di bawah untuk scan otomatis"
+                        android:textColor="#E4E4E7"
+                        android:textSize="12sp"
+                        android:fontFamily="sans-serif-rounded" />
+                </LinearLayout>
+
+                <!-- Primary Action Button: Scan QR -->
+                <Button
+                    android:id="@+id/btnGateScanQr"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="20dp"
+                    android:backgroundTint="#059669"
+                    android:text="Scan QR Web Dashboard"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <!-- Manual Config Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/card_bg"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Atau Konfigurasi Manual"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Server Endpoint URL"
+                    android:textColor="#9E9EA7"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/etGateServerUrl"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/input_field_bg"
+                    android:hint="https://stepaway.endrisusanto.my.id"
+                    android:inputType="textUri"
+                    android:padding="12dp"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#71717A"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-rounded" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="User ID (Key Akun Streamer)"
+                    android:textColor="#9E9EA7"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/etGateUserId"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/input_field_bg"
+                    android:hint="streamer"
+                    android:inputType="text"
+                    android:padding="12dp"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#71717A"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-rounded" />
+
+                <Button
+                    android:id="@+id/btnGateSaveManual"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="16dp"
+                    android:backgroundTint="#2563EB"
+                    android:text="Simpan &amp; Buka Dashboard"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"
+                android:text="StepAway OBS Overlay System • @endrisusanto"
+                android:textColor="#52525B"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-rounded" />
+        </LinearLayout>
+    </ScrollView>
+
+</FrameLayout>

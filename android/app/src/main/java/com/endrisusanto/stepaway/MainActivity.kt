@@ -55,6 +55,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvConnectedServerInfo: TextView
     private lateinit var btnScanQrPairing: Button
     private lateinit var btnScanQrInSettings: Button
+    private lateinit var btnOpenGateFromDashboard: Button
+
+    // Setup Gate (Paywall / Onboarding) Views
+    private lateinit var layoutMainDashboard: ScrollView
+    private lateinit var layoutSetupGate: ScrollView
+    private lateinit var btnGateScanQr: Button
+    private lateinit var etGateServerUrl: EditText
+    private lateinit var etGateUserId: EditText
+    private lateinit var btnGateSaveManual: Button
 
     private val barcodeLauncher = registerForActivityResult(ScanContract()) { result ->
         if (result.contents != null) {
@@ -137,11 +146,7 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
         setupListeners()
         fetchRemoteStats()
-
-        val isConfigured = prefs.getBoolean("is_configured", false)
-        if (!isConfigured) {
-            showStartupPairingDialog()
-        }
+        updateGateState()
     }
 
     override fun onResume() {
@@ -232,9 +237,18 @@ class MainActivity : AppCompatActivity() {
 
         btnResetSteps = findViewById(R.id.btnResetSteps)
 
+        // Setup Gate Views
+        layoutMainDashboard = findViewById(R.id.layoutMainDashboard)
+        layoutSetupGate = findViewById(R.id.layoutSetupGate)
+        btnGateScanQr = findViewById(R.id.btnGateScanQr)
+        etGateServerUrl = findViewById(R.id.etGateServerUrl)
+        etGateUserId = findViewById(R.id.etGateUserId)
+        btnGateSaveManual = findViewById(R.id.btnGateSaveManual)
+
         tvConnectedServerInfo = findViewById(R.id.tvConnectedServerInfo)
         btnScanQrPairing = findViewById(R.id.btnScanQrPairing)
         btnScanQrInSettings = findViewById(R.id.btnScanQrInSettings)
+        btnOpenGateFromDashboard = findViewById(R.id.btnOpenGateFromDashboard)
 
         etServerUrl = findViewById(R.id.etServerUrl)
         etUserId = findViewById(R.id.etUserId)
@@ -436,6 +450,38 @@ class MainActivity : AppCompatActivity() {
 
         btnScanQrPairing.setOnClickListener { checkCameraPermissionAndScan() }
         btnScanQrInSettings.setOnClickListener { checkCameraPermissionAndScan() }
+        btnGateScanQr.setOnClickListener { checkCameraPermissionAndScan() }
+
+        btnGateSaveManual.setOnClickListener {
+            val server = etGateServerUrl.text.toString().trim().removeSuffix("/")
+            val user = etGateUserId.text.toString().trim()
+            if (server.isEmpty() || user.isEmpty()) {
+                Toast.makeText(this, "Server URL dan User ID wajib diisi", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            etServerUrl.setText(server)
+            etUserId.setText(user)
+            etDisplayName.setText(user)
+            prefs.edit()
+                .putString("server_url", server)
+                .putString("user_id", user)
+                .putString("display_name", user)
+                .putBoolean("is_configured", true)
+                .apply()
+
+            tvConnectedServerInfo.text = "Server: $server | User: $user"
+            tvCardUserName.text = user
+            Toast.makeText(this, "Konfigurasi tersimpan!", Toast.LENGTH_SHORT).show()
+            updateGateState()
+            fetchRemoteStats()
+        }
+
+        btnOpenGateFromDashboard.setOnClickListener {
+            etGateServerUrl.setText(etServerUrl.text.toString())
+            etGateUserId.setText(etUserId.text.toString())
+            layoutMainDashboard.visibility = View.GONE
+            layoutSetupGate.visibility = View.VISIBLE
+        }
 
         btnCopySingle.setOnClickListener { copyObsLink(OverlayType.SINGLE) }
         btnCopyHeartrate.setOnClickListener { copyObsLink(OverlayType.HEARTRATE) }
@@ -878,64 +924,20 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "Tracking dihentikan", Toast.LENGTH_SHORT).show()
     }
 
-    private fun showStartupPairingDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("Sinkronisasi Web Dashboard")
-            .setMessage("Selamat datang di StepAway! Untuk mulai menyiarkan sensor langkah dan detak jantung ke overlay OBS, hubungkan aplikasi ini ke akun Web Dashboard Anda.")
-            .setCancelable(false)
-            .setPositiveButton("Scan QR Dashboard") { _, _ ->
-                checkCameraPermissionAndScan()
-            }
-            .setNegativeButton("Input Manual") { _, _ ->
-                showManualConfigDialog()
-            }
-            .show()
-    }
+    private fun updateGateState() {
+        val isConfigured = prefs.getBoolean("is_configured", false)
+        val serverUrl = prefs.getString("server_url", "") ?: ""
+        val userId = prefs.getString("user_id", "") ?: ""
 
-    private fun showManualConfigDialog() {
-        val serverInput = EditText(this).apply {
-            hint = "https://stepaway.endrisusanto.my.id"
-            setText(etServerUrl.text.toString())
+        if (isConfigured && serverUrl.isNotEmpty() && userId.isNotEmpty()) {
+            layoutSetupGate.visibility = View.GONE
+            layoutMainDashboard.visibility = View.VISIBLE
+        } else {
+            layoutMainDashboard.visibility = View.GONE
+            layoutSetupGate.visibility = View.VISIBLE
+            etGateServerUrl.setText(if (serverUrl.isNotEmpty()) serverUrl else "https://stepaway.endrisusanto.my.id")
+            etGateUserId.setText(if (userId.isNotEmpty()) userId else "streamer")
         }
-        val userInput = EditText(this).apply {
-            hint = "streamer"
-            setText(etUserId.text.toString())
-        }
-        val container = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
-            setPadding(50, 20, 50, 20)
-            addView(TextView(this@MainActivity).apply { text = "Server URL:" })
-            addView(serverInput)
-            addView(TextView(this@MainActivity).apply { text = "User ID / Key:" })
-            addView(userInput)
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("Input Endpoint Server Manual")
-            .setView(container)
-            .setPositiveButton("Simpan & Masuk") { _, _ ->
-                val server = serverInput.text.toString().trim().removeSuffix("/")
-                val user = userInput.text.toString().trim()
-                if (server.isNotEmpty() && user.isNotEmpty()) {
-                    etServerUrl.setText(server)
-                    etUserId.setText(user)
-                    etDisplayName.setText(user)
-                    prefs.edit()
-                        .putString("server_url", server)
-                        .putString("user_id", user)
-                        .putString("display_name", user)
-                        .putBoolean("is_configured", true)
-                        .apply()
-                    tvConnectedServerInfo.text = "Server: $server | User: $user"
-                    tvCardUserName.text = user
-                    Toast.makeText(this, "Konfigurasi tersimpan!", Toast.LENGTH_SHORT).show()
-                    fetchRemoteStats()
-                } else {
-                    Toast.makeText(this, "Server URL dan User ID tidak boleh kosong", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .setNegativeButton("Batal", null)
-            .show()
     }
 
     private fun checkCameraPermissionAndScan() {
@@ -983,6 +985,7 @@ class MainActivity : AppCompatActivity() {
             tvCardUserName.text = etDisplayName.text.toString()
 
             Toast.makeText(this, "Berhasil terhubung ke akun: ${etUserId.text}", Toast.LENGTH_LONG).show()
+            updateGateState()
             fetchRemoteStats()
         } catch (e: Exception) {
             if (rawContent.startsWith("http://") || rawContent.startsWith("https://")) {
@@ -1005,6 +1008,7 @@ class MainActivity : AppCompatActivity() {
                 tvCardUserName.text = user
 
                 Toast.makeText(this, "Berhasil terhubung ke akun: $user", Toast.LENGTH_LONG).show()
+                updateGateState()
                 fetchRemoteStats()
             } else {
                 Toast.makeText(this, "Format QR Code tidak valid", Toast.LENGTH_SHORT).show()
