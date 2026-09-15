@@ -48,13 +48,7 @@ jobs:
         working-directory: ./android
         run: gradle assembleDebug --no-daemon --stacktrace
 
-      - name: Prepare APK Asset
-        run: |
-          mkdir -p dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk dist/StepAway.apk
-          echo "APK successfully built and ready for release distribution."
-
-      # 3. Determine Next Version & Generate Changelog
+      # 3. Determine Next Version, Package Versioned APK & Generate Changelog
       # ponytail: simple semantic tag calculator & changelog generator using native git + standard gh CLI
       - name: Determine Next Version & Generate Changelog
         id: versioning
@@ -73,11 +67,18 @@ jobs:
           echo "Next tag: $NEXT_TAG"
           echo "next_tag=$NEXT_TAG" >> $GITHUB_OUTPUT
 
+          # Siapkan nama file APK ber-tag versi
+          mkdir -p dist
+          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/StepAway-${NEXT_TAG}.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk dist/StepAway.apk
+          echo "Versioned APK successfully created: StepAway-${NEXT_TAG}.apk"
+
           # Buat changelog dari commit log sejak tag sebelumnya
           echo "## Changelog ($NEXT_TAG)" > changelog.md
           echo "" >> changelog.md
           echo "### 📱 Download Android App" >> changelog.md
-          echo "- **[StepAway.apk](https://github.com/${{ github.repository }}/releases/download/$NEXT_TAG/StepAway.apk)** (Android Step Tracker Client)" >> changelog.md
+          echo "- **[StepAway-${NEXT_TAG}.apk](https://github.com/${{ github.repository }}/releases/download/$NEXT_TAG/StepAway-${NEXT_TAG}.apk)** (Android Step Tracker Client - $NEXT_TAG)" >> changelog.md
+          echo "- **[StepAway.apk](https://github.com/${{ github.repository }}/releases/download/$NEXT_TAG/StepAway.apk)** (Latest release alias)" >> changelog.md
           echo "" >> changelog.md
           echo "### 📝 Commit Log" >> changelog.md
           if git rev-parse "$LATEST_TAG" >/dev/null 2>&1; then
@@ -104,12 +105,13 @@ jobs:
           git commit -m "chore(release): bump version to ${{ steps.versioning.outputs.next_tag }} [skip ci]" || echo "No changes to commit"
           git push origin HEAD:${{ github.ref }}
 
-      # 4. Publish GitHub Release with APK attached
+      # 4. Publish GitHub Release with Versioned & Standard APK attached
       - name: Create GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ steps.versioning.outputs.next_tag }}" \
+            "dist/StepAway-${{ steps.versioning.outputs.next_tag }}.apk" \
             dist/StepAway.apk \
             --title "Release ${{ steps.versioning.outputs.next_tag }}" \
             --notes-file changelog.md
