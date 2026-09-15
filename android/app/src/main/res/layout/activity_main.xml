@@ -66,11 +66,60 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <!-- Quick Dashboard QR Pairing Banner -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/card_bg"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sinkronisasi Akun Web"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvConnectedServerInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Server: https://stepaway.endrisusanto.my.id"
+                    android:textColor="#71717A"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-rounded" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnScanQrPairing"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:backgroundTint="#059669"
+                android:text="Scan QR"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp" />
+        </LinearLayout>
+
         <!-- Live Step & Heart Rate Monitor Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="14dp"
             android:background="@drawable/card_bg"
             android:orientation="vertical"
             android:padding="20dp">
@@ -618,6 +667,19 @@
                 android:textColorHint="#71717A"
                 android:textSize="13sp"
                 android:fontFamily="sans-serif-rounded" />
+
+            <Button
+                android:id="@+id/btnScanQrInSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#059669"
+                android:text="Scan QR Web Dashboard"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <!-- 4. Room System Card -->

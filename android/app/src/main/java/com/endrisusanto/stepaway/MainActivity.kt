@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -22,6 +23,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -47,6 +50,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvMonitorBpm: TextView
     private lateinit var tvMonitorZone: TextView
     private lateinit var btnToggleTracking: Button
+
+    // Quick QR Pairing Views
+    private lateinit var tvConnectedServerInfo: TextView
+    private lateinit var btnScanQrPairing: Button
+    private lateinit var btnScanQrInSettings: Button
+
+    private val barcodeLauncher = registerForActivityResult(ScanContract()) { result ->
+        if (result.contents != null) {
+            handleQrPayload(result.contents)
+        }
+    }
 
     // Profile & Target Setting Views
     private lateinit var etDisplayName: EditText
@@ -106,6 +120,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val REQ_PERMISSIONS = 101
         private const val REQ_BLE_PERMISSIONS = 102
+        private const val REQ_CAMERA_PERMISSION = 103
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -122,6 +137,11 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
         setupListeners()
         fetchRemoteStats()
+
+        val isConfigured = prefs.getBoolean("is_configured", false)
+        if (!isConfigured) {
+            showStartupPairingDialog()
+        }
     }
 
     override fun onResume() {
@@ -212,6 +232,10 @@ class MainActivity : AppCompatActivity() {
 
         btnResetSteps = findViewById(R.id.btnResetSteps)
 
+        tvConnectedServerInfo = findViewById(R.id.tvConnectedServerInfo)
+        btnScanQrPairing = findViewById(R.id.btnScanQrPairing)
+        btnScanQrInSettings = findViewById(R.id.btnScanQrInSettings)
+
         etServerUrl = findViewById(R.id.etServerUrl)
         etUserId = findViewById(R.id.etUserId)
         btnCopySingle = findViewById(R.id.btnCopySingle)
@@ -233,6 +257,7 @@ class MainActivity : AppCompatActivity() {
         etDisplayName.setText(displayName)
         etTargetGoal.setText(target.toString())
         etRoomId.setText(roomId)
+        tvConnectedServerInfo.text = "Server: $serverUrl | User: $userId"
 
         updateLiveUIFromPrefs()
         updateTrackingButtonState()
@@ -408,6 +433,9 @@ class MainActivity : AppCompatActivity() {
         btnSimHr180.setOnClickListener { simulateHeartRate(180) }
 
         btnResetSteps.setOnClickListener { resetTodaySteps() }
+
+        btnScanQrPairing.setOnClickListener { checkCameraPermissionAndScan() }
+        btnScanQrInSettings.setOnClickListener { checkCameraPermissionAndScan() }
 
         btnCopySingle.setOnClickListener { copyObsLink(OverlayType.SINGLE) }
         btnCopyHeartrate.setOnClickListener { copyObsLink(OverlayType.HEARTRATE) }
@@ -848,5 +876,150 @@ class MainActivity : AppCompatActivity() {
         updateTrackingButtonState()
         StepAwayWidgetProvider.sendUpdateBroadcast(this, prefs.getInt("widget_steps", 0), false, "IDLE")
         Toast.makeText(this, "Tracking dihentikan", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showStartupPairingDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Sinkronisasi Web Dashboard")
+            .setMessage("Selamat datang di StepAway! Untuk mulai menyiarkan sensor langkah dan detak jantung ke overlay OBS, hubungkan aplikasi ini ke akun Web Dashboard Anda.")
+            .setCancelable(false)
+            .setPositiveButton("Scan QR Dashboard") { _, _ ->
+                checkCameraPermissionAndScan()
+            }
+            .setNegativeButton("Input Manual") { _, _ ->
+                showManualConfigDialog()
+            }
+            .show()
+    }
+
+    private fun showManualConfigDialog() {
+        val serverInput = EditText(this).apply {
+            hint = "https://stepaway.endrisusanto.my.id"
+            setText(etServerUrl.text.toString())
+        }
+        val userInput = EditText(this).apply {
+            hint = "streamer"
+            setText(etUserId.text.toString())
+        }
+        val container = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(50, 20, 50, 20)
+            addView(TextView(this@MainActivity).apply { text = "Server URL:" })
+            addView(serverInput)
+            addView(TextView(this@MainActivity).apply { text = "User ID / Key:" })
+            addView(userInput)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Input Endpoint Server Manual")
+            .setView(container)
+            .setPositiveButton("Simpan & Masuk") { _, _ ->
+                val server = serverInput.text.toString().trim().removeSuffix("/")
+                val user = userInput.text.toString().trim()
+                if (server.isNotEmpty() && user.isNotEmpty()) {
+                    etServerUrl.setText(server)
+                    etUserId.setText(user)
+                    etDisplayName.setText(user)
+                    prefs.edit()
+                        .putString("server_url", server)
+                        .putString("user_id", user)
+                        .putString("display_name", user)
+                        .putBoolean("is_configured", true)
+                        .apply()
+                    tvConnectedServerInfo.text = "Server: $server | User: $user"
+                    tvCardUserName.text = user
+                    Toast.makeText(this, "Konfigurasi tersimpan!", Toast.LENGTH_SHORT).show()
+                    fetchRemoteStats()
+                } else {
+                    Toast.makeText(this, "Server URL dan User ID tidak boleh kosong", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
+    private fun checkCameraPermissionAndScan() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQ_CAMERA_PERMISSION)
+        } else {
+            startQrScan()
+        }
+    }
+
+    private fun startQrScan() {
+        val options = ScanOptions().apply {
+            setPrompt("Arahkan kamera ke QR Code di Web Dashboard")
+            setBeepEnabled(true)
+            setOrientationLocked(false)
+            setBarcodeImageEnabled(false)
+        }
+        barcodeLauncher.launch(options)
+    }
+
+    private fun handleQrPayload(rawContent: String) {
+        try {
+            val json = JSONObject(rawContent)
+            val server = json.optString("server", "").trim().removeSuffix("/")
+            val userId = json.optString("userId", "").trim()
+            val apiKey = json.optString("apiKey", "").trim()
+
+            if (server.isNotEmpty()) {
+                etServerUrl.setText(server)
+            }
+            if (userId.isNotEmpty()) {
+                etUserId.setText(userId)
+                etDisplayName.setText(userId)
+            }
+
+            prefs.edit()
+                .putString("server_url", if (server.isNotEmpty()) server else etServerUrl.text.toString().trim())
+                .putString("user_id", if (userId.isNotEmpty()) userId else etUserId.text.toString().trim())
+                .putString("display_name", if (userId.isNotEmpty()) userId else etDisplayName.text.toString().trim())
+                .putString("api_key", apiKey)
+                .putBoolean("is_configured", true)
+                .apply()
+
+            tvConnectedServerInfo.text = "Server: ${etServerUrl.text} | User: ${etUserId.text}"
+            tvCardUserName.text = etDisplayName.text.toString()
+
+            Toast.makeText(this, "Berhasil terhubung ke akun: ${etUserId.text}", Toast.LENGTH_LONG).show()
+            fetchRemoteStats()
+        } catch (e: Exception) {
+            if (rawContent.startsWith("http://") || rawContent.startsWith("https://")) {
+                val uri = Uri.parse(rawContent)
+                val host = "${uri.scheme}://${uri.host}${if (uri.port != -1 && uri.port != 80 && uri.port != 443) ":${uri.port}" else ""}"
+                val user = uri.getQueryParameter("user") ?: uri.getQueryParameter("key") ?: "streamer"
+
+                etServerUrl.setText(host)
+                etUserId.setText(user)
+                etDisplayName.setText(user)
+
+                prefs.edit()
+                    .putString("server_url", host)
+                    .putString("user_id", user)
+                    .putString("display_name", user)
+                    .putBoolean("is_configured", true)
+                    .apply()
+
+                tvConnectedServerInfo.text = "Server: $host | User: $user"
+                tvCardUserName.text = user
+
+                Toast.makeText(this, "Berhasil terhubung ke akun: $user", Toast.LENGTH_LONG).show()
+                fetchRemoteStats()
+            } else {
+                Toast.makeText(this, "Format QR Code tidak valid", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQ_CAMERA_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startQrScan()
+            } else {
+                Toast.makeText(this, "Izin kamera diperlukan untuk scan QR Code", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }
