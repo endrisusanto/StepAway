@@ -1,6 +1,6 @@
 {
   "name": "stepaway-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Real-time OBS Step Counter Widget with Android Sensor Sync",
   "main": "server.js",
   "type": "module",
@@ -12,7 +12,13 @@
     "express": "^4.21.2",
     "ws": "^8.18.0"
   },
-  "keywords": ["obs", "overlay", "step-counter", "websocket", "streaming"],
+  "keywords": [
+    "obs",
+    "overlay",
+    "step-counter",
+    "websocket",
+    "streaming"
+  ],
   "author": "Endri Susanto",
   "license": "MIT"
 }
