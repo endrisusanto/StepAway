@@ -5,9 +5,9 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:orientation="vertical"
-    android:paddingStart="14dp"
-    android:paddingTop="12dp"
-    android:paddingEnd="14dp"
+    android:paddingStart="12dp"
+    android:paddingTop="10dp"
+    android:paddingEnd="12dp"
     android:paddingBottom="10dp">
 
     <!-- Top Corner Header: Pace (Left) & Percent (Right) -->
@@ -23,10 +23,10 @@
             android:layout_height="wrap_content"
             android:background="@drawable/widget_tier_bg"
             android:paddingStart="8dp"
-            android:paddingTop="3dp"
+            android:paddingTop="2dp"
             android:paddingEnd="8dp"
-            android:paddingBottom="3dp"
-            android:text="IDLE"
+            android:paddingBottom="2dp"
+            android:text="REST"
             android:textColor="#9E9EA7"
             android:textSize="11sp"
             android:fontFamily="sans-serif-medium"
@@ -43,21 +43,16 @@
             android:layout_height="wrap_content"
             android:text="0%"
             android:textColor="#00E5FF"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:fontFamily="sans-serif-rounded"
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Top-Center Spacer -->
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-    <!-- Center: Large Step Counter & STEPS Subtitle -->
+    <!-- Center: Large Step Counter & STEPS Subtitle filling height -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center">
 
@@ -67,8 +62,8 @@
             android:layout_height="wrap_content"
             android:text="0"
             android:textColor="#FFFFFF"
-            android:textSize="40sp"
-            android:fontFamily="sans-serif-rounded"
+            android:textSize="52sp"
+            android:fontFamily="sans-serif-black"
             android:textStyle="bold"
             android:includeFontPadding="false" />
 
@@ -77,24 +72,19 @@
             android:layout_height="wrap_content"
             android:text="STEPS"
             android:textColor="#FECA57"
-            android:textSize="11sp"
+            android:textSize="10sp"
             android:fontFamily="sans-serif-rounded"
             android:textStyle="bold"
             android:letterSpacing="0.08" />
     </LinearLayout>
 
-    <!-- Bottom-Center Spacer -->
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-    <!-- Bottom: Progress Bar Flush with Bottom Edge -->
+    <!-- Bottom: Progress Bar Thicker (12dp) -->
     <ProgressBar
         android:id="@+id/widgetCompactProgressBar"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="6dp"
+        android:layout_height="12dp"
+        android:layout_marginTop="4dp"
         android:max="100"
         android:progress="0"
         android:progressDrawable="@drawable/widget_progress_track" />

@@ -168,6 +168,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // ponytail: dynamic milestone palette rotation
+  function getMilestoneScheme(milestone) {
+    const schemes = [
+      { bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', text: '#09090b', glow: 'rgba(16, 185, 129, 0.6)', accent: '#10b981' }, // Emerald
+      { bg: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)', text: '#09090b', glow: 'rgba(6, 182, 212, 0.6)', accent: '#06b6d4' }, // Cyan Blue
+      { bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)', text: '#ffffff', glow: 'rgba(139, 92, 246, 0.6)', accent: '#8b5cf6' }, // Violet Purple
+      { bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', text: '#09090b', glow: 'rgba(245, 158, 11, 0.6)', accent: '#f59e0b' }, // Amber Gold
+      { bg: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)', text: '#ffffff', glow: 'rgba(244, 63, 94, 0.6)', accent: '#f43f5e' }, // Rose Crimson
+      { bg: 'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)', text: '#ffffff', glow: 'rgba(236, 72, 153, 0.6)', accent: '#ec4899' }  // Pink Purple
+    ];
+    const idx = Math.max(0, Math.floor(Number(milestone || 1000) / 1000) - 1) % schemes.length;
+    return schemes[idx];
+  }
+
   function applyPaceBadge(status) {
     livePaceBadge.className = 'activity-badge';
     if (status === 'RUNNING') {
@@ -178,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
       livePaceBadge.textContent = 'WALKING';
     } else {
       livePaceBadge.classList.add('activity-idle');
-      livePaceBadge.textContent = 'IDLE';
+      livePaceBadge.textContent = 'REST';
     }
   }
 
@@ -190,14 +204,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const json = await res.json();
       if (json.success && json.user) {
         lastSuccessfulHttpSync = Date.now();
-        liveSteps.textContent = (json.user.currentSteps || 0).toLocaleString();
+        const prev = parseInt(liveSteps.textContent.replace(/,/g, ''), 10) || 0;
+        const next = json.user.currentSteps || 0;
+        const delta = (next > prev && prev > 0) ? next - prev : 0;
+
+        liveSteps.textContent = next.toLocaleString();
         liveTarget.textContent = (json.user.targetSteps || 5000).toLocaleString();
         inputTarget.value = json.user.targetSteps || 5000;
         inputDisplayName.value = json.user.name || currentUserId;
-        const pct = Math.min(100, Math.round((json.user.currentSteps / Math.max(1, json.user.targetSteps)) * 100));
+        const pct = Math.round((next / Math.max(1, json.user.targetSteps)) * 100);
         livePercent.textContent = `${pct}%`;
-        if (metricProgressBar) metricProgressBar.style.width = `${pct}%`;
+        if (metricProgressBar) metricProgressBar.style.width = `${Math.min(100, pct)}%`;
         applyPaceBadge(json.user.activityStatus);
+
+        if (delta > 0) {
+          spawnDashboardStepPop(delta);
+        }
 
         const isRecent = json.user.lastStepTimestamp && (Date.now() - json.user.lastStepTimestamp < 35000);
         if (json.user.activityStatus !== 'IDLE' || isRecent) {
@@ -234,9 +256,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.success) {
         liveTarget.textContent = targetSteps.toLocaleString();
         const cur = parseInt(liveSteps.textContent.replace(/,/g, ''), 10) || 0;
-        const pct = Math.min(100, Math.round((cur / Math.max(1, targetSteps)) * 100));
+        const pct = Math.round((cur / Math.max(1, targetSteps)) * 100);
         livePercent.textContent = `${pct}%`;
-        if (metricProgressBar) metricProgressBar.style.width = `${pct}%`;
+        if (metricProgressBar) metricProgressBar.style.width = `${Math.min(100, pct)}%`;
 
         const originalText = btnSaveSettings.textContent;
         btnSaveSettings.textContent = 'Tersimpan!';
@@ -253,9 +275,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const pop = document.createElement('div');
     pop.className = 'step-float-pop';
     pop.textContent = `+${delta}`;
-    const randomX = Math.floor(Math.random() * 40) - 10;
-    pop.style.left = `${30 + randomX}px`;
-    pop.style.top = '14px';
+    
+    // Position directly above the "steps" label to avoid covering label/titles
+    const numWidth = liveSteps ? liveSteps.offsetWidth : 30;
+    const labelX = Math.max(50, 18 + numWidth + 6);
+    const randomOffset = Math.floor(Math.random() * 12) - 6;
+    pop.style.left = `${labelX + randomOffset}px`;
+    pop.style.top = '36px';
     metricParticlesLayer.appendChild(pop);
     setTimeout(() => pop.remove(), 1100);
 
@@ -268,6 +294,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function triggerDashboardMilestone(milestone) {
     if (!metricMilestoneBanner || !metricCardSteps) return;
+    const scheme = getMilestoneScheme(milestone);
+    metricCardSteps.style.setProperty('--milestone-bg', scheme.bg);
+    metricCardSteps.style.setProperty('--milestone-text', scheme.text);
+    metricCardSteps.style.setProperty('--milestone-glow', scheme.glow);
+    metricCardSteps.style.setProperty('--milestone-accent', scheme.accent);
+
     if (metricMilestoneVal) metricMilestoneVal.textContent = `${Number(milestone).toLocaleString()} STEPS!`;
     metricMilestoneBanner.classList.add('show');
     metricCardSteps.classList.add('milestone-active');
@@ -296,6 +328,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function syncSimulation(delta) {
     if (delta > 0) {
+      const prev = parseInt(liveSteps.textContent.replace(/,/g, ''), 10) || 0;
+      const next = prev + delta;
+      liveSteps.textContent = next.toLocaleString();
+      const target = parseInt(liveTarget.textContent.replace(/,/g, ''), 10) || 5000;
+      const pct = Math.round((next / Math.max(1, target)) * 100);
+      livePercent.textContent = `${pct}%`;
+      if (metricProgressBar) metricProgressBar.style.width = `${Math.min(100, pct)}%`;
       spawnDashboardStepPop(delta);
     }
     try {
@@ -448,9 +487,9 @@ document.addEventListener('DOMContentLoaded', () => {
           setWsStatus(true, msg.data.activityStatus !== 'IDLE' ? 'ACTIVE SYNC' : 'LIVE SYNC');
           liveSteps.textContent = (msg.data.currentSteps || 0).toLocaleString();
           liveTarget.textContent = (msg.data.targetSteps || 5000).toLocaleString();
-          const pct = Math.min(100, Math.round(((msg.data.currentSteps || 0) / Math.max(1, msg.data.targetSteps || 5000)) * 100));
+          const pct = Math.round(((msg.data.currentSteps || 0) / Math.max(1, msg.data.targetSteps || 5000)) * 100);
           livePercent.textContent = `${pct}%`;
-          if (metricProgressBar) metricProgressBar.style.width = `${pct}%`;
+          if (metricProgressBar) metricProgressBar.style.width = `${Math.min(100, pct)}%`;
           applyPaceBadge(msg.data.activityStatus);
 
           if (msg.data.bpm !== undefined && liveBpm) {
@@ -473,9 +512,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             liveSteps.textContent = next.toLocaleString();
             liveTarget.textContent = (msg.data.targetSteps || 5000).toLocaleString();
-            const pct = Math.min(100, Math.round((msg.data.currentSteps / Math.max(1, msg.data.targetSteps)) * 100));
+            const pct = Math.round((msg.data.currentSteps / Math.max(1, msg.data.targetSteps)) * 100);
             livePercent.textContent = `${pct}%`;
-            if (metricProgressBar) metricProgressBar.style.width = `${pct}%`;
+            if (metricProgressBar) metricProgressBar.style.width = `${Math.min(100, pct)}%`;
             applyPaceBadge(msg.data.activityStatus);
 
             if (delta > 0) {
@@ -506,9 +545,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (msg.data.currentSteps !== undefined) {
               liveSteps.textContent = msg.data.currentSteps.toLocaleString();
             }
-            const pct = Math.min(100, Math.round(((msg.data.currentSteps || 0) / Math.max(1, msg.data.targetSteps || 5000)) * 100));
+            const pct = Math.round(((msg.data.currentSteps || 0) / Math.max(1, msg.data.targetSteps || 5000)) * 100);
             livePercent.textContent = `${pct}%`;
-            if (metricProgressBar) metricProgressBar.style.width = `${pct}%`;
+            if (metricProgressBar) metricProgressBar.style.width = `${Math.min(100, pct)}%`;
             fetchDonations();
           }
         }

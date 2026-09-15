@@ -38,6 +38,20 @@
     makeDraggable(widgetEl);
   }
 
+  // ponytail: dynamic milestone palette rotation
+  function getMilestoneScheme(milestone) {
+    const schemes = [
+      { bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', text: '#09090b', glow: 'rgba(16, 185, 129, 0.6)', accent: '#10b981' }, // Emerald
+      { bg: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)', text: '#09090b', glow: 'rgba(6, 182, 212, 0.6)', accent: '#06b6d4' }, // Cyan Blue
+      { bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)', text: '#ffffff', glow: 'rgba(139, 92, 246, 0.6)', accent: '#8b5cf6' }, // Violet Purple
+      { bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', text: '#09090b', glow: 'rgba(245, 158, 11, 0.6)', accent: '#f59e0b' }, // Amber Gold
+      { bg: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)', text: '#ffffff', glow: 'rgba(244, 63, 94, 0.6)', accent: '#f43f5e' }, // Rose Crimson
+      { bg: 'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)', text: '#ffffff', glow: 'rgba(236, 72, 153, 0.6)', accent: '#ec4899' }  // Pink Purple
+    ];
+    const idx = Math.max(0, Math.floor(Number(milestone || 1000) / 1000) - 1) % schemes.length;
+    return schemes[idx];
+  }
+
   function applyActivityStatus(status) {
     const s = (status || 'IDLE').toUpperCase();
     activityTagEl.className = 'activity-badge';
@@ -49,20 +63,23 @@
       activityTagEl.textContent = 'WALKING';
       activityTagEl.classList.add('activity-walking');
     } else {
-      activityTagEl.textContent = 'IDLE';
+      activityTagEl.textContent = 'REST';
       activityTagEl.classList.add('activity-idle');
     }
   }
 
   function spawnStepParticle(delta) {
-    if (delta <= 0) return;
+    if (delta <= 0 || !particlesLayerEl) return;
     const pop = document.createElement('div');
     pop.className = 'step-float-pop';
     pop.textContent = `+${delta}`;
     
-    const randomX = Math.floor(Math.random() * 60) - 20;
-    pop.style.left = `${100 + randomX}px`;
-    pop.style.top = '10px';
+    // Position directly above the "steps" label so it does not obscure the streamer name
+    const numWidth = currentStepValEl ? currentStepValEl.offsetWidth : 30;
+    const labelX = Math.max(65, 24 + numWidth + 10);
+    const randomOffset = Math.floor(Math.random() * 14) - 7;
+    pop.style.left = `${labelX + randomOffset}px`;
+    pop.style.top = '48px';
 
     particlesLayerEl.appendChild(pop);
     setTimeout(() => pop.remove(), 1100);
@@ -81,9 +98,17 @@
   }
 
   function triggerMilestoneCelebration(milestone) {
-    milestoneValueEl.textContent = `${milestone.toLocaleString()} STEPS!`;
+    const scheme = getMilestoneScheme(milestone);
+    if (widgetEl) {
+      widgetEl.style.setProperty('--milestone-bg', scheme.bg);
+      widgetEl.style.setProperty('--milestone-text', scheme.text);
+      widgetEl.style.setProperty('--milestone-glow', scheme.glow);
+      widgetEl.style.setProperty('--milestone-accent', scheme.accent);
+      widgetEl.classList.add('milestone-active');
+    }
+
+    milestoneValueEl.textContent = `${Number(milestone).toLocaleString()} STEPS!`;
     milestoneBannerEl.classList.add('show');
-    if (widgetEl) widgetEl.classList.add('milestone-active');
     
     try {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -151,21 +176,25 @@
   }
 
   function updateUI(data, delta = 0) {
-    if (data && data.userId) {
+    if (!data) return;
+    if (data.userId) {
       resolvedUserId = data.userId;
     }
     userNameEl.textContent = data.name || data.userId || resolvedUserId;
+    const prevSteps = currentSteps;
     currentSteps = data.currentSteps || 0;
     targetSteps = data.targetSteps || 5000;
 
     currentStepValEl.textContent = currentSteps.toLocaleString();
     targetValEl.textContent = targetSteps.toLocaleString();
 
-    const percentage = Math.min(100, Math.round((currentSteps / Math.max(1, targetSteps)) * 100));
-    progressFillEl.style.width = `${percentage}%`;
+    const percentage = Math.round((currentSteps / Math.max(1, targetSteps)) * 100);
+    progressFillEl.style.width = `${Math.min(100, percentage)}%`;
     percentDisplayEl.textContent = `${percentage}%`;
 
-    applyActivityStatus(data.activityStatus || (delta > 3 ? 'RUNNING' : (delta > 0 ? 'WALKING' : 'IDLE')));
+    const effectiveDelta = delta > 0 ? delta : ((currentSteps > prevSteps && prevSteps > 0) ? currentSteps - prevSteps : 0);
+
+    applyActivityStatus(data.activityStatus || (effectiveDelta > 3 ? 'RUNNING' : (effectiveDelta > 0 ? 'WALKING' : 'IDLE')));
 
     if (data.bpm !== undefined) {
       if (hrChipEl) {
@@ -189,8 +218,8 @@
       if (hrChipValEl) hrChipValEl.textContent = '-';
     }
 
-    if (delta > 0) {
-      spawnStepParticle(delta);
+    if (effectiveDelta > 0) {
+      spawnStepParticle(effectiveDelta);
       triggerPulse();
     }
 
@@ -215,10 +244,23 @@
         const msg = JSON.parse(event.data);
         if (msg.type === 'init' && msg.data) {
           updateUI(msg.data, 0);
-        } else if (msg.type === 'step_update' && (msg.userId === resolvedUserId || msg.userId === initialUserKey)) {
-          updateUI(msg.data, msg.delta || 0);
-        } else if (msg.type === 'donation_alert' && (msg.userId === resolvedUserId || msg.userId === initialUserKey)) {
-          if (msg.data) {
+        } else if (msg.type === 'step_update') {
+          const isTarget = msg.userId === resolvedUserId ||
+            msg.userId === initialUserKey ||
+            (streamKey && msg.userId === streamKey) ||
+            (msg.data && (msg.data.userId === resolvedUserId || msg.data.userId === initialUserKey));
+
+          if (isTarget && msg.data) {
+            const delta = (msg.data && msg.data.delta) || msg.delta || 0;
+            updateUI(msg.data, delta);
+          }
+        } else if (msg.type === 'donation_alert') {
+          const isTarget = msg.userId === resolvedUserId ||
+            msg.userId === initialUserKey ||
+            (streamKey && msg.userId === streamKey) ||
+            (msg.data && (msg.data.userId === resolvedUserId || msg.data.userId === initialUserKey));
+
+          if (isTarget && msg.data) {
             updateUI(msg.data, 0);
             if (msg.data.donation) {
               triggerDonationAlert(msg.data.donation);
@@ -270,7 +312,7 @@
       const stepGain = Math.floor(Math.random() * 4) + 1;
       mockSteps += stepGain;
       updateUI({
-        userId,
+        userId: resolvedUserId || initialUserKey || 'streamer',
         name: 'Streamer [DEMO]',
         currentSteps: mockSteps,
         targetSteps: 5000,

@@ -271,7 +271,7 @@ function checkMilestone(prevSteps, newSteps) {
 }
 
 function broadcastUserUpdate(user, delta = 0, milestone = null) {
-  const percentage = Math.min(100, Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100));
+  const percentage = Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100);
   const payload = JSON.stringify({
     type: "step_update",
     userId: user.userId,
@@ -313,7 +313,7 @@ function broadcastUserUpdate(user, delta = 0, milestone = null) {
 }
 
 function broadcastDonationAlert(user, donationData) {
-  const percentage = Math.min(100, Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100));
+  const percentage = Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100);
   const payload = JSON.stringify({
     type: "donation_alert",
     userId: user.userId,
@@ -627,7 +627,7 @@ app.get("/api/auth/me", (req, res) => {
   }
 
   const userObj = getUser(req.account.id);
-  const percentage = Math.min(100, Math.round((userObj.currentSteps / Math.max(1, userObj.targetSteps)) * 100));
+  const percentage = Math.round((userObj.currentSteps / Math.max(1, userObj.targetSteps)) * 100);
 
   res.json({
     success: true,
@@ -674,7 +674,7 @@ app.get("/api/users/:userId", (req, res) => {
   const targetId = req.params.userId;
   // If targetId matches a streamKey, resolve to user
   const user = targetId.startsWith("sk_live_") ? (findUserByStreamKey(targetId) || getUser(targetId)) : getUser(targetId);
-  const percentage = Math.min(100, Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100));
+  const percentage = Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100);
   res.json({ success: true, user: { ...user, percentage } });
 });
 
@@ -1139,7 +1139,7 @@ app.get("/api/rooms/:roomId", (req, res) => {
 
   const membersData = (room.members || []).map(uId => {
     const u = getUser(uId);
-    const percentage = Math.min(100, Math.round((u.currentSteps / Math.max(1, u.targetSteps)) * 100));
+    const percentage = Math.round((u.currentSteps / Math.max(1, u.targetSteps)) * 100);
     return { ...u, percentage };
   });
 
@@ -1231,7 +1231,7 @@ wss.on("connection", (ws) => {
         if (msg.key) clientInfo.subscribedUsers.add(msg.key);
 
         const user = getUser(userId);
-        const percentage = Math.min(100, Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100));
+        const percentage = Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100);
         ws.send(JSON.stringify({
           type: "init",
           data: { ...user, percentage }
@@ -1247,7 +1247,7 @@ wss.on("connection", (ws) => {
           }
           clientInfo.subscribedUsers.add(u);
           const userData = getUser(u);
-          const percentage = Math.min(100, Math.round((userData.currentSteps / Math.max(1, userData.targetSteps)) * 100));
+          const percentage = Math.round((userData.currentSteps / Math.max(1, userData.targetSteps)) * 100);
           initData.push({ ...userData, percentage });
         }
         ws.send(JSON.stringify({
@@ -1262,7 +1262,7 @@ wss.on("connection", (ws) => {
         if (room && Array.isArray(room.members)) {
           for (const u of room.members) {
             const userData = getUser(u);
-            const percentage = Math.min(100, Math.round((userData.currentSteps / Math.max(1, userData.targetSteps)) * 100));
+            const percentage = Math.round((userData.currentSteps / Math.max(1, userData.targetSteps)) * 100);
             initData.push({ ...userData, percentage });
           }
         }

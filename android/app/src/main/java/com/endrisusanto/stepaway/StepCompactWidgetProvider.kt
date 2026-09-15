@@ -26,7 +26,7 @@ class StepCompactWidgetProvider : AppWidgetProvider() {
             val targetSteps = prefs.getInt("target_steps", 5000).coerceAtLeast(1)
             val activityStatus = prefs.getString("activity_status", "IDLE") ?: "IDLE"
 
-            val percentage = ((currentSteps.toDouble() / targetSteps.toDouble()) * 100).toInt().coerceIn(0, 100)
+            val percentage = ((currentSteps.toDouble() / targetSteps.toDouble()) * 100).toInt()
 
             val views = RemoteViews(context.packageName, R.layout.widget_step_compact)
 
@@ -40,14 +40,14 @@ class StepCompactWidgetProvider : AppWidgetProvider() {
                     views.setTextColor(R.id.widgetCompactPace, 0xFF10B981.toInt())
                 }
                 else -> {
-                    views.setTextViewText(R.id.widgetCompactPace, "IDLE")
+                    views.setTextViewText(R.id.widgetCompactPace, "REST")
                     views.setTextColor(R.id.widgetCompactPace, 0xFF9E9EA7.toInt())
                 }
             }
 
             views.setTextViewText(R.id.widgetCompactSteps, "%,d".format(currentSteps))
             views.setTextViewText(R.id.widgetCompactPercent, "$percentage%")
-            views.setProgressBar(R.id.widgetCompactProgressBar, 100, percentage, false)
+            views.setProgressBar(R.id.widgetCompactProgressBar, 100, percentage.coerceIn(0, 100), false)
 
             // Open app on click
             val intent = Intent(context, MainActivity::class.java)

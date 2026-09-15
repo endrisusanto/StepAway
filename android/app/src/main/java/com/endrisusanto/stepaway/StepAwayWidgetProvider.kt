@@ -28,7 +28,7 @@ class StepAwayWidgetProvider : AppWidgetProvider() {
             val activityStatus = prefs.getString("activity_status", "IDLE") ?: "IDLE"
             val liveBpm = prefs.getInt("widget_bpm", 0)
 
-            val percentage = ((currentSteps.toDouble() / targetSteps.toDouble()) * 100).toInt().coerceIn(0, 100)
+            val percentage = ((currentSteps.toDouble() / targetSteps.toDouble()) * 100).toInt()
 
             val views = RemoteViews(context.packageName, R.layout.widget_step_away)
 
@@ -45,7 +45,7 @@ class StepAwayWidgetProvider : AppWidgetProvider() {
                     views.setTextColor(R.id.widgetTierBadge, 0xFF10B981.toInt())
                 }
                 else -> {
-                    views.setTextViewText(R.id.widgetTierBadge, "IDLE")
+                    views.setTextViewText(R.id.widgetTierBadge, "REST")
                     views.setTextColor(R.id.widgetTierBadge, 0xFF9E9EA7.toInt())
                 }
             }
@@ -57,7 +57,7 @@ class StepAwayWidgetProvider : AppWidgetProvider() {
 
             views.setTextViewText(R.id.widgetStepCount, "%,d".format(currentSteps))
             views.setTextViewText(R.id.widgetTargetInfo, "Goal: %,d".format(targetSteps))
-            views.setProgressBar(R.id.widgetProgressBar, 100, percentage, false)
+            views.setProgressBar(R.id.widgetProgressBar, 100, percentage.coerceIn(0, 100), false)
             views.setTextViewText(R.id.widgetPercentDisplay, "$percentage%")
 
             // Open app on click
