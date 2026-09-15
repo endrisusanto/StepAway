@@ -1,0 +1,42 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    
+    <!-- Background Card -->
+    <path
+        android:fillColor="#18181B"
+        android:pathData="M12,0 L108,0 A12,12 0 0,1 120,12 L120,108 A12,12 0 0,1 108,120 L12,120 A12,12 0 0,1 0,108 L0,12 A12,12 0 0,1 12,0 Z" />
+    <path
+        android:strokeColor="#27272A"
+        android:strokeWidth="1.5"
+        android:pathData="M12,0.75 L108,0.75 A11.25,11.25 0 0,1 119.25,12 L119.25,108 A11.25,11.25 0 0,1 108,119.25 L12,119.25 A11.25,11.25 0 0,1 0.75,108 L0.75,12 A11.25,11.25 0 0,1 12,0.75 Z" />
+
+    <!-- Top Row: HR Live Title & Aerobic Zone Badge -->
+    <path
+        android:fillColor="#F43F5E"
+        android:pathData="M14,16 L44,16 A3,3 0 0,1 47,19 L47,21 A3,3 0 0,1 44,24 L14,24 A3,3 0 0,1 11,21 L11,19 A3,3 0 0,1 14,16 Z" />
+
+    <path
+        android:fillColor="#33F59E0B"
+        android:pathData="M66,14 L106,14 A4,4 0 0,1 110,18 L110,22 A4,4 0 0,1 106,26 L66,26 A4,4 0 0,1 62,22 L62,18 A4,4 0 0,1 66,14 Z" />
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M70,18 L102,18 A2,2 0 0,1 104,20 L104,20 A2,2 0 0,1 102,22 L70,22 A2,2 0 0,1 68,20 L68,20 A2,2 0 0,1 70,18 Z" />
+
+    <!-- Center Hero BPM Value (Red) -->
+    <path
+        android:fillColor="#F43F5E"
+        android:pathData="M22,46 L98,46 A6,6 0 0,1 104,52 L104,64 A6,6 0 0,1 98,70 L22,70 A6,6 0 0,1 16,64 L16,52 A6,6 0 0,1 22,46 Z" />
+        
+    <!-- BPM Subtitle (Gray) -->
+    <path
+        android:fillColor="#A1A1AA"
+        android:pathData="M44,78 L76,78 A3,3 0 0,1 79,81 L79,83 A3,3 0 0,1 76,86 L44,86 A3,3 0 0,1 41,83 L41,81 A3,3 0 0,1 44,78 Z" />
+
+    <!-- Bottom Pulse Indicator -->
+    <path
+        android:fillColor="#33F43F5E"
+        android:pathData="M28,100 L92,100 A2,2 0 0,1 94,102 L94,102 A2,2 0 0,1 92,104 L28,104 A2,2 0 0,1 26,102 L26,102 A2,2 0 0,1 28,100 Z" />
+</vector>

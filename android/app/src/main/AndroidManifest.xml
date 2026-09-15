@@ -59,6 +59,7 @@
 
         <receiver
             android:name=".StepAwayWidgetProvider"
+            android:label="@string/widget_combo_label"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -70,6 +71,7 @@
 
         <receiver
             android:name=".StepCompactWidgetProvider"
+            android:label="@string/widget_compact_label"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -81,6 +83,7 @@
 
         <receiver
             android:name=".HeartRateWidgetProvider"
+            android:label="@string/widget_hr_label"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

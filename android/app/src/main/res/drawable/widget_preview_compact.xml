@@ -1,0 +1,45 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    
+    <!-- Background Card -->
+    <path
+        android:fillColor="#18181B"
+        android:pathData="M12,0 L108,0 A12,12 0 0,1 120,12 L120,108 A12,12 0 0,1 108,120 L12,120 A12,12 0 0,1 0,108 L0,12 A12,12 0 0,1 12,0 Z" />
+    <path
+        android:strokeColor="#27272A"
+        android:strokeWidth="1.5"
+        android:pathData="M12,0.75 L108,0.75 A11.25,11.25 0 0,1 119.25,12 L119.25,108 A11.25,11.25 0 0,1 108,119.25 L12,119.25 A11.25,11.25 0 0,1 0.75,108 L0.75,12 A11.25,11.25 0 0,1 12,0.75 Z" />
+
+    <!-- Top Row: Pace Badge & Percent -->
+    <path
+        android:fillColor="#3310B981"
+        android:pathData="M14,14 L50,14 A4,4 0 0,1 54,18 L54,22 A4,4 0 0,1 50,26 L14,26 A4,4 0 0,1 10,22 L10,18 A4,4 0 0,1 14,14 Z" />
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M18,18 L46,18 A2,2 0 0,1 48,20 L48,20 A2,2 0 0,1 46,22 L18,22 A2,2 0 0,1 16,20 L16,20 A2,2 0 0,1 18,18 Z" />
+
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M84,16 L106,16 A3,3 0 0,1 109,19 L109,21 A3,3 0 0,1 106,24 L84,24 A3,3 0 0,1 81,21 L81,19 A3,3 0 0,1 84,16 Z" />
+
+    <!-- Center Hero Steps Number -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,46 L96,46 A6,6 0 0,1 102,52 L102,62 A6,6 0 0,1 96,68 L24,68 A6,6 0 0,1 18,62 L18,52 A6,6 0 0,1 24,46 Z" />
+        
+    <!-- STEPS Subtitle (Yellow) -->
+    <path
+        android:fillColor="#FECA57"
+        android:pathData="M40,76 L80,76 A3,3 0 0,1 83,79 L83,81 A3,3 0 0,1 80,84 L40,84 A3,3 0 0,1 37,81 L37,79 A3,3 0 0,1 40,76 Z" />
+
+    <!-- Bottom Mini Progress Bar -->
+    <path
+        android:fillColor="#27272A"
+        android:pathData="M14,100 L106,100 A3,3 0 0,1 109,103 L109,103 A3,3 0 0,1 106,106 L14,106 A3,3 0 0,1 11,103 L11,103 A3,3 0 0,1 14,100 Z" />
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M14,100 L76,100 A3,3 0 0,1 79,103 L79,103 A3,3 0 0,1 76,106 L14,106 A3,3 0 0,1 11,103 L11,103 A3,3 0 0,1 14,100 Z" />
+</vector>

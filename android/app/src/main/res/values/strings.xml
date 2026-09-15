@@ -1,4 +1,13 @@
 <resources>
     <string name="app_name">StepAway</string>
     <string name="widget_description">Pantau langkah kaki dan status koneksi StepAway secara langsung di Homescreen.</string>
+    
+    <string name="widget_combo_label">StepAway Combo (4x2)</string>
+    <string name="widget_combo_desc">Widget lengkap langkah, target progress, pace aktivitas, dan detak jantung live.</string>
+    
+    <string name="widget_compact_label">Step Tracker (2x2)</string>
+    <string name="widget_compact_desc">Widget ringkas penghitung langkah kaki harian dan persentase target.</string>
+    
+    <string name="widget_hr_label">Heart Rate (2x2)</string>
+    <string name="widget_hr_desc">Widget pemantau detak jantung (BPM) live dan zona intensitas dari smartband.</string>
 </resources>
