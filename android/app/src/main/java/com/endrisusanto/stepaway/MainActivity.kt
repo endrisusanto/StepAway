@@ -44,6 +44,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvGoalInfo: TextView
     private lateinit var pbStepProgress: ProgressBar
     private lateinit var tvLivePercent: TextView
+    private lateinit var tvMonitorBpm: TextView
+    private lateinit var tvMonitorZone: TextView
     private lateinit var btnToggleTracking: Button
 
     // Profile & Target Setting Views
@@ -74,6 +76,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnSim10: Button
     private lateinit var btnSim100: Button
     private lateinit var btnSim1000: Button
+    private lateinit var btnSimHr75: Button
+    private lateinit var btnSimHr125: Button
+    private lateinit var btnSimHr155: Button
+    private lateinit var btnSimHr180: Button
     private lateinit var btnResetSteps: Button
 
     // Connection & OBS Views
@@ -131,6 +137,8 @@ class MainActivity : AppCompatActivity() {
         tvGoalInfo = findViewById(R.id.tvGoalInfo)
         pbStepProgress = findViewById(R.id.pbStepProgress)
         tvLivePercent = findViewById(R.id.tvLivePercent)
+        tvMonitorBpm = findViewById(R.id.tvMonitorBpm)
+        tvMonitorZone = findViewById(R.id.tvMonitorZone)
         btnToggleTracking = findViewById(R.id.btnToggleTracking)
 
         etDisplayName = findViewById(R.id.etDisplayName)
@@ -157,6 +165,12 @@ class MainActivity : AppCompatActivity() {
         btnSim10 = findViewById(R.id.btnSim10)
         btnSim100 = findViewById(R.id.btnSim100)
         btnSim1000 = findViewById(R.id.btnSim1000)
+
+        btnSimHr75 = findViewById(R.id.btnSimHr75)
+        btnSimHr125 = findViewById(R.id.btnSimHr125)
+        btnSimHr155 = findViewById(R.id.btnSimHr155)
+        btnSimHr180 = findViewById(R.id.btnSimHr180)
+
         btnResetSteps = findViewById(R.id.btnResetSteps)
 
         etServerUrl = findViewById(R.id.etServerUrl)
@@ -202,7 +216,7 @@ class MainActivity : AppCompatActivity() {
         when (status.uppercase()) {
             "RUNNING" -> {
                 tvCardPaceStatus.text = "RUNNING"
-                tvCardPaceStatus.setTextColor(0xFFFF5252.toInt())
+                tvCardPaceStatus.setTextColor(0xFFF43F5E.toInt())
             }
             "WALKING" -> {
                 tvCardPaceStatus.text = "WALKING"
@@ -210,38 +224,55 @@ class MainActivity : AppCompatActivity() {
             }
             else -> {
                 tvCardPaceStatus.text = "IDLE"
-                tvCardPaceStatus.setTextColor(0xFF94A3B8.toInt())
+                tvCardPaceStatus.setTextColor(0xFF9E9EA7.toInt())
             }
         }
+    }
+
+    private fun updateHeartRateUI(bpm: Int) {
+        val bpmText = if (bpm > 0) bpm.toString() else "--"
+        tvLiveBpm.text = bpmText
+        tvMonitorBpm.text = bpmText
+
+        val zone = when {
+            bpm >= 170 -> "PEAK"
+            bpm >= 140 -> "ANAEROBIC"
+            bpm >= 100 -> "AEROBIC"
+            bpm > 0 -> "REST"
+            else -> "IDLE"
+        }
+        tvBleZoneBadge.text = zone
+        tvMonitorZone.text = zone
+
+        val zoneColor = when {
+            bpm >= 170 -> 0xFFF43F5E.toInt()
+            bpm >= 140 -> 0xFFF97316.toInt()
+            bpm >= 100 -> 0xFFF59E0B.toInt()
+            bpm > 0 -> 0xFF06B6D4.toInt()
+            else -> 0xFF9E9EA7.toInt()
+        }
+        tvMonitorZone.setTextColor(zoneColor)
+        tvBleZoneBadge.setTextColor(zoneColor)
     }
 
     private fun updateTrackingButtonState() {
         if (isTracking) {
             btnToggleTracking.text = "Stop Tracking"
-            btnToggleTracking.setBackgroundColor(0xFFFF5252.toInt())
+            btnToggleTracking.setBackgroundColor(0xFFF43F5E.toInt())
             tvLiveStatusBadge.text = "● ACTIVE SYNC"
             tvLiveStatusBadge.setTextColor(0xFF10B981.toInt())
         } else {
             btnToggleTracking.text = "Start Tracking"
             btnToggleTracking.setBackgroundColor(0xFF10B981.toInt())
             tvLiveStatusBadge.text = "● STANDBY"
-            tvLiveStatusBadge.setTextColor(0xFF94A3B8.toInt())
+            tvLiveStatusBadge.setTextColor(0xFF9E9EA7.toInt())
         }
     }
 
     private fun setupBleCallbacks() {
         bleManager.onBpmUpdated = { bpm ->
             StepSensorService.liveBpm = bpm
-            tvLiveBpm.text = if (bpm > 0) bpm.toString() else "--"
-
-            val zone = when {
-                bpm >= 170 -> "PEAK"
-                bpm >= 140 -> "ANAEROBIC"
-                bpm >= 100 -> "AEROBIC"
-                bpm > 0 -> "REST"
-                else -> "IDLE"
-            }
-            tvBleZoneBadge.text = zone
+            updateHeartRateUI(bpm)
 
             if (bpm > 0) {
                 syncHeartRateToServer(bpm)
@@ -258,12 +289,11 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Smartband terhubung!", Toast.LENGTH_SHORT).show()
             } else {
                 tvBleStatusBadge.text = "● DISCONNECTED"
-                tvBleStatusBadge.setTextColor(0xFF94A3B8.toInt())
+                tvBleStatusBadge.setTextColor(0xFF9E9EA7.toInt())
                 tvConnectedBleDevice.text = "Tidak ada smartband terhubung"
                 btnDisconnectBle.visibility = View.GONE
-                btnScanBle.text = "🔍 Scan Smartband"
-                tvLiveBpm.text = "--"
-                tvBleZoneBadge.text = "Idle"
+                btnScanBle.text = "Scan Smartband"
+                updateHeartRateUI(0)
             }
         }
 
@@ -316,12 +346,23 @@ class MainActivity : AppCompatActivity() {
         btnSim100.setOnClickListener { sendSimulationStep(100) }
         btnSim1000.setOnClickListener { sendSimulationStep(1000) }
 
+        btnSimHr75.setOnClickListener { simulateHeartRate(75) }
+        btnSimHr125.setOnClickListener { simulateHeartRate(125) }
+        btnSimHr155.setOnClickListener { simulateHeartRate(155) }
+        btnSimHr180.setOnClickListener { simulateHeartRate(180) }
+
         btnResetSteps.setOnClickListener { resetTodaySteps() }
 
         btnCopySingle.setOnClickListener { copyObsLink(OverlayType.SINGLE) }
         btnCopyHeartrate.setOnClickListener { copyObsLink(OverlayType.HEARTRATE) }
         btnCopyCombo.setOnClickListener { copyObsLink(OverlayType.COMBO) }
         btnCopyRoom.setOnClickListener { copyObsLink(OverlayType.ROOM) }
+    }
+
+    private fun simulateHeartRate(bpm: Int) {
+        updateHeartRateUI(bpm)
+        syncHeartRateToServer(bpm)
+        Toast.makeText(this, "Simulasi HR $bpm BPM terkirim ke OBS!", Toast.LENGTH_SHORT).show()
     }
 
     private enum class OverlayType { SINGLE, HEARTRATE, COMBO, ROOM }
@@ -667,7 +708,7 @@ class MainActivity : AppCompatActivity() {
                         withContext(Dispatchers.Main) {
                             etDisplayName.setText(name)
                             etTargetGoal.setText(target.toString())
-                            if (bpm > 0) tvLiveBpm.text = bpm.toString()
+                            updateHeartRateUI(bpm)
                             updateLiveUIFromPrefs()
                             StepAwayWidgetProvider.sendUpdateBroadcast(this@MainActivity, steps, isTracking, pace)
                         }

@@ -14,7 +14,7 @@
     <header class="dashboard-header">
       <div class="brand-badge">
         <div class="brand-icon">
-          <svg viewBox="0 0 512 512" width="26" height="26" fill="#0B0F19">
+          <svg viewBox="0 0 512 512" width="24" height="24" fill="#121214">
             <g transform="rotate(-6 160 300)">
               <path d="M 115,185 C 90,230 85,310 115,355 C 135,385 185,385 205,345 C 230,295 235,215 195,160 C 165,120 135,145 115,185 Z" />
               <path d="M 120,405 C 110,435 125,475 160,475 C 195,475 210,435 200,405 C 190,395 130,395 120,405 Z" />
@@ -33,7 +33,7 @@
       <div style="display: flex; align-items: center; gap: 10px;">
         <div id="wsStatusDot" class="status-indicator">
           <span class="status-dot"></span>
-          <span id="wsStatusText" class="status-text">Connecting...</span>
+          <span id="wsStatusText" class="status-text">Menghubungkan...</span>
         </div>
         <div class="domain-pill">stepaway.endrisusanto.my.id</div>
       </div>
@@ -229,16 +229,32 @@
 
         <!-- Live Embedded Preview Card -->
         <section class="card">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
             <h2 class="card-title">Live Overlay Preview</h2>
-            <div class="preview-switcher">
-              <button id="tabPreviewStep" class="preview-tab active">Step</button>
-              <button id="tabPreviewHr" class="preview-tab">Heart Rate</button>
-              <button id="tabPreviewCombo" class="preview-tab">Combo</button>
+            <div class="preview-header-actions">
+              <div class="preview-switcher">
+                <button id="tabPreviewStep" class="preview-tab active">Step</button>
+                <button id="tabPreviewHr" class="preview-tab">Heart Rate</button>
+                <button id="tabPreviewCombo" class="preview-tab">Combo</button>
+              </div>
+              <div class="preview-size-controls">
+                <button class="preview-size-btn" data-height="220">220px</button>
+                <button class="preview-size-btn active" data-height="340">340px</button>
+                <button class="preview-size-btn" data-height="500">500px</button>
+              </div>
+              <button id="btnFullscreenPreview" class="preview-btn-icon" title="Fullscreen Preview">
+                Fullscreen
+              </button>
             </div>
           </div>
-          <div class="preview-container">
+
+          <div id="previewContainer" class="preview-container">
             <iframe id="previewIframe" src="/overlay?user=streamer" title="Live Overlay Preview" class="preview-frame"></iframe>
+          </div>
+
+          <div class="preview-resize-hint">
+            <span>Tarik sudut bawah kanan frame untuk ubah ukuran bebas</span>
+            <span id="previewHeightLabel">Tinggi: 340px</span>
           </div>
         </section>
 

@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0B0F19"
+    android:background="#121214"
     android:fillViewport="true">
 
     <LinearLayout
@@ -44,7 +44,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Real-time OBS Step Sensor"
-                    android:textColor="#00D2D3"
+                    android:textColor="#00E5FF"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
@@ -60,13 +60,13 @@
                 android:paddingEnd="10dp"
                 android:paddingBottom="4dp"
                 android:text="● STANDBY"
-                android:textColor="#94A3B8"
+                android:textColor="#9E9EA7"
                 android:textSize="11sp"
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Live Step Monitor Card -->
+        <!-- Live Step & Heart Rate Monitor Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -87,7 +87,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Streamer"
-                    android:textColor="#CBD5E1"
+                    android:textColor="#D4D4D8"
                     android:textSize="15sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
@@ -103,13 +103,13 @@
                     android:paddingEnd="10dp"
                     android:paddingBottom="3dp"
                     android:text="IDLE"
-                    android:textColor="#94A3B8"
+                    android:textColor="#9E9EA7"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Big Counter -->
+            <!-- Big Step Counter -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -149,7 +149,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="6dp"
                     android:text="Goal: 5,000"
-                    android:textColor="#94A3B8"
+                    android:textColor="#9E9EA7"
                     android:textSize="13sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
@@ -179,8 +179,72 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
                     android:text="0%"
-                    android:textColor="#00D2D3"
+                    android:textColor="#00E5FF"
                     android:textSize="14sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Prominent Live Heart Rate (HR Rate Value) Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:background="#26262B"
+                android:paddingStart="14dp"
+                android:paddingTop="10dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Heart Rate"
+                    android:textColor="#9E9EA7"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvMonitorBpm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="--"
+                    android:textColor="#F43F5E"
+                    android:textSize="22sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="BPM"
+                    android:textColor="#9E9EA7"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/tvMonitorZone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/widget_tier_bg"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="2dp"
+                    android:text="Idle"
+                    android:textColor="#9E9EA7"
+                    android:textSize="11sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -190,11 +254,11 @@
                 android:id="@+id/btnToggleTracking"
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
-                android:layout_marginTop="18dp"
+                android:layout_marginTop="16dp"
                 android:backgroundTint="#10B981"
                 android:text="Start Tracking"
                 android:textAllCaps="false"
-                android:textColor="#0B0F19"
+                android:textColor="#121214"
                 android:textSize="16sp"
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
@@ -223,7 +287,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:text="Nama Tampilan (Display Name)"
-                android:textColor="#94A3B8"
+                android:textColor="#9E9EA7"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
@@ -233,12 +297,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:background="#1E293B"
+                android:background="#26262B"
                 android:hint="Streamer"
                 android:inputType="text"
                 android:padding="12dp"
                 android:textColor="#FFFFFF"
-                android:textColorHint="#64748B"
+                android:textColorHint="#71717A"
                 android:textSize="14sp"
                 android:fontFamily="sans-serif-rounded" />
 
@@ -247,7 +311,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:text="Target Langkah (Goal)"
-                android:textColor="#94A3B8"
+                android:textColor="#9E9EA7"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
@@ -257,12 +321,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:background="#1E293B"
+                android:background="#26262B"
                 android:hint="5000"
                 android:inputType="number"
                 android:padding="12dp"
                 android:textColor="#FFFFFF"
-                android:textColorHint="#64748B"
+                android:textColorHint="#71717A"
                 android:textSize="14sp"
                 android:fontFamily="sans-serif-rounded" />
 
@@ -278,10 +342,10 @@
                     android:layout_width="0dp"
                     android:layout_height="38dp"
                     android:layout_weight="1"
-                    android:backgroundTint="#1E293B"
+                    android:backgroundTint="#26262B"
                     android:text="3k"
                     android:textAllCaps="false"
-                    android:textColor="#00D2D3"
+                    android:textColor="#00E5FF"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
@@ -292,10 +356,10 @@
                     android:layout_height="38dp"
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
-                    android:backgroundTint="#1E293B"
+                    android:backgroundTint="#26262B"
                     android:text="5k"
                     android:textAllCaps="false"
-                    android:textColor="#00D2D3"
+                    android:textColor="#00E5FF"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
@@ -306,10 +370,10 @@
                     android:layout_height="38dp"
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
-                    android:backgroundTint="#1E293B"
+                    android:backgroundTint="#26262B"
                     android:text="10k"
                     android:textAllCaps="false"
-                    android:textColor="#00D2D3"
+                    android:textColor="#00E5FF"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
@@ -320,10 +384,10 @@
                     android:layout_height="38dp"
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
-                    android:backgroundTint="#1E293B"
+                    android:backgroundTint="#26262B"
                     android:text="20k"
                     android:textAllCaps="false"
-                    android:textColor="#00D2D3"
+                    android:textColor="#00E5FF"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
@@ -334,7 +398,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="14dp"
-                android:backgroundTint="#6C5CE7"
+                android:backgroundTint="#8B5CF6"
                 android:text="Simpan Pengaturan ke Server"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
@@ -366,7 +430,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:text="ID Room"
-                android:textColor="#94A3B8"
+                android:textColor="#9E9EA7"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
@@ -376,12 +440,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:background="#1E293B"
+                android:background="#26262B"
                 android:hint="global"
                 android:inputType="text"
                 android:padding="12dp"
                 android:textColor="#FFFFFF"
-                android:textColorHint="#64748B"
+                android:textColorHint="#71717A"
                 android:textSize="14sp"
                 android:fontFamily="sans-serif-rounded" />
 
@@ -390,7 +454,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:text="Passcode Room (Kosongkan jika publik)"
-                android:textColor="#94A3B8"
+                android:textColor="#9E9EA7"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
@@ -400,12 +464,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:background="#1E293B"
+                android:background="#26262B"
                 android:hint="Opsional"
                 android:inputType="textPassword"
                 android:padding="12dp"
                 android:textColor="#FFFFFF"
-                android:textColorHint="#64748B"
+                android:textColorHint="#71717A"
                 android:textSize="14sp"
                 android:fontFamily="sans-serif-rounded" />
 
@@ -420,10 +484,10 @@
                     android:layout_width="0dp"
                     android:layout_height="44dp"
                     android:layout_weight="1"
-                    android:backgroundTint="#1E293B"
+                    android:backgroundTint="#26262B"
                     android:text="Gabung Room"
                     android:textAllCaps="false"
-                    android:textColor="#00D2D3"
+                    android:textColor="#00E5FF"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
 
@@ -442,7 +506,7 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Test Simulator Card -->
+        <!-- Test Simulator Card (Steps + HR Rate Values) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -454,16 +518,27 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Simulasi Langkah OBS"
+                android:text="Simulasi Langkah &amp; Detak Jantung"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
+
+            <!-- Step Sim -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Simulasi Langkah (Sync OBS)"
+                android:textColor="#9E9EA7"
+                android:textSize="12sp"
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="6dp"
                 android:orientation="horizontal">
 
                 <Button
@@ -471,7 +546,7 @@
                     android:layout_width="0dp"
                     android:layout_height="42dp"
                     android:layout_weight="1"
-                    android:backgroundTint="#1E293B"
+                    android:backgroundTint="#26262B"
                     android:text="+1"
                     android:textAllCaps="false"
                     android:textColor="#FECA57"
@@ -485,7 +560,7 @@
                     android:layout_height="42dp"
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
-                    android:backgroundTint="#1E293B"
+                    android:backgroundTint="#26262B"
                     android:text="+10"
                     android:textAllCaps="false"
                     android:textColor="#FECA57"
@@ -499,7 +574,7 @@
                     android:layout_height="42dp"
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
-                    android:backgroundTint="#1E293B"
+                    android:backgroundTint="#26262B"
                     android:text="+100"
                     android:textAllCaps="false"
                     android:textColor="#FECA57"
@@ -513,7 +588,7 @@
                     android:layout_height="42dp"
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
-                    android:backgroundTint="#FF6B6B"
+                    android:backgroundTint="#F43F5E"
                     android:text="+1000"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
@@ -522,15 +597,88 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
+            <!-- HR Sim -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Simulasi Detak Jantung (BPM)"
+                android:textColor="#9E9EA7"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnSimHr75"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#26262B"
+                    android:text="75"
+                    android:textAllCaps="false"
+                    android:textColor="#06B6D4"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnSimHr125"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:backgroundTint="#26262B"
+                    android:text="125"
+                    android:textAllCaps="false"
+                    android:textColor="#F59E0B"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnSimHr155"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:backgroundTint="#26262B"
+                    android:text="155"
+                    android:textAllCaps="false"
+                    android:textColor="#F97316"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnSimHr180"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:backgroundTint="#26262B"
+                    android:text="180"
+                    android:textAllCaps="false"
+                    android:textColor="#F43F5E"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
             <Button
                 android:id="@+id/btnResetSteps"
                 android:layout_width="match_parent"
                 android:layout_height="42dp"
-                android:layout_marginTop="10dp"
-                android:backgroundTint="#33FF5252"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#33F43F5E"
                 android:text="Reset Langkah Hari Ini"
                 android:textAllCaps="false"
-                android:textColor="#FF6B6B"
+                android:textColor="#F43F5E"
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -558,7 +706,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:text="Server URL"
-                android:textColor="#94A3B8"
+                android:textColor="#9E9EA7"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
@@ -568,12 +716,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:background="#1E293B"
+                android:background="#26262B"
                 android:hint="https://stepaway.endrisusanto.my.id"
                 android:inputType="textUri"
                 android:padding="12dp"
                 android:textColor="#FFFFFF"
-                android:textColorHint="#64748B"
+                android:textColorHint="#71717A"
                 android:textSize="13sp"
                 android:fontFamily="sans-serif-rounded" />
 
@@ -582,7 +730,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:text="User ID (Key Unik)"
-                android:textColor="#94A3B8"
+                android:textColor="#9E9EA7"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
@@ -592,12 +740,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:background="#1E293B"
+                android:background="#26262B"
                 android:hint="streamer"
                 android:inputType="text"
                 android:padding="12dp"
                 android:textColor="#FFFFFF"
-                android:textColorHint="#64748B"
+                android:textColorHint="#71717A"
                 android:textSize="13sp"
                 android:fontFamily="sans-serif-rounded" />
         </LinearLayout>
@@ -637,7 +785,7 @@
                     android:paddingEnd="8dp"
                     android:paddingBottom="3dp"
                     android:text="● DISCONNECTED"
-                    android:textColor="#94A3B8"
+                    android:textColor="#9E9EA7"
                     android:textSize="10sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
@@ -647,8 +795,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Standar GATT 0x180D (Pulsoid / HypeRate style broadcast)"
-                android:textColor="#94A3B8"
+                android:text="Standar GATT 0x180D (Pulsoid / HypeRate broadcast)"
+                android:textColor="#9E9EA7"
                 android:textSize="11sp"
                 android:fontFamily="sans-serif-rounded" />
 
@@ -665,7 +813,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="--"
-                    android:textColor="#FF5252"
+                    android:textColor="#F43F5E"
                     android:textSize="44sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
@@ -676,7 +824,7 @@
                     android:layout_marginStart="6dp"
                     android:layout_marginBottom="6dp"
                     android:text="BPM"
-                    android:textColor="#94A3B8"
+                    android:textColor="#9E9EA7"
                     android:textSize="14sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
@@ -697,7 +845,7 @@
                     android:paddingEnd="10dp"
                     android:paddingBottom="3dp"
                     android:text="Idle"
-                    android:textColor="#94A3B8"
+                    android:textColor="#9E9EA7"
                     android:textSize="11sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
@@ -709,7 +857,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:text="Tidak ada smartband terhubung"
-                android:textColor="#64748B"
+                android:textColor="#71717A"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-rounded" />
 
@@ -725,10 +873,10 @@
                     android:layout_width="0dp"
                     android:layout_height="44dp"
                     android:layout_weight="1"
-                    android:backgroundTint="#00D2D3"
+                    android:backgroundTint="#00E5FF"
                     android:text="Scan Smartband"
                     android:textAllCaps="false"
-                    android:textColor="#0B0F19"
+                    android:textColor="#121214"
                     android:textSize="13sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
@@ -738,10 +886,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="44dp"
                     android:layout_marginStart="8dp"
-                    android:backgroundTint="#1E293B"
+                    android:backgroundTint="#26262B"
                     android:text="Putus"
                     android:textAllCaps="false"
-                    android:textColor="#FF6B6B"
+                    android:textColor="#F43F5E"
                     android:textSize="13sp"
                     android:fontFamily="sans-serif-rounded"
                     android:visibility="gone" />
@@ -778,10 +926,10 @@
                     android:layout_width="0dp"
                     android:layout_height="42dp"
                     android:layout_weight="1"
-                    android:backgroundTint="#1E293B"
+                    android:backgroundTint="#26262B"
                     android:text="Step Overlay"
                     android:textAllCaps="false"
-                    android:textColor="#00D2D3"
+                    android:textColor="#00E5FF"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
@@ -792,10 +940,10 @@
                     android:layout_height="42dp"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
-                    android:backgroundTint="#1E293B"
+                    android:backgroundTint="#26262B"
                     android:text="HR Overlay"
                     android:textAllCaps="false"
-                    android:textColor="#FF6B6B"
+                    android:textColor="#F43F5E"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
@@ -812,7 +960,7 @@
                     android:layout_width="0dp"
                     android:layout_height="42dp"
                     android:layout_weight="1"
-                    android:backgroundTint="#1E293B"
+                    android:backgroundTint="#26262B"
                     android:text="Step + HR Combo"
                     android:textAllCaps="false"
                     android:textColor="#FECA57"
@@ -826,7 +974,7 @@
                     android:layout_height="42dp"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
-                    android:backgroundTint="#1E293B"
+                    android:backgroundTint="#26262B"
                     android:text="Room Overlay"
                     android:textAllCaps="false"
                     android:textColor="#A29BFE"
