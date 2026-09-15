@@ -4,30 +4,56 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:padding="14dp"
     android:gravity="center_vertical">
 
-    <!-- Icon Container -->
-    <ImageView
-        android:id="@+id/widgetIcon"
-        android:layout_width="38dp"
-        android:layout_height="38dp"
-        android:src="@drawable/ic_launcher_foreground"
-        android:contentDescription="StepAway Logo" />
-
-    <!-- Info Column -->
+    <!-- Header: User Name & Tier Badge -->
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginStart="12dp"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-        <!-- Steps Number & Label -->
-        <LinearLayout
+        <TextView
+            android:id="@+id/widgetUserName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Streamer"
+            android:textColor="#E2E8F0"
+            android:textSize="13sp"
+            android:fontFamily="sans-serif-rounded"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widgetTierBadge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/widget_tier_bg"
+            android:paddingStart="8dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="2dp"
+            android:text="STARTER"
+            android:textColor="#10B981"
+            android:textSize="10sp"
+            android:fontFamily="sans-serif-rounded"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Counter Display: Big Steps + Goal -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:orientation="horizontal"
+        android:gravity="bottom">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:orientation="horizontal"
             android:gravity="bottom">
 
@@ -37,45 +63,62 @@
                 android:layout_height="wrap_content"
                 android:text="0"
                 android:textColor="#FFFFFF"
-                android:textSize="22sp"
+                android:textSize="26sp"
+                android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
+                android:layout_marginBottom="2dp"
                 android:text="steps"
                 android:textColor="#94A3B8"
-                android:textSize="12sp"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Status & Target -->
-        <LinearLayout
+        <TextView
+            android:id="@+id/widgetTargetInfo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_marginBottom="2dp"
+            android:text="Goal: 5,000"
+            android:textColor="#94A3B8"
+            android:textSize="11sp"
+            android:fontFamily="sans-serif-rounded"
+            android:textStyle="bold" />
+    </LinearLayout>
 
-            <TextView
-                android:id="@+id/widgetStatusBadge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="● STANDBY"
-                android:textColor="#64748B"
-                android:textSize="10sp"
-                android:textStyle="bold" />
+    <!-- Progress Bar & Percentage -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/widgetTargetInfo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="Goal: 5,000"
-                android:textColor="#94A3B8"
-                android:textSize="10sp" />
-        </LinearLayout>
+        <ProgressBar
+            android:id="@+id/widgetProgressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="10dp"
+            android:layout_weight="1"
+            android:max="100"
+            android:progress="0"
+            android:progressDrawable="@drawable/widget_progress_track" />
+
+        <TextView
+            android:id="@+id/widgetPercentDisplay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="0%"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-rounded"
+            android:textStyle="bold" />
     </LinearLayout>
 
 </LinearLayout>
