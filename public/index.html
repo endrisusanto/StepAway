@@ -2,10 +2,382 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=/dashboard">
-  <title>StepAway - Redirecting to Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StepAway - Real-time OBS Step Counter & Heart Rate Overlay</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/landing.css">
 </head>
 <body>
-  <p>Mengalihkan ke <a href="/dashboard">Dashboard StepAway</a>...</p>
+
+  <!-- Navigation Bar -->
+  <header class="landing-nav">
+    <a href="/" class="brand-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M13 4v16"></path>
+        <path d="M17 8l-4-4-4 4"></path>
+        <path d="M19 16l-6 4-6-4"></path>
+      </svg>
+      <span>StepAway</span>
+    </a>
+    <div class="nav-actions">
+      <button id="btnNavLogin" class="btn btn-secondary">Masuk</button>
+      <a href="/dashboard" id="btnNavLaunch" class="btn btn-primary">Launch App</a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="hero-section">
+    <div class="hero-badge">
+      <span class="pulse-dot"></span>
+      <span>v1.0 Live Telemetry Platform</span>
+    </div>
+
+    <h1 class="hero-title">
+      Tingkatkan Interaktivitas Stream dengan <span class="hero-gradient-text">Telemetri Langkah & Heart Rate Real-Time</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      Hubungkan sensor langkah HP Android dan Smartband BLE langsung ke OBS Studio dengan widget transparan dinamis, auto-goal Subathon, dan konversi donasi otomatis.
+    </p>
+
+    <div class="hero-cta-group">
+      <button id="btnHeroLaunch" class="btn btn-primary" style="padding: 14px 28px; font-size: 15px;">
+        <span>Launch App & Mulai</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+
+      <a href="/api/auth/google" class="btn btn-google" style="padding: 14px 24px; font-size: 15px;">
+        <svg width="18" height="18" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+          <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+        </svg>
+        <span>Masuk dengan Google</span>
+      </a>
+    </div>
+
+    <!-- Live Widget Preview Showcase -->
+    <div class="showcase-container">
+      <div class="showcase-header">
+        <div class="showcase-dots">
+          <div class="showcase-dot"></div>
+          <div class="showcase-dot"></div>
+          <div class="showcase-dot"></div>
+        </div>
+        <span style="font-size: 11px; font-weight: 800; color: #10b981; letter-spacing: 0.05em;">OBS BROWSER SOURCE OVERLAY</span>
+      </div>
+
+      <div class="showcase-grid">
+        <div class="showcase-card">
+          <div class="showcase-card-title">Live Step Counter (Subathon Target)</div>
+          <div style="display: flex; align-items: baseline; gap: 8px;">
+            <div class="showcase-val-large" id="demoStepVal">12.450</div>
+            <div style="font-size: 14px; color: var(--text-muted); font-family: var(--font-mono);">/ 15.000 Steps</div>
+          </div>
+          <div class="showcase-progress-wrap">
+            <div class="showcase-progress-fill"></div>
+          </div>
+        </div>
+
+        <div class="showcase-card">
+          <div class="showcase-card-title">Live Heart Rate (BLE Sensor)</div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: baseline; gap: 6px;">
+              <div class="showcase-val-large" style="color: #06b6d4;">134</div>
+              <div style="font-size: 13px; color: var(--text-muted);">BPM</div>
+            </div>
+            <span style="font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 99px; background: rgba(6, 182, 212, 0.15); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.3);">
+              Aerobic Zone
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Feature Highlights -->
+  <section class="features-section">
+    <div class="section-title-wrap">
+      <h2 class="section-title">Fitur Lengkap untuk Streamer</h2>
+      <p class="section-subtitle">Didesain khusus untuk live IRL, walking stream, treadmill challenge, dan Subathon marathon.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <h3>Integrasi Donasi TipTap</h3>
+        <p>Setiap donasi yang masuk otomatis mengonversi rupiah menjadi pertambahan langkah atau target Subathon secara instan.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <h3>Sinkronisasi Smartband BLE</h3>
+        <p>Membaca sensor detak jantung standar Bluetooth Low Energy (0x180D) dan ponsel Android tanpa kabel.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h3>Widget OBS Transparan</h3>
+        <p>Cukup copy link Browser Source. Tampilan transparan dengan animasi milestone, partikel langkah, dan audio chime.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3>Stream Key & QR Pairing</h3>
+        <p>Isolasi data antar streamer dengan Stream Key pribadi. Sambungkan aplikasi Android cukup dengan scan QR code.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 Simple Steps -->
+  <section class="steps-section">
+    <div class="section-title-wrap">
+      <h2 class="section-title">3 Langkah Cepat Mulai Streaming</h2>
+      <p class="section-subtitle">Siap digunakan dalam kurang dari 2 menit tanpa instalasi server rumit.</p>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">01</div>
+        <h4>Daftar / Login Akun</h4>
+        <p>Masuk dengan Google atau buat akun creator untuk memperoleh Stream Key unik Anda.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">02</div>
+        <h4>Scan QR di HP Android</h4>
+        <p>Buka aplikasi StepAway di smartphone Anda dan scan QR code untuk menghubungkan sensor.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">03</div>
+        <h4>Pasang di OBS Studio</h4>
+        <p>Salin link Browser Source ke OBS Studio. Widget telemetri real-time siap disiarkan langsung ke penonton.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <p>StepAway &copy; 2026 • Real-time OBS Stream Telemetry Platform oleh <strong>@endrisusanto</strong></p>
+  </footer>
+
+  <!-- SaaS Authentication Modal (Embedded on Landing Page) -->
+  <div id="authModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="authModalTitle" class="modal-title">Masuk ke StepAway</h3>
+        <button id="btnCloseAuthModal" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <a href="/api/auth/google" class="btn btn-google" id="btnGoogleAuth">
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+          </svg>
+          <span>Lanjutkan dengan Google</span>
+        </a>
+
+        <div class="auth-divider">
+          <span>atau dengan email</span>
+        </div>
+
+        <div class="auth-tabs">
+          <button id="tabAuthLogin" class="auth-tab-btn active">Masuk</button>
+          <button id="tabAuthRegister" class="auth-tab-btn">Daftar Akun Baru</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="formLogin" style="display: flex; flex-direction: column; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label" for="inputLoginEmail">Email</label>
+            <input type="email" id="inputLoginEmail" class="input-text" placeholder="email@domain.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputLoginPassword">Password</label>
+            <input type="password" id="inputLoginPassword" class="input-text" placeholder="Masukkan password" required>
+          </div>
+          <button type="submit" id="btnSubmitLogin" class="btn btn-primary" style="margin-top: 6px;">Masuk ke Dashboard</button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="formRegister" style="display: none; flex-direction: column; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label" for="inputRegName">Nama Streamer / Channel</label>
+            <input type="text" id="inputRegName" class="input-text" placeholder="Contoh: Budi Walking" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputRegEmail">Email</label>
+            <input type="email" id="inputRegEmail" class="input-text" placeholder="email@domain.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputRegPassword">Password (Min. 6 Karakter)</label>
+            <input type="password" id="inputRegPassword" class="input-text" placeholder="Buat password aman" minlength="6" required>
+          </div>
+          <button type="submit" id="btnSubmitRegister" class="btn btn-primary" style="margin-top: 6px;">Daftar Akun Creator</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const authModal = document.getElementById('authModal');
+      const authModalTitle = document.getElementById('authModalTitle');
+      const tabAuthLogin = document.getElementById('tabAuthLogin');
+      const tabAuthRegister = document.getElementById('tabAuthRegister');
+      const formLogin = document.getElementById('formLogin');
+      const formRegister = document.getElementById('formRegister');
+      const btnCloseAuthModal = document.getElementById('btnCloseAuthModal');
+      const btnNavLogin = document.getElementById('btnNavLogin');
+      const btnNavLaunch = document.getElementById('btnNavLaunch');
+      const btnHeroLaunch = document.getElementById('btnHeroLaunch');
+
+      let isAuthenticated = false;
+
+      // Check active session
+      try {
+        const res = await fetch('/api/auth/me');
+        const data = await res.json();
+        if (data.success && data.authenticated && data.account) {
+          isAuthenticated = true;
+          if (btnNavLogin) {
+            btnNavLogin.textContent = data.account.name || 'Akun Saya';
+            btnNavLogin.onclick = () => window.location.href = '/dashboard';
+          }
+          if (btnNavLaunch) btnNavLaunch.textContent = 'Buka Dashboard';
+        }
+      } catch (e) {}
+
+      // Check URL query param for auth prompt or errors
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('require_auth') === 'true' && !isAuthenticated) {
+        openAuthModal('login');
+      } else if (params.get('auth_error')) {
+        alert('Google Login Gagal: ' + decodeURIComponent(params.get('auth_error')));
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      function openAuthModal(mode = 'login') {
+        if (!authModal) return;
+        authModal.style.display = 'flex';
+        switchAuthTab(mode);
+      }
+
+      function closeAuthModal() {
+        if (authModal) authModal.style.display = 'none';
+      }
+
+      function switchAuthTab(tab) {
+        if (tab === 'login') {
+          if (tabAuthLogin) tabAuthLogin.classList.add('active');
+          if (tabAuthRegister) tabAuthRegister.classList.remove('active');
+          if (formLogin) formLogin.style.display = 'flex';
+          if (formRegister) formRegister.style.display = 'none';
+          if (authModalTitle) authModalTitle.textContent = 'Masuk ke StepAway';
+        } else {
+          if (tabAuthRegister) tabAuthRegister.classList.add('active');
+          if (tabAuthLogin) tabAuthLogin.classList.remove('active');
+          if (formRegister) formRegister.style.display = 'flex';
+          if (formLogin) formLogin.style.display = 'none';
+          if (authModalTitle) authModalTitle.textContent = 'Daftar Akun Baru';
+        }
+      }
+
+      if (btnNavLogin && !isAuthenticated) btnNavLogin.addEventListener('click', () => openAuthModal('login'));
+      if (btnHeroLaunch) {
+        btnHeroLaunch.addEventListener('click', () => {
+          if (isAuthenticated) {
+            window.location.href = '/dashboard';
+          } else {
+            openAuthModal('login');
+          }
+        });
+      }
+      if (btnNavLaunch) {
+        btnNavLaunch.addEventListener('click', (e) => {
+          if (!isAuthenticated) {
+            e.preventDefault();
+            openAuthModal('login');
+          }
+        });
+      }
+
+      if (btnCloseAuthModal) btnCloseAuthModal.addEventListener('click', closeAuthModal);
+      if (tabAuthLogin) tabAuthLogin.addEventListener('click', () => switchAuthTab('login'));
+      if (tabAuthRegister) tabAuthRegister.addEventListener('click', () => switchAuthTab('register'));
+
+      if (authModal) {
+        authModal.addEventListener('click', (e) => {
+          if (e.target === authModal) closeAuthModal();
+        });
+      }
+
+      // Login handler
+      if (formLogin) {
+        formLogin.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('inputLoginEmail').value.trim();
+          const password = document.getElementById('inputLoginPassword').value;
+          if (!email || !password) return alert('Email dan password wajib diisi');
+
+          try {
+            const res = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (data.success) {
+              window.location.href = '/dashboard';
+            } else {
+              alert(data.message || 'Login gagal');
+            }
+          } catch (err) {
+            alert('Terjadi kesalahan: ' + err.message);
+          }
+        });
+      }
+
+      // Register handler
+      if (formRegister) {
+        formRegister.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const name = document.getElementById('inputRegName').value.trim();
+          const email = document.getElementById('inputRegEmail').value.trim();
+          const password = document.getElementById('inputRegPassword').value;
+          if (!email || !password) return alert('Email dan password wajib diisi');
+          if (password.length < 6) return alert('Password minimal 6 karakter');
+
+          try {
+            const res = await fetch('/api/auth/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, email, password })
+            });
+            const data = await res.json();
+            if (data.success) {
+              window.location.href = '/dashboard';
+            } else {
+              alert(data.message || 'Pendaftaran gagal');
+            }
+          } catch (err) {
+            alert('Terjadi kesalahan: ' + err.message);
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>

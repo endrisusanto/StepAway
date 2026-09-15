@@ -929,8 +929,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } else {
         currentUserAccount = null;
-        if (authGuestBox) authGuestBox.style.display = 'flex';
-        if (authUserBox) authUserBox.style.display = 'none';
+        window.location.href = '/?require_auth=true';
+        return;
       }
     } catch (err) {
       console.error('[Auth Me Error]', err);

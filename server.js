@@ -1291,6 +1291,9 @@ app.get("/overlay/multi", (req, res) => {
 });
 
 app.get("/dashboard", (req, res) => {
+  if (!req.account) {
+    return res.redirect("/?require_auth=true");
+  }
   res.sendFile(path.join(__dirname, "public", "dashboard.html"));
 });
 
