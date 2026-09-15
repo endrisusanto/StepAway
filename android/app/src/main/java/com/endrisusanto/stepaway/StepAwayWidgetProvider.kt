@@ -11,13 +11,16 @@ import android.widget.RemoteViews
 class StepAwayWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        val views = buildRemoteViews(context)
+        val component = ComponentName(context, StepAwayWidgetProvider::class.java)
+        appWidgetManager.updateAppWidget(component, views)
         for (appWidgetId in appWidgetIds) {
-            updateAppWidget(context, appWidgetManager, appWidgetId)
+            appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }
 
     companion object {
-        fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
+        fun buildRemoteViews(context: Context): RemoteViews {
             val prefs = context.getSharedPreferences("StepAwayPrefs", Context.MODE_PRIVATE)
             val currentSteps = prefs.getInt("widget_steps", 0)
             val targetSteps = prefs.getInt("target_steps", 5000).coerceAtLeast(1)
@@ -31,7 +34,7 @@ class StepAwayWidgetProvider : AppWidgetProvider() {
 
             views.setTextViewText(R.id.widgetUserName, userId)
 
-            // Dynamic Pace Status (Clean antislop labels)
+            // Dynamic Pace Status
             when (activityStatus.uppercase()) {
                 "RUNNING" -> {
                     views.setTextViewText(R.id.widgetTierBadge, "RUNNING")
@@ -65,10 +68,15 @@ class StepAwayWidgetProvider : AppWidgetProvider() {
             )
             views.setOnClickPendingIntent(R.id.widgetRoot, pendingIntent)
 
+            return views
+        }
+
+        fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
+            val views = buildRemoteViews(context)
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
 
-        fun sendUpdateBroadcast(context: Context, steps: Int, isTracking: Boolean, activityStatus: String = "IDLE", bpm: Int = 0) {
+        fun sendUpdateBroadcast(context: Context, steps: Int, isTracking: Boolean, activityStatus: String = "IDLE", bpm: Int = -1) {
             val prefs = context.getSharedPreferences("StepAwayPrefs", Context.MODE_PRIVATE)
             val editor = prefs.edit()
                 .putInt("widget_steps", steps)
@@ -82,22 +90,31 @@ class StepAwayWidgetProvider : AppWidgetProvider() {
 
             val appWidgetManager = AppWidgetManager.getInstance(context)
 
-            // Update Combo Widget
+            // 1. Combo 4x2 Widget
             val comboWidget = ComponentName(context, StepAwayWidgetProvider::class.java)
-            for (id in appWidgetManager.getAppWidgetIds(comboWidget)) {
-                updateAppWidget(context, appWidgetManager, id)
+            val comboViews = buildRemoteViews(context)
+            appWidgetManager.updateAppWidget(comboWidget, comboViews)
+            val comboIds = appWidgetManager.getAppWidgetIds(comboWidget)
+            for (id in comboIds) {
+                appWidgetManager.updateAppWidget(id, comboViews)
             }
 
-            // Update Compact Step Widget
+            // 2. Compact Step 2x2 Widget
             val compactWidget = ComponentName(context, StepCompactWidgetProvider::class.java)
-            for (id in appWidgetManager.getAppWidgetIds(compactWidget)) {
-                StepCompactWidgetProvider.updateAppWidget(context, appWidgetManager, id)
+            val compactViews = StepCompactWidgetProvider.buildRemoteViews(context)
+            appWidgetManager.updateAppWidget(compactWidget, compactViews)
+            val compactIds = appWidgetManager.getAppWidgetIds(compactWidget)
+            for (id in compactIds) {
+                appWidgetManager.updateAppWidget(id, compactViews)
             }
 
-            // Update Heart Rate Widget
+            // 3. Heart Rate 2x2 Widget
             val hrWidget = ComponentName(context, HeartRateWidgetProvider::class.java)
-            for (id in appWidgetManager.getAppWidgetIds(hrWidget)) {
-                HeartRateWidgetProvider.updateAppWidget(context, appWidgetManager, id)
+            val hrViews = HeartRateWidgetProvider.buildRemoteViews(context)
+            appWidgetManager.updateAppWidget(hrWidget, hrViews)
+            val hrIds = appWidgetManager.getAppWidgetIds(hrWidget)
+            for (id in hrIds) {
+                appWidgetManager.updateAppWidget(id, hrViews)
             }
         }
     }

@@ -5,9 +5,10 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:orientation="vertical"
-    android:padding="12dp"
+    android:padding="14dp"
     android:gravity="center">
 
+    <!-- Top Status Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -19,14 +20,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/widget_tier_bg"
-            android:paddingStart="6dp"
-            android:paddingTop="2dp"
-            android:paddingEnd="6dp"
-            android:paddingBottom="2dp"
+            android:paddingStart="8dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="3dp"
             android:text="IDLE"
             android:textColor="#9E9EA7"
-            android:textSize="9sp"
-            android:fontFamily="sans-serif-rounded"
+            android:textSize="11sp"
+            android:fontFamily="sans-serif-medium"
             android:textStyle="bold" />
 
         <View
@@ -40,29 +41,43 @@
             android:layout_height="wrap_content"
             android:text="0%"
             android:textColor="#00E5FF"
-            android:textSize="11sp"
+            android:textSize="13sp"
             android:fontFamily="sans-serif-rounded"
             android:textStyle="bold" />
     </LinearLayout>
 
+    <!-- Center Big Counter -->
     <TextView
         android:id="@+id/widgetCompactSteps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="4dp"
         android:text="0"
         android:textColor="#FFFFFF"
-        android:textSize="24sp"
+        android:textSize="30sp"
         android:fontFamily="sans-serif-rounded"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:includeFontPadding="false" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="STEPS"
         android:textColor="#FECA57"
-        android:textSize="9sp"
+        android:textSize="11sp"
         android:fontFamily="sans-serif-rounded"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:letterSpacing="0.05" />
+
+    <!-- Mini Progress Bar -->
+    <ProgressBar
+        android:id="@+id/widgetCompactProgressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="6dp"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/widget_progress_track" />
 
 </LinearLayout>

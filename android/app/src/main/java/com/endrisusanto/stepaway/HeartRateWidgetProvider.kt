@@ -3,6 +3,7 @@ package com.endrisusanto.stepaway
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
@@ -10,13 +11,16 @@ import android.widget.RemoteViews
 class HeartRateWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        val views = buildRemoteViews(context)
+        val component = ComponentName(context, HeartRateWidgetProvider::class.java)
+        appWidgetManager.updateAppWidget(component, views)
         for (appWidgetId in appWidgetIds) {
-            updateAppWidget(context, appWidgetManager, appWidgetId)
+            appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }
 
     companion object {
-        fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
+        fun buildRemoteViews(context: Context): RemoteViews {
             val prefs = context.getSharedPreferences("StepAwayPrefs", Context.MODE_PRIVATE)
             val bpm = prefs.getInt("widget_bpm", 0)
 
@@ -50,6 +54,11 @@ class HeartRateWidgetProvider : AppWidgetProvider() {
             )
             views.setOnClickPendingIntent(R.id.widgetHrRoot, pendingIntent)
 
+            return views
+        }
+
+        fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
+            val views = buildRemoteViews(context)
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }

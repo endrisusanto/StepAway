@@ -3,6 +3,7 @@ package com.endrisusanto.stepaway
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
@@ -10,13 +11,16 @@ import android.widget.RemoteViews
 class StepCompactWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        val views = buildRemoteViews(context)
+        val component = ComponentName(context, StepCompactWidgetProvider::class.java)
+        appWidgetManager.updateAppWidget(component, views)
         for (appWidgetId in appWidgetIds) {
-            updateAppWidget(context, appWidgetManager, appWidgetId)
+            appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }
 
     companion object {
-        fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
+        fun buildRemoteViews(context: Context): RemoteViews {
             val prefs = context.getSharedPreferences("StepAwayPrefs", Context.MODE_PRIVATE)
             val currentSteps = prefs.getInt("widget_steps", 0)
             val targetSteps = prefs.getInt("target_steps", 5000).coerceAtLeast(1)
@@ -43,6 +47,7 @@ class StepCompactWidgetProvider : AppWidgetProvider() {
 
             views.setTextViewText(R.id.widgetCompactSteps, "%,d".format(currentSteps))
             views.setTextViewText(R.id.widgetCompactPercent, "$percentage%")
+            views.setProgressBar(R.id.widgetCompactProgressBar, 100, percentage, false)
 
             // Open app on click
             val intent = Intent(context, MainActivity::class.java)
@@ -52,6 +57,11 @@ class StepCompactWidgetProvider : AppWidgetProvider() {
             )
             views.setOnClickPendingIntent(R.id.widgetCompactRoot, pendingIntent)
 
+            return views
+        }
+
+        fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
+            val views = buildRemoteViews(context)
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }

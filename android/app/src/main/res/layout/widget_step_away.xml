@@ -5,10 +5,10 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:orientation="vertical"
-    android:padding="14dp"
+    android:padding="16dp"
     android:gravity="center_vertical">
 
-    <!-- Header: User Name & Pace Badge & HR Chip -->
+    <!-- Header: User Name & HR Chip & Pace Badge -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -21,25 +21,27 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Streamer"
-            android:textColor="#E2E8F0"
-            android:textSize="13sp"
-            android:fontFamily="sans-serif-rounded"
-            android:textStyle="bold" />
+            android:textColor="#F4F4F5"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif-medium"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
         <TextView
             android:id="@+id/widgetHrChip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/widget_tier_bg"
-            android:paddingStart="6dp"
-            android:paddingTop="2dp"
-            android:paddingEnd="6dp"
-            android:paddingBottom="2dp"
-            android:layout_marginEnd="6dp"
+            android:paddingStart="8dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="3dp"
+            android:layout_marginEnd="8dp"
             android:text="-- BPM"
             android:textColor="#F43F5E"
-            android:textSize="10sp"
-            android:fontFamily="sans-serif-rounded"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-medium"
             android:textStyle="bold" />
 
         <TextView
@@ -47,22 +49,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/widget_tier_bg"
-            android:paddingStart="8dp"
-            android:paddingTop="2dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="2dp"
+            android:paddingStart="10dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="3dp"
             android:text="IDLE"
             android:textColor="#9E9EA7"
-            android:textSize="10sp"
-            android:fontFamily="sans-serif-rounded"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-medium"
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Counter Display: Big Steps + Goal -->
+    <!-- Counter Display: Large Step Counter & Goal Target -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="8dp"
         android:orientation="horizontal"
         android:gravity="bottom">
 
@@ -79,18 +81,19 @@
                 android:layout_height="wrap_content"
                 android:text="0"
                 android:textColor="#FFFFFF"
-                android:textSize="26sp"
+                android:textSize="34sp"
                 android:fontFamily="sans-serif-rounded"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:includeFontPadding="false" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginBottom="2dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginBottom="4dp"
                 android:text="steps"
                 android:textColor="#FECA57"
-                android:textSize="11sp"
+                android:textSize="13sp"
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -99,11 +102,11 @@
             android:id="@+id/widgetTargetInfo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="2dp"
+            android:layout_marginBottom="4dp"
             android:text="Goal: 5,000"
-            android:textColor="#9E9EA7"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-rounded"
+            android:textColor="#A1A1AA"
+            android:textSize="13sp"
+            android:fontFamily="sans-serif-medium"
             android:textStyle="bold" />
     </LinearLayout>
 
@@ -111,7 +114,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="8dp"
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
@@ -129,10 +132,10 @@
             android:id="@+id/widgetPercentDisplay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="12dp"
             android:text="0%"
             android:textColor="#00E5FF"
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:fontFamily="sans-serif-rounded"
             android:textStyle="bold" />
     </LinearLayout>
