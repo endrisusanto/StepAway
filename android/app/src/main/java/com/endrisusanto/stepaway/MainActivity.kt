@@ -963,10 +963,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startQrScan() {
+        // ponytail: portrait mode scan without boilerplate
         val options = ScanOptions().apply {
             setPrompt("Arahkan kamera ke QR Code di Web Dashboard")
             setBeepEnabled(true)
-            setOrientationLocked(false)
+            setOrientationLocked(true)
+            setCaptureActivity(PortraitCaptureActivity::class.java)
             setBarcodeImageEnabled(false)
         }
         barcodeLauncher.launch(options)

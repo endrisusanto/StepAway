@@ -258,6 +258,7 @@ body {
   font-size: 13px;
   font-weight: 700;
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .metric-progress-track {
@@ -966,6 +967,7 @@ body {
   font-weight: 700;
   color: #ffffff;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .plan-badge {
@@ -980,6 +982,7 @@ body {
   color: #10b981;
   border: 1px solid rgba(16, 185, 129, 0.35);
   line-height: 1.3;
+  white-space: nowrap;
 }
 
 .auth-tabs {

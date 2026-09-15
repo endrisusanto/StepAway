@@ -80,19 +80,19 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
             android:background="@drawable/card_bg"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:padding="12dp">
+            android:orientation="vertical"
+            android:padding="14dp">
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="Sinkronisasi Akun Web"
                     android:textColor="#FFFFFF"
                     android:textSize="13sp"
@@ -100,46 +100,62 @@
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/tvConnectedServerInfo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Server: https://stepaway.endrisusanto.my.id"
-                    android:textColor="#71717A"
-                    android:textSize="11sp"
-                    android:fontFamily="sans-serif-rounded" />
+                    android:background="@drawable/widget_tier_bg"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="2dp"
+                    android:text="CONNECTED"
+                    android:textColor="#10B981"
+                    android:textSize="10sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/tvConnectedServerInfo"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Server: https://stepaway.endrisusanto.my.id"
+                android:textColor="#71717A"
+                android:textSize="11sp"
+                android:singleLine="true"
+                android:ellipsize="middle"
+                android:fontFamily="sans-serif-rounded" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/btnScanQrPairing"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="38dp"
+                    android:layout_weight="1"
                     android:backgroundTint="#059669"
-                    android:text="Scan QR"
+                    android:text="Scan QR Web"
                     android:textColor="#FFFFFF"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
-                    android:textStyle="bold"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp" />
+                    android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/btnOpenGateFromDashboard"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="38dp"
-                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
                     android:backgroundTint="#27272A"
-                    android:text="Ganti"
+                    android:text="Ganti Akun"
                     android:textColor="#D4D4D8"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
-                    android:textStyle="bold"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp" />
+                    android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
 
@@ -360,7 +376,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Smartband Heart Rate (BLE 0x180D)"
+                    android:text="Smartband Heart Rate"
                     android:textColor="#FFFFFF"
                     android:textSize="16sp"
                     android:fontFamily="sans-serif-rounded"
@@ -1275,7 +1291,7 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/step_pill_bg"
                         android:padding="12dp"
-                        android:text="1. Buka stepaway.endrisusanto.my.id di browser PC"
+                        android:text="1. Buka stepaway.endrisusanto.my.id di PC"
                         android:textColor="#E4E4E7"
                         android:textSize="12sp"
                         android:fontFamily="sans-serif-rounded" />
@@ -1286,7 +1302,7 @@
                         android:layout_marginTop="8dp"
                         android:background="@drawable/step_pill_bg"
                         android:padding="12dp"
-                        android:text="2. Klik tombol Scan QR Android di Header Web"
+                        android:text="2. Klik Scan QR Android di Web Dashboard"
                         android:textColor="#E4E4E7"
                         android:textSize="12sp"
                         android:fontFamily="sans-serif-rounded" />
@@ -1297,7 +1313,7 @@
                         android:layout_marginTop="8dp"
                         android:background="@drawable/step_pill_bg"
                         android:padding="12dp"
-                        android:text="3. Tekan tombol di bawah untuk scan otomatis"
+                        android:text="3. Arahkan kamera HP ke QR Code"
                         android:textColor="#E4E4E7"
                         android:textSize="12sp"
                         android:fontFamily="sans-serif-rounded" />
