@@ -53,7 +53,13 @@
 
     <!-- Top Key Metrics Bar -->
     <div class="metrics-grid">
-      <div class="metric-card">
+      <div id="metricCardSteps" class="metric-card has-particles">
+        <!-- Milestone celebration banner for dashboard card -->
+        <div id="metricMilestoneBanner" class="metric-milestone-banner">
+          <span class="milestone-title">MILESTONE REACHED</span>
+          <span id="metricMilestoneVal" class="milestone-value">1,000 STEPS!</span>
+        </div>
+        <div id="metricParticlesLayer" class="metric-particles-layer"></div>
         <div class="metric-label">CURRENT STEPS</div>
         <div class="metric-value-row">
           <span id="liveSteps" class="metric-number">0</span>

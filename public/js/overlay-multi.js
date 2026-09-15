@@ -110,6 +110,11 @@
 
     if (delta > 0) {
       spawnStepParticle(particlesEl, delta);
+      if (stepsEl) {
+        stepsEl.classList.remove('step-bump');
+        void stepsEl.offsetWidth;
+        stepsEl.classList.add('step-bump');
+      }
       barEl.classList.remove('pulse-active');
       void barEl.offsetWidth;
       barEl.classList.add('pulse-active');
@@ -118,7 +123,11 @@
     if (userData.milestone) {
       milestoneValEl.textContent = `${userData.milestone.toLocaleString()} STEPS!`;
       milestoneEl.classList.add('show');
-      setTimeout(() => milestoneEl.classList.remove('show'), 3000);
+      card.classList.add('milestone-active');
+      setTimeout(() => {
+        milestoneEl.classList.remove('show');
+        card.classList.remove('milestone-active');
+      }, 3000);
     }
   }
 

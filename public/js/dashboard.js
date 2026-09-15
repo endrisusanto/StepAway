@@ -7,6 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const liveBpm = document.getElementById('liveBpm');
   const liveBpmZone = document.getElementById('liveBpmZone');
   const metricProgressBar = document.getElementById('metricProgressBar');
+  const metricCardSteps = document.getElementById('metricCardSteps');
+  const metricMilestoneBanner = document.getElementById('metricMilestoneBanner');
+  const metricMilestoneVal = document.getElementById('metricMilestoneVal');
+  const metricParticlesLayer = document.getElementById('metricParticlesLayer');
+  let milestoneDashboardTimer = null;
   const brandLogoIcon = document.getElementById('brandLogoIcon');
   const guideUserId = document.getElementById('guideUserId');
 
@@ -242,13 +247,67 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function syncSimulation(delta) {
+  // ponytail: lightweight particle and milestone animation helpers
+  function spawnDashboardStepPop(delta) {
+    if (delta <= 0 || !metricParticlesLayer) return;
+    const pop = document.createElement('div');
+    pop.className = 'step-float-pop';
+    pop.textContent = `+${delta}`;
+    const randomX = Math.floor(Math.random() * 40) - 10;
+    pop.style.left = `${30 + randomX}px`;
+    pop.style.top = '14px';
+    metricParticlesLayer.appendChild(pop);
+    setTimeout(() => pop.remove(), 1100);
+
+    if (liveSteps) {
+      liveSteps.classList.remove('step-bump');
+      void liveSteps.offsetWidth;
+      liveSteps.classList.add('step-bump');
+    }
+  }
+
+  function triggerDashboardMilestone(milestone) {
+    if (!metricMilestoneBanner || !metricCardSteps) return;
+    if (metricMilestoneVal) metricMilestoneVal.textContent = `${Number(milestone).toLocaleString()} STEPS!`;
+    metricMilestoneBanner.classList.add('show');
+    metricCardSteps.classList.add('milestone-active');
+
     try {
-      await fetch('/api/steps/sync', {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.5);
+    } catch (e) {}
+
+    if (milestoneDashboardTimer) clearTimeout(milestoneDashboardTimer);
+    milestoneDashboardTimer = setTimeout(() => {
+      metricMilestoneBanner.classList.remove('show');
+      metricCardSteps.classList.remove('milestone-active');
+    }, 3200);
+  }
+
+  async function syncSimulation(delta) {
+    if (delta > 0) {
+      spawnDashboardStepPop(delta);
+    }
+    try {
+      const res = await fetch('/api/steps/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: currentUserId, delta })
       });
+      const data = await res.json();
+      if (data && data.milestone) {
+        triggerDashboardMilestone(data.milestone);
+      }
     } catch (e) {
       console.error('[Sim Step Error]', e);
     }
@@ -408,12 +467,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
           if (isTargetUser && msg.data) {
             setWsStatus(true, 'ACTIVE SYNC');
-            liveSteps.textContent = (msg.data.currentSteps || 0).toLocaleString();
+            const prev = parseInt(liveSteps.textContent.replace(/,/g, ''), 10) || 0;
+            const next = msg.data.currentSteps || 0;
+            const delta = msg.data.delta || (next > prev ? next - prev : 0);
+
+            liveSteps.textContent = next.toLocaleString();
             liveTarget.textContent = (msg.data.targetSteps || 5000).toLocaleString();
             const pct = Math.min(100, Math.round((msg.data.currentSteps / Math.max(1, msg.data.targetSteps)) * 100));
             livePercent.textContent = `${pct}%`;
             if (metricProgressBar) metricProgressBar.style.width = `${pct}%`;
             applyPaceBadge(msg.data.activityStatus);
+
+            if (delta > 0) {
+              spawnDashboardStepPop(delta);
+            }
+            if (msg.data.milestone) {
+              triggerDashboardMilestone(msg.data.milestone);
+            }
 
             if (msg.data.bpm !== undefined && liveBpm) {
               liveBpm.textContent = msg.data.bpm > 0 ? msg.data.bpm : '--';

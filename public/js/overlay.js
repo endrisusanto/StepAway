@@ -66,6 +66,12 @@
 
     particlesLayerEl.appendChild(pop);
     setTimeout(() => pop.remove(), 1100);
+
+    if (currentStepValEl) {
+      currentStepValEl.classList.remove('step-bump');
+      void currentStepValEl.offsetWidth;
+      currentStepValEl.classList.add('step-bump');
+    }
   }
 
   function triggerPulse() {
@@ -77,6 +83,7 @@
   function triggerMilestoneCelebration(milestone) {
     milestoneValueEl.textContent = `${milestone.toLocaleString()} STEPS!`;
     milestoneBannerEl.classList.add('show');
+    if (widgetEl) widgetEl.classList.add('milestone-active');
     
     try {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -95,6 +102,7 @@
 
     setTimeout(() => {
       milestoneBannerEl.classList.remove('show');
+      if (widgetEl) widgetEl.classList.remove('milestone-active');
     }, 3200);
   }
 
