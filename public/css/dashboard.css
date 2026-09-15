@@ -168,16 +168,43 @@ body {
 .status-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  height: 38px;
+  gap: 7px;
   font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 700;
   color: var(--text-muted);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  padding: 5px 10px;
-  border-radius: 6px;
+  padding: 0 13px;
+  border-radius: 8px;
   white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.btn-header {
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.btn-header-small {
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  box-sizing: border-box;
 }
 
 .status-dot {
@@ -1052,13 +1079,15 @@ body {
 
 /* SaaS User Bar & Authentication Styles */
 .user-auth-bar {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
+  height: 38px;
+  gap: 10px;
   background: var(--bg-card-alt);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  padding: 6px 12px 6px 14px;
+  padding: 0 12px;
+  box-sizing: border-box;
 }
 
 .user-info-col {

@@ -5,133 +5,219 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:orientation="vertical"
-    android:paddingStart="14dp"
-    android:paddingTop="12dp"
-    android:paddingEnd="14dp"
-    android:paddingBottom="12dp">
+    android:paddingStart="12dp"
+    android:paddingTop="10dp"
+    android:paddingEnd="12dp"
+    android:paddingBottom="10dp">
 
-    <!-- Top Corner Header: User Name (Left) & HR Chip + Pace Badge (Right) -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <TextView
-            android:id="@+id/widgetUserName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Streamer"
-            android:textColor="#F4F4F5"
-            android:textSize="13sp"
-            android:fontFamily="sans-serif-medium"
-            android:textStyle="bold"
-            android:maxLines="1"
-            android:ellipsize="end" />
-
-        <TextView
-            android:id="@+id/widgetHrChip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/widget_tier_bg"
-            android:paddingStart="8dp"
-            android:paddingTop="3dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="3dp"
-            android:layout_marginEnd="6dp"
-            android:text="-- BPM"
-            android:textColor="#F43F5E"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-medium"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/widgetTierBadge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/widget_tier_bg"
-            android:paddingStart="9dp"
-            android:paddingTop="3dp"
-            android:paddingEnd="9dp"
-            android:paddingBottom="3dp"
-            android:text="REST"
-            android:textColor="#9E9EA7"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-medium"
-            android:textStyle="bold" />
-    </LinearLayout>
-
-    <!-- Center: Extra Large Step Counter Filling Available Height & Goal + Percentage in Corner -->
+    <!-- Center: Side-by-Side Versus Split (Steps VS Heart Rate) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="horizontal"
-        android:gravity="center_vertical|bottom">
+        android:baselineAligned="false">
 
+        <!-- Left Column: Steps & Streamer Status -->
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:orientation="horizontal"
-            android:gravity="bottom">
+            android:orientation="vertical"
+            android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/widgetStepCount"
-                android:layout_width="wrap_content"
+            <!-- Left Header: Username & Pace Badge -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="0"
-                android:textColor="#FFFFFF"
-                android:textSize="54sp"
-                android:fontFamily="sans-serif-black"
-                android:textStyle="bold"
-                android:includeFontPadding="false" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:layout_marginBottom="6dp"
-                android:text="steps"
-                android:textColor="#FECA57"
-                android:textSize="13sp"
-                android:fontFamily="sans-serif-rounded"
-                android:textStyle="bold" />
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/widgetUserName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Streamer"
+                    android:textColor="#F4F4F5"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
 
-        <!-- Right Corner: Goal & Percentage -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="bottom"
-            android:layout_marginBottom="6dp">
+                <TextView
+                    android:id="@+id/widgetTierBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/widget_tier_bg"
+                    android:paddingStart="7dp"
+                    android:paddingTop="2dp"
+                    android:paddingEnd="7dp"
+                    android:paddingBottom="2dp"
+                    android:text="REST"
+                    android:textColor="#9E9EA7"
+                    android:textSize="10sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
+            <!-- Massive Step Number -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical|bottom">
+
+                <TextView
+                    android:id="@+id/widgetStepCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="#FFFFFF"
+                    android:textSize="44sp"
+                    android:fontFamily="sans-serif-black"
+                    android:textStyle="bold"
+                    android:includeFontPadding="false" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginBottom="4dp"
+                    android:text="steps"
+                    android:textColor="#FECA57"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Goal Subtitle -->
             <TextView
                 android:id="@+id/widgetTargetInfo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Goal: 5,000"
                 android:textColor="#A1A1AA"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:fontFamily="sans-serif-medium"
                 android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Center Versus Separator -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="#27272A" />
 
             <TextView
-                android:id="@+id/widgetPercentDisplay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="0%"
-                android:textColor="#00E5FF"
-                android:textSize="14sp"
-                android:fontFamily="sans-serif-rounded"
+                android:text="VS"
+                android:textColor="#6366F1"
+                android:textSize="10sp"
+                android:fontFamily="sans-serif-black"
+                android:textStyle="bold"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="#27272A" />
+        </LinearLayout>
+
+        <!-- Right Column: Heart Rate Live & Target % -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
+            <!-- Right Header: Title & Percent Display -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="HEART RATE"
+                    android:textColor="#F43F5E"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widgetPercentDisplay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0%"
+                    android:textColor="#00E5FF"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Massive BPM Number -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical|bottom">
+
+                <TextView
+                    android:id="@+id/widgetHrChip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textColor="#F43F5E"
+                    android:textSize="44sp"
+                    android:fontFamily="sans-serif-black"
+                    android:textStyle="bold"
+                    android:includeFontPadding="false" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginBottom="4dp"
+                    android:text="BPM"
+                    android:textColor="#F43F5E"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Sensor Live Status -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Live BLE Sensor"
+                android:textColor="#71717A"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-medium"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Bottom: Progress Bar Flush with Bottom Edge - Thick 14dp -->
+    <!-- Bottom: Progress Bar Much Thicker (14dp) Flush with Bottom -->
     <ProgressBar
         android:id="@+id/widgetProgressBar"
         style="?android:attr/progressBarStyleHorizontal"

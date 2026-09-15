@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StepAway - Real-time OBS Step Counter & Heart Rate Overlay</title>
+  <title>StepAway - Real-time OBS Step Counter & Heart Rate Telemetry</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="/css/landing.css">
 </head>
 <body>
 
-  <!-- Navigation Bar -->
+  <!-- Navigation Bar (Brand Only) -->
   <header class="landing-nav">
     <a href="/" class="brand-logo">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -19,47 +19,43 @@
       </svg>
       <span>StepAway</span>
     </a>
-    <div class="nav-actions">
-      <button id="btnNavLogin" class="btn btn-secondary">Masuk</button>
-      <a href="/dashboard" id="btnNavLaunch" class="btn btn-primary">Launch App</a>
-    </div>
   </header>
 
   <!-- Hero Section -->
   <main class="hero-section">
     <div class="hero-badge">
-      <span>Platform Telemetri OBS Real-Time</span>
+      <span>Aplikasi Telemetri OBS &amp; Android Step Tracker</span>
     </div>
 
     <h1 class="hero-title">
-      Telemetri Langkah & Detak Jantung <span class="hero-title-highlight">Langsung ke OBS Studio</span>
+      Telemetri Langkah &amp; Detak Jantung <span class="hero-title-highlight">Langsung ke OBS Studio</span>
     </h1>
 
     <p class="hero-subtitle">
-      Hubungkan sensor langkah HP Android dan Smartband BLE langsung ke OBS Studio dengan widget transparan dinamis, auto-goal Subathon, dan konversi donasi otomatis.
+      Hubungkan sensor langkah ponsel Android dan Smartband Bluetooth Low Energy langsung ke OBS Studio dengan widget transparan dinamis, auto-goal Subathon, dan konversi donasi otomatis.
     </p>
 
+    <!-- Switch Button Pill (Dashboard & Download APK) -->
     <div class="hero-cta-group">
-      <button id="btnHeroLaunch" class="btn btn-primary" style="padding: 12px 24px; font-size: 14px;">
-        <span>Launch App</span>
-      </button>
-
-      <a href="/api/auth/google" class="btn btn-google" style="padding: 12px 22px; font-size: 14px;">
-        <svg width="18" height="18" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
-          <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
-          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-        </svg>
-        <span>Masuk dengan Google</span>
-      </a>
+      <div class="hero-switch-container">
+        <a href="/dashboard" id="btnHeroDashboard" class="hero-switch-btn active-primary btn-dashboard">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span>Buka Dashboard</span>
+        </a>
+        <a href="https://github.com/endrisusanto/StepAway/releases/latest" target="_blank" rel="noopener noreferrer" class="hero-switch-btn btn-download">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4483.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5802 8.411 13.8443 8.125 12 8.125s-3.5802.286-5.1368.8247L4.8409 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396"/>
+          </svg>
+          <span>Download APK</span>
+        </a>
+      </div>
     </div>
 
     <!-- Live Widget Preview Showcase -->
     <div class="showcase-container">
       <div class="showcase-header">
-        <span class="showcase-title-tag">OBS BROWSER SOURCE LIVE OVERLAY</span>
-        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Transparan & Responsif</span>
+        <span class="showcase-title-tag">OBS BROWSER SOURCE LIVE OVERLAY PREVIEW</span>
+        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Transparan &amp; Responsif</span>
       </div>
 
       <div class="showcase-grid">
@@ -90,8 +86,66 @@
     </div>
   </main>
 
+  <!-- Dedicated Mobile Companion Info Section -->
+  <section id="download" class="apk-section">
+    <div class="apk-card">
+      <div class="apk-content-col">
+        <div class="apk-badge">Aplikasi Android Resmi</div>
+        <h2 class="apk-title">Aplikasi StepAway untuk Smartphone Android</h2>
+        <p class="apk-desc">
+          Kirimkan data langkah dan denyut jantung dari saku Anda secara realtime ke OBS Studio. Berjalan di latar belakang dengan konsumsi daya rendah saat layar mati selama sesi IRL walking atau treadmill.
+        </p>
+
+        <div class="apk-specs-list">
+          <div class="apk-spec-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Layanan latar belakang Foreground Service tetap aktif saat layar terkunci</span>
+          </div>
+          <div class="apk-spec-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Koneksi instan ke Smartband via Bluetooth Low Energy (0x180D GATT)</span>
+          </div>
+          <div class="apk-spec-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>3 Pilihan Widget Layar Utama (Home Screen) dengan versus split dan progress bar tebal</span>
+          </div>
+          <div class="apk-spec-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Pairing cepat cukup dengan scan QR code dari layar dashboard</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="apk-preview-col">
+        <div class="widget-preview-item">
+          <div class="widget-preview-info">
+            <span class="widget-preview-label">Widget Home Screen 4x2</span>
+            <span class="widget-preview-name">Steps VS Heart Rate Combo</span>
+          </div>
+          <span class="widget-preview-badge">Versus Split Layout</span>
+        </div>
+
+        <div class="widget-preview-item">
+          <div class="widget-preview-info">
+            <span class="widget-preview-label">Widget Home Screen 2x2</span>
+            <span class="widget-preview-name">Compact Step Counter</span>
+          </div>
+          <span class="widget-preview-badge">Thick 12dp Progress</span>
+        </div>
+
+        <div class="widget-preview-item">
+          <div class="widget-preview-info">
+            <span class="widget-preview-label">Widget Home Screen 2x2</span>
+            <span class="widget-preview-name">Live Heart Rate Zone</span>
+          </div>
+          <span class="widget-preview-badge">BPM Denyut Realtime</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Feature Highlights -->
-  <section class="features-section">
+  <section id="features" class="features-section">
     <div class="section-title-wrap">
       <h2 class="section-title">Fitur Lengkap untuk Streamer</h2>
       <p class="section-subtitle">Didesain khusus untuk live IRL, walking stream, treadmill challenge, dan Subathon marathon.</p>
@@ -102,70 +156,93 @@
         <div class="feature-icon-box">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         </div>
-        <h3>Integrasi Donasi TipTap</h3>
-        <p>Setiap donasi yang masuk otomatis mengonversi rupiah menjadi pertambahan langkah atau target Subathon secara instan.</p>
+        <h3>Integrasi Donasi Saweria &amp; TipTap</h3>
+        <p>Webhook otomatis mengonversi rupiah donasi penonton menjadi pertambahan target langkah atau penambahan progress Subathon secara instan di layar siaran.</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon-box">
+        <div class="feature-icon-box green">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </div>
-        <h3>Sinkronisasi Smartband BLE</h3>
-        <p>Membaca sensor detak jantung standar Bluetooth Low Energy (0x180D) dan ponsel Android tanpa kabel.</p>
+        <h3>Sinkronisasi Smartband Bluetooth LE</h3>
+        <p>Membaca sensor detak jantung standar BLE GATT 0x180D (Xiaomi Smart Band, Huawei, Polar, Garmin, dan chest strap) tanpa memerlukan aplikasi pihak ketiga.</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon-box">
+        <div class="feature-icon-box cyan">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </div>
-        <h3>Widget OBS Transparan</h3>
-        <p>Cukup copy link Browser Source. Tampilan transparan dengan animasi milestone, partikel langkah, dan audio chime.</p>
+        <h3>Widget OBS Transparan &amp; Multi-Streamer</h3>
+        <p>Tersedia mode single streamer dan multi-streamer. Dilengkapi tema warna dinamis setiap pencapaian milestone, animasi floating +1, dan chime audio peringatan.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-box amber">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3>Isolasi Stream Key &amp; QR Pairing</h3>
+        <p>Setiap streamer memiliki Stream Key privat untuk isolasi data. Hubungkan aplikasi Android ke server cukup dengan memindai kode QR dari dashboard.</p>
       </div>
 
       <div class="feature-card">
         <div class="feature-icon-box">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
         </div>
-        <h3>Stream Key & QR Pairing</h3>
-        <p>Isolasi data antar streamer dengan Stream Key pribadi. Sambungkan aplikasi Android cukup dengan scan QR code.</p>
+        <h3>Sensor Langkah Akurat &amp; Hemat Daya</h3>
+        <p>Aplikasi Android memanfaatkan hardware step detector ponsel secara native. Berjalan di latar belakang tanpa menguras baterai saat siaran langsung di luar ruangan.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-box green">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        </div>
+        <h3>Widget Layar Utama Android</h3>
+        <p>Pantau status langkah dan denyut nadi tanpa membuka aplikasi. Dilengkapi 3 varian widget home screen dengan tipografi ekstra besar dan progress bar tebal.</p>
       </div>
     </div>
   </section>
 
-  <!-- 3 Simple Steps -->
+  <!-- 3 Simple Steps (Inline 3 Columns) -->
   <section class="steps-section">
     <div class="section-title-wrap">
-      <h2 class="section-title">3 Langkah Cepat Mulai Streaming</h2>
-      <p class="section-subtitle">Siap digunakan dalam kurang dari 2 menit tanpa instalasi server rumit.</p>
+      <h2 class="section-title">3 Langkah Cepat Mulai Siaran</h2>
+      <p class="section-subtitle">Dapat disiapkan dalam waktu singkat tanpa konfigurasi server yang rumit.</p>
     </div>
 
     <div class="steps-grid">
       <div class="step-card">
         <div class="step-number">01</div>
-        <h4>Daftar / Login Akun</h4>
-        <p>Masuk dengan Google atau buat akun creator untuk memperoleh Stream Key unik Anda.</p>
+        <h4>Daftar &amp; Buka Dashboard</h4>
+        <p>Masuk ke dashboard akun creator Anda, lalu tentukan target langkah Subathon dan nominal konversi donasi.</p>
       </div>
 
       <div class="step-card">
         <div class="step-number">02</div>
-        <h4>Scan QR di HP Android</h4>
-        <p>Buka aplikasi StepAway di smartphone Anda dan scan QR code untuk menghubungkan sensor.</p>
+        <h4>Pasang APK &amp; Scan QR di Ponsel</h4>
+        <p>Buka aplikasi StepAway di ponsel Android, hubungkan sensor detak jantung Bluetooth jika ada, lalu pindai kode QR dashboard.</p>
       </div>
 
       <div class="step-card">
         <div class="step-number">03</div>
-        <h4>Pasang di OBS Studio</h4>
-        <p>Salin link Browser Source ke OBS Studio. Widget telemetri real-time siap disiarkan langsung ke penonton.</p>
+        <h4>Salin URL ke OBS Studio</h4>
+        <p>Salin tautan Browser Source dari dashboard ke OBS Studio Anda. Telemetri langkah dan denyut jantung siap tayang ke penonton.</p>
       </div>
     </div>
   </section>
 
   <!-- Footer -->
   <footer class="landing-footer">
-    <p>StepAway &copy; 2026 • Real-time OBS Stream Telemetry Platform oleh <strong>@endrisusanto</strong></p>
+    <div class="footer-content">
+      <p>StepAway &copy; 2026 • Platform Telemetri OBS Real-Time oleh <strong>@endrisusanto</strong></p>
+      <div class="footer-links">
+        <a href="https://github.com/endrisusanto/StepAway/releases/latest" target="_blank" rel="noopener noreferrer" class="footer-link">Download APK</a>
+        <a href="https://github.com/endrisusanto/StepAway" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub Repository</a>
+        <a href="/dashboard" class="footer-link">Dashboard</a>
+      </div>
+    </div>
   </footer>
 
-  <!-- SaaS Authentication Modal (Embedded on Landing Page) -->
+  <!-- SaaS Authentication Modal (Accessible when required) -->
   <div id="authModal" class="modal-overlay" style="display: none;">
     <div class="modal-card">
       <div class="modal-header">
@@ -234,9 +311,7 @@
       const formLogin = document.getElementById('formLogin');
       const formRegister = document.getElementById('formRegister');
       const btnCloseAuthModal = document.getElementById('btnCloseAuthModal');
-      const btnNavLogin = document.getElementById('btnNavLogin');
-      const btnNavLaunch = document.getElementById('btnNavLaunch');
-      const btnHeroLaunch = document.getElementById('btnHeroLaunch');
+      const btnHeroDashboard = document.getElementById('btnHeroDashboard');
 
       let isAuthenticated = false;
 
@@ -246,11 +321,6 @@
         const data = await res.json();
         if (data.success && data.authenticated && data.account) {
           isAuthenticated = true;
-          if (btnNavLogin) {
-            btnNavLogin.textContent = data.account.name || 'Akun Saya';
-            btnNavLogin.onclick = () => window.location.href = '/dashboard';
-          }
-          if (btnNavLaunch) btnNavLaunch.textContent = 'Buka Dashboard';
         }
       } catch (e) {}
 
@@ -289,18 +359,8 @@
         }
       }
 
-      if (btnNavLogin && !isAuthenticated) btnNavLogin.addEventListener('click', () => openAuthModal('login'));
-      if (btnHeroLaunch) {
-        btnHeroLaunch.addEventListener('click', () => {
-          if (isAuthenticated) {
-            window.location.href = '/dashboard';
-          } else {
-            openAuthModal('login');
-          }
-        });
-      }
-      if (btnNavLaunch) {
-        btnNavLaunch.addEventListener('click', (e) => {
+      if (btnHeroDashboard) {
+        btnHeroDashboard.addEventListener('click', (e) => {
           if (!isAuthenticated) {
             e.preventDefault();
             openAuthModal('login');

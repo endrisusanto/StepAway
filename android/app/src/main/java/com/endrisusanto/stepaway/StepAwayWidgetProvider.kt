@@ -50,9 +50,9 @@ class StepAwayWidgetProvider : AppWidgetProvider() {
                 }
             }
 
-            // Live HR Chip
-            val hrText = if (liveBpm > 0) "$liveBpm BPM" else "-- BPM"
-            views.setTextViewText(R.id.widgetHrChip, hrText)
+            // Live HR BPM
+            val hrValue = if (liveBpm > 0) liveBpm.toString() else "--"
+            views.setTextViewText(R.id.widgetHrChip, hrValue)
             views.setTextColor(R.id.widgetHrChip, if (liveBpm > 0) 0xFFF43F5E.toInt() else 0xFF9E9EA7.toInt())
 
             views.setTextViewText(R.id.widgetStepCount, "%,d".format(currentSteps))
