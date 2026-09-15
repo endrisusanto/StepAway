@@ -76,10 +76,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnSim10: Button
     private lateinit var btnSim100: Button
     private lateinit var btnSim1000: Button
+    private lateinit var btnSimMinus1: Button
+    private lateinit var btnSimMinus10: Button
+    private lateinit var btnSimMinus100: Button
+    private lateinit var btnSimMinus1000: Button
     private lateinit var btnSimHr75: Button
     private lateinit var btnSimHr125: Button
     private lateinit var btnSimHr155: Button
     private lateinit var btnSimHr180: Button
+    private lateinit var btnResetSteps: Button
 
     // Connection & OBS Views
     private lateinit var etServerUrl: EditText
@@ -195,10 +200,17 @@ class MainActivity : AppCompatActivity() {
         btnSim100 = findViewById(R.id.btnSim100)
         btnSim1000 = findViewById(R.id.btnSim1000)
 
+        btnSimMinus1 = findViewById(R.id.btnSimMinus1)
+        btnSimMinus10 = findViewById(R.id.btnSimMinus10)
+        btnSimMinus100 = findViewById(R.id.btnSimMinus100)
+        btnSimMinus1000 = findViewById(R.id.btnSimMinus1000)
+
         btnSimHr75 = findViewById(R.id.btnSimHr75)
         btnSimHr125 = findViewById(R.id.btnSimHr125)
         btnSimHr155 = findViewById(R.id.btnSimHr155)
         btnSimHr180 = findViewById(R.id.btnSimHr180)
+
+        btnResetSteps = findViewById(R.id.btnResetSteps)
 
         etServerUrl = findViewById(R.id.etServerUrl)
         etUserId = findViewById(R.id.etUserId)
@@ -385,10 +397,17 @@ class MainActivity : AppCompatActivity() {
         btnSim100.setOnClickListener { sendSimulationStep(100) }
         btnSim1000.setOnClickListener { sendSimulationStep(1000) }
 
+        btnSimMinus1.setOnClickListener { sendSimulationStep(-1) }
+        btnSimMinus10.setOnClickListener { sendSimulationStep(-10) }
+        btnSimMinus100.setOnClickListener { sendSimulationStep(-100) }
+        btnSimMinus1000.setOnClickListener { sendSimulationStep(-1000) }
+
         btnSimHr75.setOnClickListener { simulateHeartRate(75) }
         btnSimHr125.setOnClickListener { simulateHeartRate(125) }
         btnSimHr155.setOnClickListener { simulateHeartRate(155) }
         btnSimHr180.setOnClickListener { simulateHeartRate(180) }
+
+        btnResetSteps.setOnClickListener { resetTodaySteps() }
 
         btnCopySingle.setOnClickListener { copyObsLink(OverlayType.SINGLE) }
         btnCopyHeartrate.setOnClickListener { copyObsLink(OverlayType.HEARTRATE) }
@@ -670,8 +689,9 @@ class MainActivity : AppCompatActivity() {
                 conn.disconnect()
 
                 if (code in 200..299) {
-                    val newSteps = prefs.getInt("widget_steps", 0) + delta
-                    val pace = if (delta >= 100) "RUNNING" else "WALKING"
+                    val current = prefs.getInt("widget_steps", 0)
+                    val newSteps = (current + delta).coerceAtLeast(0)
+                    val pace = if (delta >= 100 || delta <= -100) "RUNNING" else if (delta != 0) "WALKING" else "IDLE"
                     prefs.edit()
                         .putInt("widget_steps", newSteps)
                         .putString("activity_status", pace)
@@ -680,7 +700,8 @@ class MainActivity : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         updateLiveUIFromPrefs()
                         StepAwayWidgetProvider.sendUpdateBroadcast(this@MainActivity, newSteps, isTracking, pace)
-                        Toast.makeText(this@MainActivity, "+$delta langkah terkirim ke OBS!", Toast.LENGTH_SHORT).show()
+                        val sign = if (delta > 0) "+$delta" else "$delta"
+                        Toast.makeText(this@MainActivity, "$sign langkah terkirim ke OBS!", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {

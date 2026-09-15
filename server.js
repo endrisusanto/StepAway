@@ -230,8 +230,8 @@ app.post("/api/steps/sync", (req, res) => {
   const prevSteps = user.currentSteps;
   if (typeof steps === "number") {
     user.currentSteps = Math.max(0, steps);
-  } else if (delta > 0) {
-    user.currentSteps += Math.max(1, Number(delta));
+  } else if (typeof delta === "number" && delta !== 0) {
+    user.currentSteps = Math.max(0, user.currentSteps + Number(delta));
   }
 
   if (typeof bpm === "number") {

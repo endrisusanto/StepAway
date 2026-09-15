@@ -138,9 +138,9 @@
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
 
-                <View
+                <FrameLayout
                     android:layout_width="0dp"
-                    android:layout_height="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1" />
 
                 <TextView
@@ -228,9 +228,9 @@
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
 
-                <View
+                <FrameLayout
                     android:layout_width="0dp"
-                    android:layout_height="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1" />
 
                 <TextView
@@ -264,7 +264,153 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Profile & Target Goal Card -->
+        <!-- 1. Smartband BLE Heart Rate (0x180D) Card (Moved above Profile!) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/card_bg"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Smartband Heart Rate (BLE 0x180D)"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvBleStatusBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/widget_tier_bg"
+                    android:paddingStart="8dp"
+                    android:paddingTop="3dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="3dp"
+                    android:text="● DISCONNECTED"
+                    android:textColor="#9E9EA7"
+                    android:textSize="10sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Standar GATT 0x180D (Pulsoid / HypeRate broadcast)"
+                android:textColor="#9E9EA7"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-rounded" />
+
+            <!-- Live BPM Display -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:gravity="bottom">
+
+                <TextView
+                    android:id="@+id/tvLiveBpm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textColor="#F43F5E"
+                    android:textSize="44sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginBottom="6dp"
+                    android:text="BPM"
+                    android:textColor="#9E9EA7"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/tvBleZoneBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:background="@drawable/widget_tier_bg"
+                    android:paddingStart="10dp"
+                    android:paddingTop="3dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="3dp"
+                    android:text="Idle"
+                    android:textColor="#9E9EA7"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvConnectedBleDevice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Tidak ada smartband terhubung"
+                android:textColor="#71717A"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-rounded" />
+
+            <!-- BLE Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnScanBle"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#00E5FF"
+                    android:text="Scan Smartband"
+                    android:textAllCaps="false"
+                    android:textColor="#121214"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnDisconnectBle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="#26262B"
+                    android:text="Putus"
+                    android:textAllCaps="false"
+                    android:textColor="#F43F5E"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 2. Profile & Target Goal Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -431,7 +577,50 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Room System Card -->
+        <!-- 3. Connection Settings Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/card_bg"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pengaturan Koneksi Server"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Server URL"
+                android:textColor="#9E9EA7"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etServerUrl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="#26262B"
+                android:hint="https://stepaway.endrisusanto.my.id"
+                android:inputType="textUri"
+                android:padding="12dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#71717A"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-rounded" />
+        </LinearLayout>
+
+        <!-- 4. Room System Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -530,7 +719,7 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Test Simulator Card (Steps + HR Rate Values) -->
+        <!-- 5. Test Simulator Card (Steps + HR Rate Values) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -548,12 +737,12 @@
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
 
-            <!-- Step Sim -->
+            <!-- Step Sim Increment -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Simulasi Langkah (Sync OBS)"
+                android:layout_marginTop="10dp"
+                android:text="Tambah Langkah (+ Step)"
                 android:textColor="#9E9EA7"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-rounded"
@@ -574,7 +763,10 @@
                     android:text="+1"
                     android:textAllCaps="false"
                     android:textColor="#FECA57"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:maxLines="1"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
 
@@ -588,7 +780,10 @@
                     android:text="+10"
                     android:textAllCaps="false"
                     android:textColor="#FECA57"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:maxLines="1"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
 
@@ -602,7 +797,10 @@
                     android:text="+100"
                     android:textAllCaps="false"
                     android:textColor="#FECA57"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:maxLines="1"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
 
@@ -610,13 +808,101 @@
                     android:id="@+id/btnSim1000"
                     android:layout_width="0dp"
                     android:layout_height="42dp"
-                    android:layout_weight="1"
+                    android:layout_weight="1.1"
                     android:layout_marginStart="6dp"
-                    android:backgroundTint="#F43F5E"
+                    android:backgroundTint="#10B981"
                     android:text="+1000"
                     android:textAllCaps="false"
-                    android:textColor="#FFFFFF"
-                    android:textSize="13sp"
+                    android:textColor="#121214"
+                    android:textSize="11.5sp"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:maxLines="1"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Step Sim Decrement -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Kurang Langkah (- Step)"
+                android:textColor="#9E9EA7"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnSimMinus1"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#26262B"
+                    android:text="-1"
+                    android:textAllCaps="false"
+                    android:textColor="#F59E0B"
+                    android:textSize="12sp"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:maxLines="1"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnSimMinus10"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:backgroundTint="#26262B"
+                    android:text="-10"
+                    android:textAllCaps="false"
+                    android:textColor="#F59E0B"
+                    android:textSize="12sp"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:maxLines="1"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnSimMinus100"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:backgroundTint="#26262B"
+                    android:text="-100"
+                    android:textAllCaps="false"
+                    android:textColor="#F59E0B"
+                    android:textSize="12sp"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:maxLines="1"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnSimMinus1000"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1.1"
+                    android:layout_marginStart="6dp"
+                    android:backgroundTint="#26262B"
+                    android:text="-1000"
+                    android:textAllCaps="false"
+                    android:textColor="#F97316"
+                    android:textSize="11.5sp"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:maxLines="1"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -694,198 +980,23 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-        </LinearLayout>
-
-        <!-- Connection Settings Card -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/card_bg"
-            android:orientation="vertical"
-            android:padding="20dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Pengaturan Koneksi Server"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:fontFamily="sans-serif-rounded"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Server URL"
-                android:textColor="#9E9EA7"
-                android:textSize="12sp"
-                android:fontFamily="sans-serif-rounded"
-                android:textStyle="bold" />
-
-            <EditText
-                android:id="@+id/etServerUrl"
+            <!-- Reset Steps Button -->
+            <Button
+                android:id="@+id/btnResetSteps"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:background="#26262B"
-                android:hint="https://stepaway.endrisusanto.my.id"
-                android:inputType="textUri"
-                android:padding="12dp"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#71717A"
+                android:layout_height="46dp"
+                android:layout_marginTop="14dp"
+                android:backgroundTint="#33F43F5E"
+                android:text="Reset Langkah (0 Steps)"
+                android:textAllCaps="false"
+                android:textColor="#F43F5E"
                 android:textSize="13sp"
-                android:fontFamily="sans-serif-rounded" />
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
+
         </LinearLayout>
 
-        <!-- Smartband BLE Heart Rate (0x180D) Card -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/card_bg"
-            android:orientation="vertical"
-            android:padding="20dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Smartband Heart Rate (BLE 0x180D)"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp"
-                    android:fontFamily="sans-serif-rounded"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvBleStatusBadge"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/widget_tier_bg"
-                    android:paddingStart="8dp"
-                    android:paddingTop="3dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="3dp"
-                    android:text="● DISCONNECTED"
-                    android:textColor="#9E9EA7"
-                    android:textSize="10sp"
-                    android:fontFamily="sans-serif-rounded"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Standar GATT 0x180D (Pulsoid / HypeRate broadcast)"
-                android:textColor="#9E9EA7"
-                android:textSize="11sp"
-                android:fontFamily="sans-serif-rounded" />
-
-            <!-- Live BPM Display -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                android:gravity="bottom">
-
-                <TextView
-                    android:id="@+id/tvLiveBpm"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="--"
-                    android:textColor="#F43F5E"
-                    android:textSize="44sp"
-                    android:fontFamily="sans-serif-rounded"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:layout_marginBottom="6dp"
-                    android:text="BPM"
-                    android:textColor="#9E9EA7"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif-rounded"
-                    android:textStyle="bold" />
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-
-                <TextView
-                    android:id="@+id/tvBleZoneBadge"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="6dp"
-                    android:background="@drawable/widget_tier_bg"
-                    android:paddingStart="10dp"
-                    android:paddingTop="3dp"
-                    android:paddingEnd="10dp"
-                    android:paddingBottom="3dp"
-                    android:text="Idle"
-                    android:textColor="#9E9EA7"
-                    android:textSize="11sp"
-                    android:fontFamily="sans-serif-rounded"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/tvConnectedBleDevice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="Tidak ada smartband terhubung"
-                android:textColor="#71717A"
-                android:textSize="12sp"
-                android:fontFamily="sans-serif-rounded" />
-
-            <!-- BLE Action Buttons -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btnScanBle"
-                    android:layout_width="0dp"
-                    android:layout_height="44dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="#00E5FF"
-                    android:text="Scan Smartband"
-                    android:textAllCaps="false"
-                    android:textColor="#121214"
-                    android:textSize="13sp"
-                    android:fontFamily="sans-serif-rounded"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btnDisconnectBle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="44dp"
-                    android:layout_marginStart="8dp"
-                    android:backgroundTint="#26262B"
-                    android:text="Putus"
-                    android:textAllCaps="false"
-                    android:textColor="#F43F5E"
-                    android:textSize="13sp"
-                    android:fontFamily="sans-serif-rounded"
-                    android:visibility="gone" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- OBS Overlay Links Card -->
+        <!-- 6. OBS Overlay Links Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
