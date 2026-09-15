@@ -924,3 +924,81 @@ body {
   border-top: 1px solid var(--border-color);
   background: rgba(0, 0, 0, 0.2);
 }
+
+/* SaaS User Bar & Authentication Styles */
+.user-auth-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border-color);
+  border-radius: 99px;
+  padding: 4px 12px 4px 14px;
+}
+
+.user-info-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.plan-badge {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: rgba(16, 185, 129, 0.16);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.auth-tabs {
+  display: flex;
+  background: var(--bg-card-alt);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 3px;
+  margin-bottom: 14px;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.auth-tab-btn.active {
+  background: var(--bg-card);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.qr-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  margin: 10px 0;
+}
+
+.qr-canvas-holder {
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

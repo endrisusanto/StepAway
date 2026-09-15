@@ -71,7 +71,41 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputJoinPasscode = document.getElementById('inputJoinPasscode');
   const btnJoinRoom = document.getElementById('btnJoinRoom');
 
+  // SaaS Auth & Profile Elements
+  const authGuestBox = document.getElementById('authGuestBox');
+  const authUserBox = document.getElementById('authUserBox');
+  const headerUserName = document.getElementById('headerUserName');
+  const headerPlanBadge = document.getElementById('headerPlanBadge');
+  const btnOpenLoginModal = document.getElementById('btnOpenLoginModal');
+  const btnLogout = document.getElementById('btnLogout');
+  const btnOpenQrModal = document.getElementById('btnOpenQrModal');
+
+  const displayStreamKey = document.getElementById('displayStreamKey');
+  const btnRegenStreamKey = document.getElementById('btnRegenStreamKey');
+
+  const authModal = document.getElementById('authModal');
+  const authModalTitle = document.getElementById('authModalTitle');
+  const tabAuthLogin = document.getElementById('tabAuthLogin');
+  const tabAuthRegister = document.getElementById('tabAuthRegister');
+  const formLogin = document.getElementById('formLogin');
+  const formRegister = document.getElementById('formRegister');
+  const inputLoginEmail = document.getElementById('inputLoginEmail');
+  const inputLoginPassword = document.getElementById('inputLoginPassword');
+  const inputRegName = document.getElementById('inputRegName');
+  const inputRegEmail = document.getElementById('inputRegEmail');
+  const inputRegPassword = document.getElementById('inputRegPassword');
+  const btnCloseAuthModal = document.getElementById('btnCloseAuthModal');
+
+  const qrPairingModal = document.getElementById('qrPairingModal');
+  const btnCloseQrModal = document.getElementById('btnCloseQrModal');
+  const btnCloseQrFooter = document.getElementById('btnCloseQrFooter');
+  const qrServerUrl = document.getElementById('qrServerUrl');
+  const qrStreamKeyVal = document.getElementById('qrStreamKeyVal');
+  const qrSvgCode = document.getElementById('qrSvgCode');
+
   let currentUserId = localStorage.getItem('stepaway_userid') || 'streamer';
+  let currentStreamKey = localStorage.getItem('stepaway_streamkey') || 'sk_live_demo_streamer';
+  let currentUserAccount = null;
   inputUserId.value = currentUserId;
 
   let activeRoomId = localStorage.getItem('stepaway_roomid') || 'global';
@@ -81,12 +115,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateUrls() {
     const origin = window.location.origin;
-    const single = `${origin}/overlay?user=${encodeURIComponent(currentUserId)}`;
-    const heartrate = `${origin}/overlay/heartrate?user=${encodeURIComponent(currentUserId)}`;
-    const combo = `${origin}/overlay?user=${encodeURIComponent(currentUserId)}&show_hr=true`;
+    const keyParam = currentStreamKey ? `key=${encodeURIComponent(currentStreamKey)}` : `user=${encodeURIComponent(currentUserId)}`;
+    const single = `${origin}/overlay?${keyParam}`;
+    const heartrate = `${origin}/overlay/heartrate?${keyParam}`;
+    const combo = `${origin}/overlay?${keyParam}&show_hr=true`;
     const room = `${origin}/overlay/multi?room=${encodeURIComponent(activeRoomId)}`;
-    const test = `${origin}/overlay?user=${encodeURIComponent(currentUserId)}&test=true`;
-    const webhook = `${origin}/api/webhooks/tiptap?userId=${encodeURIComponent(currentUserId)}`;
+    const test = `${origin}/overlay?${keyParam}&test=true`;
+    const webhook = `${origin}/api/webhooks/tiptap?key=${encodeURIComponent(currentStreamKey || currentUserId)}`;
 
     urlSingle.textContent = single;
     urlHeartrate.textContent = heartrate;
@@ -94,19 +129,38 @@ document.addEventListener('DOMContentLoaded', () => {
     urlRoom.textContent = room;
     urlTest.textContent = test;
     if (urlWebhookTipTap) urlWebhookTipTap.textContent = webhook;
+    if (displayStreamKey) displayStreamKey.textContent = currentStreamKey || 'sk_live_demo_streamer';
+    if (qrStreamKeyVal) qrStreamKeyVal.textContent = currentStreamKey || 'sk_live_demo_streamer';
+    if (qrServerUrl) qrServerUrl.textContent = origin;
     guideUserId.textContent = currentUserId;
 
     updatePreviewIframe();
+    generateQrSvg();
+  }
+
+  function generateQrSvg() {
+    const qrHolder = document.getElementById('qrCanvasContainer');
+    if (!qrHolder) return;
+    const pairingPayload = JSON.stringify({
+      server: window.location.origin,
+      userId: currentUserId,
+      apiKey: currentStreamKey
+    });
+
+    if (typeof window.generateQrCodeSvg === 'function') {
+      qrHolder.innerHTML = window.generateQrCodeSvg(pairingPayload, 200);
+    }
   }
 
   function updatePreviewIframe() {
     if (!previewIframe) return;
+    const keyParam = currentStreamKey ? `key=${encodeURIComponent(currentStreamKey)}` : `user=${encodeURIComponent(currentUserId)}`;
     if (activePreviewMode === 'hr') {
-      previewIframe.src = `/overlay/heartrate?user=${encodeURIComponent(currentUserId)}`;
+      previewIframe.src = `/overlay/heartrate?${keyParam}`;
     } else if (activePreviewMode === 'combo') {
-      previewIframe.src = `/overlay?user=${encodeURIComponent(currentUserId)}&show_hr=true`;
+      previewIframe.src = `/overlay?${keyParam}&show_hr=true`;
     } else {
-      previewIframe.src = `/overlay?user=${encodeURIComponent(currentUserId)}`;
+      previewIframe.src = `/overlay?${keyParam}`;
     }
   }
 
@@ -844,9 +898,196 @@ document.addEventListener('DOMContentLoaded', () => {
     window.open(urlTest.textContent, '_blank');
   });
 
+  // SaaS Authentication & Account Management
+  async function checkAuthSession() {
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      if (data.success && data.authenticated && data.account) {
+        currentUserAccount = data.account;
+        currentUserId = data.account.id;
+        currentStreamKey = data.account.streamKey || currentStreamKey;
+        localStorage.setItem('stepaway_userid', currentUserId);
+        localStorage.setItem('stepaway_streamkey', currentStreamKey);
+
+        if (inputUserId) inputUserId.value = currentUserId;
+        if (inputDisplayName && data.account.name) inputDisplayName.value = data.account.name;
+
+        if (authGuestBox) authGuestBox.style.display = 'none';
+        if (authUserBox) authUserBox.style.display = 'flex';
+        if (headerUserName) headerUserName.textContent = data.account.name || data.account.email;
+        if (headerPlanBadge) {
+          headerPlanBadge.textContent = data.account.plan === 'creator_pro' ? 'PRO CREATOR' : 'CREATOR FREE';
+        }
+      } else {
+        currentUserAccount = null;
+        if (authGuestBox) authGuestBox.style.display = 'flex';
+        if (authUserBox) authUserBox.style.display = 'none';
+      }
+    } catch (err) {
+      console.error('[Auth Me Error]', err);
+    } finally {
+      updateUrls();
+      fetchUserStats();
+      fetchDonations();
+      connectLiveWebSocket();
+    }
+  }
+
+  function openAuthModal(mode = 'login') {
+    if (!authModal) return;
+    authModal.style.display = 'flex';
+    switchAuthTab(mode);
+  }
+
+  function closeAuthModal() {
+    if (authModal) authModal.style.display = 'none';
+  }
+
+  function switchAuthTab(tab) {
+    if (tab === 'login') {
+      if (tabAuthLogin) tabAuthLogin.classList.add('active');
+      if (tabAuthRegister) tabAuthRegister.classList.remove('active');
+      if (formLogin) formLogin.style.display = 'flex';
+      if (formRegister) formRegister.style.display = 'none';
+      if (authModalTitle) authModalTitle.textContent = 'Masuk ke StepAway';
+    } else {
+      if (tabAuthRegister) tabAuthRegister.classList.add('active');
+      if (tabAuthLogin) tabAuthLogin.classList.remove('active');
+      if (formRegister) formRegister.style.display = 'flex';
+      if (formLogin) formLogin.style.display = 'none';
+      if (authModalTitle) authModalTitle.textContent = 'Daftar Akun Baru';
+    }
+  }
+
+  if (btnOpenLoginModal) btnOpenLoginModal.addEventListener('click', () => openAuthModal('login'));
+  if (btnCloseAuthModal) btnCloseAuthModal.addEventListener('click', closeAuthModal);
+  if (tabAuthLogin) tabAuthLogin.addEventListener('click', () => switchAuthTab('login'));
+  if (tabAuthRegister) tabAuthRegister.addEventListener('click', () => switchAuthTab('register'));
+
+  if (authModal) {
+    authModal.addEventListener('click', (e) => {
+      if (e.target === authModal) closeAuthModal();
+    });
+  }
+
+  if (formLogin) {
+    formLogin.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = inputLoginEmail.value.trim();
+      const password = inputLoginPassword.value;
+      if (!email || !password) return alert('Email dan password wajib diisi');
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeAuthModal();
+          inputLoginEmail.value = '';
+          inputLoginPassword.value = '';
+          await checkAuthSession();
+        } else {
+          alert(data.message || 'Login gagal');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan login: ' + err.message);
+      }
+    });
+  }
+
+  if (formRegister) {
+    formRegister.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = inputRegName.value.trim();
+      const email = inputRegEmail.value.trim();
+      const password = inputRegPassword.value;
+      if (!email || !password) return alert('Email dan password wajib diisi');
+      if (password.length < 6) return alert('Password minimal 6 karakter');
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeAuthModal();
+          inputRegName.value = '';
+          inputRegEmail.value = '';
+          inputRegPassword.value = '';
+          await checkAuthSession();
+        } else {
+          alert(data.message || 'Pendaftaran gagal');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan registrasi: ' + err.message);
+      }
+    });
+  }
+
+  if (btnLogout) {
+    btnLogout.addEventListener('click', async () => {
+      if (!confirm('Yakin ingin keluar dari akun?')) return;
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        currentUserAccount = null;
+        currentUserId = 'streamer';
+        currentStreamKey = 'sk_live_demo_streamer';
+        localStorage.removeItem('stepaway_userid');
+        localStorage.removeItem('stepaway_streamkey');
+        await checkAuthSession();
+      } catch (err) {
+        console.error('[Logout Error]', err);
+      }
+    });
+  }
+
+  if (btnRegenStreamKey) {
+    btnRegenStreamKey.addEventListener('click', async () => {
+      if (!confirm('Peringatan: Membuat Stream Key baru akan memutuskan overlay OBS yang sedang aktif sampai Anda memperbarui URL OBS. Lanjutkan?')) return;
+      try {
+        const res = await fetch('/api/auth/regenerate-stream-key', { method: 'POST' });
+        const data = await res.json();
+        if (data.success && data.streamKey) {
+          currentStreamKey = data.streamKey;
+          localStorage.setItem('stepaway_streamkey', currentStreamKey);
+          updateUrls();
+          alert('Stream Key baru berhasil dibuat. Silakan perbarui link OBS Browser Source Anda.');
+        } else {
+          alert(data.message || 'Gagal membuat Stream Key baru');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan: ' + err.message);
+      }
+    });
+  }
+
+  // QR Pairing Modal Handlers
+  function openQrModal() {
+    if (qrPairingModal) {
+      updateUrls();
+      qrPairingModal.style.display = 'flex';
+    }
+  }
+
+  function closeQrModal() {
+    if (qrPairingModal) qrPairingModal.style.display = 'none';
+  }
+
+  if (btnOpenQrModal) btnOpenQrModal.addEventListener('click', openQrModal);
+  if (btnCloseQrModal) btnCloseQrModal.addEventListener('click', closeQrModal);
+  if (btnCloseQrFooter) btnCloseQrFooter.addEventListener('click', closeQrModal);
+  if (qrPairingModal) {
+    qrPairingModal.addEventListener('click', (e) => {
+      if (e.target === qrPairingModal) closeQrModal();
+    });
+  }
+
   // Init
-  updateUrls();
-  fetchUserStats();
-  fetchDonations();
-  connectLiveWebSocket();
+  checkAuthSession();
 });

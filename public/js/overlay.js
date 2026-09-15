@@ -1,7 +1,10 @@
 // StepAway Single User Overlay Logic
 (() => {
   const params = new URLSearchParams(window.location.search);
-  const userId = params.get('user') || 'streamer';
+  const streamKey = params.get('key') || params.get('streamKey');
+  const userParam = params.get('user');
+  const initialUserKey = streamKey || userParam || 'streamer';
+  let resolvedUserId = initialUserKey;
   const isTest = params.get('test') === 'true';
 
   const widgetEl = document.getElementById('stepWidget');
@@ -140,7 +143,10 @@
   }
 
   function updateUI(data, delta = 0) {
-    userNameEl.textContent = data.name || data.userId || userId;
+    if (data && data.userId) {
+      resolvedUserId = data.userId;
+    }
+    userNameEl.textContent = data.name || data.userId || resolvedUserId;
     currentSteps = data.currentSteps || 0;
     targetSteps = data.targetSteps || 5000;
 
@@ -193,7 +199,7 @@
 
     ws.onopen = () => {
       statusDotEl.classList.add('online');
-      ws.send(JSON.stringify({ type: 'subscribe', userId }));
+      ws.send(JSON.stringify({ type: 'subscribe', userId: initialUserKey, key: streamKey }));
     };
 
     ws.onmessage = (event) => {
@@ -201,9 +207,9 @@
         const msg = JSON.parse(event.data);
         if (msg.type === 'init' && msg.data) {
           updateUI(msg.data, 0);
-        } else if (msg.type === 'step_update' && msg.userId === userId) {
+        } else if (msg.type === 'step_update' && (msg.userId === resolvedUserId || msg.userId === initialUserKey)) {
           updateUI(msg.data, msg.delta || 0);
-        } else if (msg.type === 'donation_alert' && msg.userId === userId) {
+        } else if (msg.type === 'donation_alert' && (msg.userId === resolvedUserId || msg.userId === initialUserKey)) {
           if (msg.data) {
             updateUI(msg.data, 0);
             if (msg.data.donation) {
@@ -227,7 +233,7 @@
   }
 
   // Initial Fetch & Connect
-  fetch(`/api/users/${encodeURIComponent(userId)}`)
+  fetch(`/api/users/${encodeURIComponent(initialUserKey)}`)
     .then(res => res.json())
     .then(json => {
       if (json.success && json.user) {

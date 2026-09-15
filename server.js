@@ -3,6 +3,7 @@ import http from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -25,11 +26,40 @@ function getBpmZone(bpm) {
   return "REST";
 }
 
+function hashPassword(password, salt = crypto.randomBytes(16).toString("hex")) {
+  const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, "sha512").toString("hex");
+  return { hash, salt };
+}
+
+function verifyPassword(password, hash, salt) {
+  const verify = crypto.pbkdf2Sync(password, salt, 1000, 64, "sha512").toString("hex");
+  return verify === hash;
+}
+
+function generateStreamKey() {
+  return "sk_live_" + crypto.randomBytes(12).toString("hex");
+}
+
+function parseCookies(cookieHeader) {
+  const list = {};
+  if (!cookieHeader) return list;
+  cookieHeader.split(";").forEach(cookie => {
+    let [name, ...rest] = cookie.split("=");
+    name = name.trim();
+    if (!name) return;
+    list[name] = decodeURIComponent(rest.join("=").trim());
+  });
+  return list;
+}
+
 let db = {
+  accounts: {},
+  sessions: {},
   users: {
     streamer: {
       userId: "streamer",
       name: "Streamer",
+      streamKey: "sk_live_demo_streamer",
       currentSteps: 0,
       targetSteps: 5000,
       bpm: 0,
@@ -40,6 +70,14 @@ let db = {
       activityStatus: "IDLE",
       lastStepTimestamp: Date.now(),
       recentPaces: [],
+      donationSettings: {
+        enabled: true,
+        secretToken: "",
+        conversionRate: 10,
+        mode: "subathon_target",
+        minAmount: 1000
+      },
+      donations: [],
       lastUpdated: new Date().toISOString()
     }
   },
@@ -60,12 +98,27 @@ if (fs.existsSync(DATA_FILE)) {
   try {
     const raw = fs.readFileSync(DATA_FILE, "utf-8");
     const parsed = JSON.parse(raw);
+    db.accounts = parsed.accounts || {};
+    db.sessions = parsed.sessions || {};
     db.users = { ...db.users, ...(parsed.users || {}) };
     db.rooms = { ...db.rooms, ...(parsed.rooms || {}) };
   } catch (err) {
     console.error("[Storage] Failed to read storage.json, using defaults:", err.message);
   }
 }
+
+// Clean up expired sessions periodically (every 1 hour)
+setInterval(() => {
+  const now = Date.now();
+  let changed = false;
+  for (const token in db.sessions) {
+    if (db.sessions[token].expiresAt && db.sessions[token].expiresAt < now) {
+      delete db.sessions[token];
+      changed = true;
+    }
+  }
+  if (changed) saveDB();
+}, 3600000);
 
 function saveDB() {
   try {
@@ -75,9 +128,49 @@ function saveDB() {
   }
 }
 
+function findUserByStreamKey(streamKey) {
+  if (!streamKey) return null;
+  for (const userId in db.users) {
+    if (db.users[userId].streamKey === streamKey) {
+      return db.users[userId];
+    }
+  }
+  for (const accId in db.accounts) {
+    if (db.accounts[accId].streamKey === streamKey) {
+      return getUser(accId);
+    }
+  }
+  return null;
+}
+
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+
+// Session authentication middleware
+function authMiddleware(req, res, next) {
+  const authHeader = req.headers["authorization"] || "";
+  const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+  const cookies = parseCookies(req.headers["cookie"]);
+  const sessionToken = bearerToken || cookies["stepaway_session"] || req.query.sessionToken;
+
+  if (sessionToken && db.sessions[sessionToken]) {
+    const session = db.sessions[sessionToken];
+    if (!session.expiresAt || session.expiresAt > Date.now()) {
+      const account = db.accounts[session.accountId];
+      if (account) {
+        req.account = account;
+        req.user = getUser(account.id);
+        return next();
+      }
+    }
+  }
+  req.account = null;
+  req.user = null;
+  next();
+}
+
+app.use(authMiddleware);
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: "/ws" });
@@ -239,13 +332,192 @@ function broadcastDonationAlert(user, donationData) {
   }
 }
 
-// REST APIs
+// REST APIs: Authentication & Multi-Tenant SaaS
+app.post("/api/auth/register", (req, res) => {
+  const { email, password, name } = req.body;
+  if (!email || !email.includes("@")) {
+    return res.status(400).json({ success: false, message: "Format email tidak valid" });
+  }
+  if (!password || password.length < 6) {
+    return res.status(400).json({ success: false, message: "Password minimal 6 karakter" });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  for (const accId in db.accounts) {
+    if (db.accounts[accId].email === cleanEmail) {
+      return res.status(400).json({ success: false, message: "Email sudah terdaftar. Silakan login." });
+    }
+  }
+
+  const accountId = "usr_" + crypto.randomBytes(6).toString("hex");
+  const { hash, salt } = hashPassword(password);
+  const streamKey = generateStreamKey();
+  const displayName = (name && name.trim()) ? name.trim() : cleanEmail.split("@")[0];
+
+  const newAccount = {
+    id: accountId,
+    email: cleanEmail,
+    name: displayName,
+    passwordHash: hash,
+    salt,
+    streamKey,
+    plan: "creator_free",
+    createdAt: new Date().toISOString()
+  };
+
+  db.accounts[accountId] = newAccount;
+
+  // Initialize user profile
+  const userObj = getUser(accountId);
+  userObj.name = displayName;
+  userObj.streamKey = streamKey;
+  saveDB();
+
+  // Create session
+  const sessionToken = "sess_" + crypto.randomBytes(32).toString("hex");
+  db.sessions[sessionToken] = {
+    accountId,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
+  };
+  saveDB();
+
+  res.setHeader("Set-Cookie", `stepaway_session=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}`);
+
+  res.json({
+    success: true,
+    message: "Pendaftaran berhasil",
+    sessionToken,
+    account: {
+      id: newAccount.id,
+      email: newAccount.email,
+      name: newAccount.name,
+      streamKey: newAccount.streamKey,
+      plan: newAccount.plan
+    },
+    userState: userObj
+  });
+});
+
+app.post("/api/auth/login", (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ success: false, message: "Email dan password wajib diisi" });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  let foundAccount = null;
+
+  for (const accId in db.accounts) {
+    if (db.accounts[accId].email === cleanEmail) {
+      foundAccount = db.accounts[accId];
+      break;
+    }
+  }
+
+  if (!foundAccount) {
+    return res.status(401).json({ success: false, message: "Email atau password salah" });
+  }
+
+  if (!verifyPassword(password, foundAccount.passwordHash, foundAccount.salt)) {
+    return res.status(401).json({ success: false, message: "Email atau password salah" });
+  }
+
+  // Create session
+  const sessionToken = "sess_" + crypto.randomBytes(32).toString("hex");
+  db.sessions[sessionToken] = {
+    accountId: foundAccount.id,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000
+  };
+  saveDB();
+
+  res.setHeader("Set-Cookie", `stepaway_session=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}`);
+
+  const userObj = getUser(foundAccount.id);
+  res.json({
+    success: true,
+    message: "Login berhasil",
+    sessionToken,
+    account: {
+      id: foundAccount.id,
+      email: foundAccount.email,
+      name: foundAccount.name,
+      streamKey: foundAccount.streamKey,
+      plan: foundAccount.plan
+    },
+    userState: userObj
+  });
+});
+
+app.post("/api/auth/logout", (req, res) => {
+  const cookies = parseCookies(req.headers["cookie"]);
+  const authHeader = req.headers["authorization"] || "";
+  const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+  const sessionToken = bearerToken || cookies["stepaway_session"] || req.body.sessionToken;
+
+  if (sessionToken && db.sessions[sessionToken]) {
+    delete db.sessions[sessionToken];
+    saveDB();
+  }
+
+  res.setHeader("Set-Cookie", `stepaway_session=; Path=/; HttpOnly; Max-Age=0`);
+  res.json({ success: true, message: "Berhasil logout" });
+});
+
+app.get("/api/auth/me", (req, res) => {
+  if (!req.account) {
+    return res.json({ success: false, authenticated: false });
+  }
+
+  const userObj = getUser(req.account.id);
+  const percentage = Math.min(100, Math.round((userObj.currentSteps / Math.max(1, userObj.targetSteps)) * 100));
+
+  res.json({
+    success: true,
+    authenticated: true,
+    account: {
+      id: req.account.id,
+      email: req.account.email,
+      name: req.account.name,
+      streamKey: req.account.streamKey || userObj.streamKey,
+      plan: req.account.plan || "creator_free"
+    },
+    user: {
+      ...userObj,
+      percentage
+    }
+  });
+});
+
+app.post("/api/auth/regenerate-stream-key", (req, res) => {
+  if (!req.account) {
+    return res.status(401).json({ success: false, message: "Silakan login terlebih dahulu" });
+  }
+
+  const newKey = generateStreamKey();
+  req.account.streamKey = newKey;
+  const userObj = getUser(req.account.id);
+  userObj.streamKey = newKey;
+  userObj.lastUpdated = new Date().toISOString();
+  saveDB();
+
+  res.json({
+    success: true,
+    message: "Stream Key baru berhasil dibuat",
+    streamKey: newKey
+  });
+});
+
+// REST APIs: Public & Streamer Endpoints
 app.get("/api/users", (req, res) => {
   res.json({ success: true, users: Object.values(db.users) });
 });
 
 app.get("/api/users/:userId", (req, res) => {
-  const user = getUser(req.params.userId);
+  const targetId = req.params.userId;
+  // If targetId matches a streamKey, resolve to user
+  const user = targetId.startsWith("sk_live_") ? (findUserByStreamKey(targetId) || getUser(targetId)) : getUser(targetId);
   const percentage = Math.min(100, Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100));
   res.json({ success: true, user: { ...user, percentage } });
 });
@@ -268,8 +540,17 @@ app.post("/api/users/:userId/settings", (req, res) => {
 
 // Unified Steps & Heart Rate Sync Endpoint
 app.post("/api/steps/sync", (req, res) => {
-  const { userId = "streamer", steps, delta = 0, name, bpm } = req.body;
-  const user = getUser(userId);
+  const streamKey = req.body.apiKey || req.body.streamKey || req.body.key || req.query.key || req.query.streamKey || req.headers["x-stream-key"];
+  let user = null;
+  if (streamKey) {
+    user = findUserByStreamKey(streamKey);
+  }
+  if (!user) {
+    const userId = req.body.userId || "streamer";
+    user = getUser(userId);
+  }
+
+  const { steps, delta = 0, name, bpm } = req.body;
   if (name && user.name !== name) {
     user.name = name;
   }
@@ -318,8 +599,17 @@ app.post("/api/steps/sync", (req, res) => {
 
 // Dedicated Heart Rate update endpoint (for rapid BLE notification sync)
 app.post("/api/heartrate/sync", (req, res) => {
-  const { userId = "streamer", bpm } = req.body;
-  const user = getUser(userId);
+  const streamKey = req.body.apiKey || req.body.streamKey || req.body.key || req.query.key || req.query.streamKey || req.headers["x-stream-key"];
+  let user = null;
+  if (streamKey) {
+    user = findUserByStreamKey(streamKey);
+  }
+  if (!user) {
+    const userId = req.body.userId || "streamer";
+    user = getUser(userId);
+  }
+
+  const { bpm } = req.body;
 
   if (typeof bpm === "number") {
     user.bpm = Math.max(0, Math.round(bpm));
@@ -388,7 +678,8 @@ app.post("/api/users/:userId/reset", (req, res) => {
 
 // Donation Settings & Webhook Endpoints (TipTap.gg & Generic Webhooks)
 app.get("/api/users/:userId/donations", (req, res) => {
-  const user = getUser(req.params.userId);
+  const targetId = req.params.userId;
+  const user = targetId.startsWith("sk_live_") ? (findUserByStreamKey(targetId) || getUser(targetId)) : getUser(targetId);
   res.json({
     success: true,
     settings: user.donationSettings,
@@ -397,7 +688,8 @@ app.get("/api/users/:userId/donations", (req, res) => {
 });
 
 app.post("/api/users/:userId/donation-settings", (req, res) => {
-  const user = getUser(req.params.userId);
+  const targetId = req.params.userId;
+  const user = targetId.startsWith("sk_live_") ? (findUserByStreamKey(targetId) || getUser(targetId)) : getUser(targetId);
   const { enabled, secretToken, conversionRate, mode, minAmount } = req.body;
 
   if (typeof enabled === "boolean") {
@@ -427,9 +719,16 @@ app.post("/api/users/:userId/donation-settings", (req, res) => {
 });
 
 // Webhook Endpoint for TipTap.gg / Saweria / Trakteer
-app.post(["/api/webhooks/tiptap", "/api/webhooks/donation"], (req, res) => {
-  const userId = req.query.userId || req.query.user || req.body.userId || "streamer";
-  const user = getUser(userId);
+app.post(["/api/webhooks/tiptap", "/api/webhooks/donation", "/api/webhooks/tiptap/:streamKey"], (req, res) => {
+  const streamKey = req.params.streamKey || req.query.key || req.query.streamKey || req.body.streamKey || req.body.key;
+  let user = null;
+  if (streamKey) {
+    user = findUserByStreamKey(streamKey);
+  }
+  if (!user) {
+    const userId = req.query.userId || req.query.user || req.body.userId || "streamer";
+    user = getUser(userId);
+  }
 
   if (!user.donationSettings || user.donationSettings.enabled === false) {
     return res.status(403).json({ success: false, message: "Integrasi donasi sedang dinonaktifkan untuk user ini" });
@@ -761,7 +1060,15 @@ wss.on("connection", (ws) => {
     try {
       const msg = JSON.parse(message.toString());
       if (msg.type === "subscribe") {
-        const userId = msg.userId || "streamer";
+        let userId = msg.userId || "streamer";
+        if (msg.key) {
+          const u = findUserByStreamKey(msg.key);
+          if (u) userId = u.userId;
+        } else if (userId.startsWith("sk_live_")) {
+          const u = findUserByStreamKey(userId);
+          if (u) userId = u.userId;
+        }
+
         clientInfo.subscribedUsers.add(userId);
         const user = getUser(userId);
         const percentage = Math.min(100, Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100));
@@ -772,7 +1079,12 @@ wss.on("connection", (ws) => {
       } else if (msg.type === "subscribe_multi") {
         const userIds = Array.isArray(msg.userIds) ? msg.userIds : ["streamer"];
         const initData = [];
-        for (const u of userIds) {
+        for (const rawId of userIds) {
+          let u = rawId;
+          if (rawId.startsWith("sk_live_")) {
+            const found = findUserByStreamKey(rawId);
+            if (found) u = found.userId;
+          }
           clientInfo.subscribedUsers.add(u);
           const userData = getUser(u);
           const percentage = Math.min(100, Math.round((userData.currentSteps / Math.max(1, userData.targetSteps)) * 100));

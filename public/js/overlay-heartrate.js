@@ -1,7 +1,10 @@
 // StepAway Standalone Live Heart Rate Overlay Logic
 (() => {
   const params = new URLSearchParams(window.location.search);
-  const userId = params.get('user') || 'streamer';
+  const streamKey = params.get('key') || params.get('streamKey');
+  const userParam = params.get('user');
+  const initialUserKey = streamKey || userParam || 'streamer';
+  let resolvedUserId = initialUserKey;
   const isTest = params.get('test') === 'true';
 
   const widgetEl = document.getElementById('hrWidget');
@@ -57,15 +60,16 @@
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-      ws.send(JSON.stringify({ type: 'subscribe', userId }));
+      ws.send(JSON.stringify({ type: 'subscribe', userId: initialUserKey, key: streamKey }));
     };
 
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
         if (msg.type === 'init' && msg.data) {
+          if (msg.data.userId) resolvedUserId = msg.data.userId;
           updateHeartRate(msg.data.bpm || 0, msg.data.bpmZone);
-        } else if (msg.type === 'step_update' && msg.userId === userId) {
+        } else if (msg.type === 'step_update' && (msg.userId === resolvedUserId || msg.userId === initialUserKey)) {
           if (msg.data.bpm !== undefined) {
             updateHeartRate(msg.data.bpm, msg.data.bpmZone);
           }
@@ -81,10 +85,11 @@
   }
 
   // Initial Fetch & Connect
-  fetch(`/api/users/${encodeURIComponent(userId)}`)
+  fetch(`/api/users/${encodeURIComponent(initialUserKey)}`)
     .then(res => res.json())
     .then(json => {
       if (json.success && json.user) {
+        if (json.user.userId) resolvedUserId = json.user.userId;
         updateHeartRate(json.user.bpm || 0, json.user.bpmZone);
       }
     })

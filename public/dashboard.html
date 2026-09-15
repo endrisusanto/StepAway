@@ -35,6 +35,18 @@
           <span class="status-dot"></span>
           <span id="wsStatusText" class="status-text">Menghubungkan...</span>
         </div>
+
+        <!-- SaaS Auth User State -->
+        <div id="authGuestBox" style="display: flex; gap: 8px;">
+          <button id="btnOpenLoginModal" class="btn btn-primary" style="padding: 6px 14px; font-size: 12px;">Masuk / Daftar Akun</button>
+        </div>
+        <div id="authUserBox" class="user-auth-bar" style="display: none;">
+          <span id="headerUserName" class="user-info-text">Streamer</span>
+          <span id="headerPlanBadge" class="plan-badge">Creator Free</span>
+          <button id="btnOpenQrModal" class="btn btn-secondary" style="padding: 3px 8px; font-size: 11px;">Scan QR Android</button>
+          <button id="btnLogout" class="btn btn-danger" style="padding: 3px 8px; font-size: 11px;">Keluar</button>
+        </div>
+
         <div class="domain-pill">stepaway.endrisusanto.my.id</div>
       </div>
     </header>
@@ -116,6 +128,15 @@
           <div class="form-group">
             <label class="form-label" for="inputUserId">User ID (Key Unik)</label>
             <input type="text" id="inputUserId" class="input-text" value="streamer">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="displayStreamKey">Stream Key (Token Privat OBS &amp; Android)</label>
+            <div class="url-box">
+              <span id="displayStreamKey" class="url-text">sk_live_demo_streamer</span>
+              <button class="btn btn-secondary copy-btn" data-target="displayStreamKey">Salin</button>
+              <button id="btnRegenStreamKey" class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px;" title="Buat Stream Key baru jika bocor">Regen</button>
+            </div>
           </div>
 
           <div class="form-group">
@@ -420,6 +441,95 @@
     </div>
   </div>
 
+  <!-- SaaS Authentication Modal (Login & Register) -->
+  <div id="authModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3 id="authModalTitle" class="modal-title">Masuk ke StepAway</h3>
+        <button id="btnCloseAuthModal" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="auth-tabs">
+          <button id="tabAuthLogin" class="auth-tab-btn active">Masuk</button>
+          <button id="tabAuthRegister" class="auth-tab-btn">Daftar Akun Baru</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="formLogin" style="display: flex; flex-direction: column; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label" for="inputLoginEmail">Email</label>
+            <input type="email" id="inputLoginEmail" class="input-text" placeholder="email@domain.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputLoginPassword">Password</label>
+            <input type="password" id="inputLoginPassword" class="input-text" placeholder="Masukkan password" required>
+          </div>
+          <button type="submit" id="btnSubmitLogin" class="btn btn-primary" style="margin-top: 6px;">Masuk ke Dashboard</button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="formRegister" style="display: none; flex-direction: column; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label" for="inputRegName">Nama Streamer / Channel</label>
+            <input type="text" id="inputRegName" class="input-text" placeholder="Contoh: Budi Walking" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputRegEmail">Email</label>
+            <input type="email" id="inputRegEmail" class="input-text" placeholder="email@domain.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputRegPassword">Password (Min. 6 Karakter)</label>
+            <input type="password" id="inputRegPassword" class="input-text" placeholder="Buat password aman" minlength="6" required>
+          </div>
+          <button type="submit" id="btnSubmitRegister" class="btn btn-primary" style="margin-top: 6px;">Daftar Akun Creator</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Code Pairing Modal for Android App -->
+  <div id="qrPairingModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Sambungkan Aplikasi Android</h3>
+        <button id="btnCloseQrModal" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+          Buka aplikasi <strong>StepAway</strong> di smartphone Anda, lalu scan QR code berikut untuk otomatis menghubungkan akun dan token sensor.
+        </p>
+
+        <div class="qr-box">
+          <div id="qrCanvasContainer" class="qr-canvas-holder">
+            <!-- Rendered QR or Fallback Payload -->
+            <svg id="qrSvgCode" viewBox="0 0 200 200" width="180" height="180"></svg>
+          </div>
+        </div>
+
+        <div style="text-align: left; margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="form-group">
+            <label class="form-label">Server URL</label>
+            <div class="url-box">
+              <span id="qrServerUrl" class="url-text">https://stepaway.endrisusanto.my.id</span>
+              <button class="btn btn-secondary copy-btn" data-target="qrServerUrl">Salin</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Stream Key / API Key</label>
+            <div class="url-box">
+              <span id="qrStreamKeyVal" class="url-text">sk_live_...</span>
+              <button class="btn btn-secondary copy-btn" data-target="qrStreamKeyVal">Salin</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnCloseQrFooter" class="btn btn-secondary">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/qr-lib.js"></script>
   <script src="/js/dashboard.js"></script>
 </body>
 </html>
