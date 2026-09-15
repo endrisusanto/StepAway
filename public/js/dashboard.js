@@ -191,6 +191,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (metricProgressBar) metricProgressBar.style.width = `${pct}%`;
         applyPaceBadge(json.user.activityStatus);
 
+        const isRecent = json.user.lastStepTimestamp && (Date.now() - json.user.lastStepTimestamp < 25000);
+        if (json.user.activityStatus !== 'IDLE' || isRecent) {
+          setWsStatus(true, 'ACTIVE SYNC');
+        } else if (ws && ws.readyState === WebSocket.OPEN) {
+          setWsStatus(true, 'LIVE SYNC');
+        }
+
         if (json.user.bpm !== undefined && liveBpm) {
           liveBpm.textContent = json.user.bpm > 0 ? json.user.bpm : '--';
           if (liveBpmZone) {
@@ -332,15 +339,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function setWsStatus(online) {
+  function setWsStatus(online, customText = null) {
     const brandLogoIcon = document.getElementById('brandLogoIcon');
+    const wsStatusBadge = document.getElementById('wsStatusBadge');
+    const wsStatusText = document.getElementById('wsStatusText');
+
     if (brandLogoIcon) {
       if (online) {
         brandLogoIcon.className = 'brand-icon online';
-        brandLogoIcon.setAttribute('title', 'Koneksi: Live Sync Terhubung');
+        brandLogoIcon.setAttribute('title', customText ? `Koneksi: ${customText}` : 'Koneksi: Live Sync Terhubung');
       } else {
         brandLogoIcon.className = 'brand-icon offline';
         brandLogoIcon.setAttribute('title', 'Koneksi: Terputus (Mencoba menghubungkan kembali...)');
+      }
+    }
+
+    if (wsStatusBadge && wsStatusText) {
+      if (online) {
+        wsStatusBadge.className = 'status-indicator online';
+        wsStatusText.textContent = customText || 'LIVE SYNC';
+      } else {
+        wsStatusBadge.className = 'status-indicator offline';
+        wsStatusText.textContent = customText || 'TERPUTUS';
       }
     }
   }
@@ -353,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
 
     ws.onopen = () => {
-      setWsStatus(true);
+      setWsStatus(true, 'LIVE SYNC');
       ws.send(JSON.stringify({ type: 'subscribe', userId: currentUserId, key: currentStreamKey }));
     };
 
@@ -361,6 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const msg = JSON.parse(event.data);
         if (msg.type === 'init' && msg.data) {
+          setWsStatus(true, msg.data.activityStatus !== 'IDLE' ? 'ACTIVE SYNC' : 'LIVE SYNC');
           liveSteps.textContent = (msg.data.currentSteps || 0).toLocaleString();
           liveTarget.textContent = (msg.data.targetSteps || 5000).toLocaleString();
           const pct = Math.min(100, Math.round(((msg.data.currentSteps || 0) / Math.max(1, msg.data.targetSteps || 5000)) * 100));
@@ -381,6 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
             (currentUserAccount && (msg.userId === currentUserAccount.id || msg.userId === currentUserAccount.streamKey));
 
           if (isTargetUser && msg.data) {
+            setWsStatus(true, 'ACTIVE SYNC');
             liveSteps.textContent = (msg.data.currentSteps || 0).toLocaleString();
             liveTarget.textContent = (msg.data.targetSteps || 5000).toLocaleString();
             const pct = Math.min(100, Math.round((msg.data.currentSteps / Math.max(1, msg.data.targetSteps)) * 100));
@@ -402,6 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
             (currentUserAccount && (msg.userId === currentUserAccount.id || msg.userId === currentUserAccount.streamKey));
 
           if (isTargetUser && msg.data) {
+            setWsStatus(true, 'ACTIVE SYNC');
             if (msg.data.targetSteps !== undefined) {
               liveTarget.textContent = msg.data.targetSteps.toLocaleString();
             }
@@ -418,12 +441,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     ws.onclose = () => {
-      setWsStatus(false);
+      setWsStatus(false, 'RECONNECTING');
       setTimeout(connectLiveWebSocket, 3000);
     };
 
     ws.onerror = () => {
-      setWsStatus(false);
+      setWsStatus(false, 'OFFLINE');
     };
   }
 
@@ -1135,4 +1158,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Init
   checkAuthSession();
+
+  // ponytail: periodic sync fallback (every 4s) to ensure resilience
+  setInterval(fetchUserStats, 4000);
 });

@@ -196,6 +196,14 @@ body {
   color: var(--accent-green);
 }
 
+.status-indicator.offline .status-dot {
+  background: var(--accent-rose);
+}
+
+.status-indicator.offline .status-text {
+  color: var(--accent-rose);
+}
+
 /* Top Key Metrics Grid (Reflow: 4 cols on Desktop, 2 on Tablet, 1 on Mobile) */
 .metrics-grid {
   display: grid;

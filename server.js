@@ -725,6 +725,7 @@ app.post("/api/steps/sync", (req, res) => {
   }
 
   const effectiveDelta = user.currentSteps - prevSteps;
+  user.lastStepTimestamp = Date.now();
   if (effectiveDelta > 0) {
     calculateActivityStatus(user, effectiveDelta);
   }
