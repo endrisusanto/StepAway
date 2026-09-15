@@ -1,0 +1,166 @@
+// StepAway Single User Overlay Logic
+(() => {
+  const params = new URLSearchParams(window.location.search);
+  const userId = params.get('user') || 'streamer';
+  const isTest = params.get('test') === 'true';
+
+  const widgetEl = document.getElementById('stepWidget');
+  const userNameEl = document.getElementById('userName');
+  const tierTagEl = document.getElementById('tierTag');
+  const statusDotEl = document.getElementById('statusDot');
+  const currentStepValEl = document.getElementById('currentStepVal');
+  const targetValEl = document.getElementById('targetVal');
+  const progressFillEl = document.getElementById('progressFill');
+  const percentDisplayEl = document.getElementById('percentDisplay');
+  const particlesLayerEl = document.getElementById('particlesLayer');
+  const milestoneBannerEl = document.getElementById('milestoneBanner');
+  const milestoneValueEl = document.getElementById('milestoneValue');
+
+  let currentSteps = 0;
+  let targetSteps = 5000;
+  let ws = null;
+
+  function getTier(steps) {
+    if (steps >= 10000) return { name: 'Master', class: 'tier-master' };
+    if (steps >= 5000) return { name: 'Gold', class: 'tier-gold' };
+    if (steps >= 2000) return { name: 'Silver', class: 'tier-silver' };
+    if (steps >= 1000) return { name: 'Bronze', class: 'tier-bronze' };
+    return { name: 'Starter', class: 'tier-starter' };
+  }
+
+  function applyTier(steps) {
+    const tier = getTier(steps);
+    tierTagEl.textContent = tier.name;
+    widgetEl.classList.remove('tier-starter', 'tier-bronze', 'tier-silver', 'tier-gold', 'tier-master');
+    widgetEl.classList.add(tier.class);
+  }
+
+  function spawnStepParticle(delta) {
+    if (delta <= 0) return;
+    const pop = document.createElement('div');
+    pop.className = 'step-float-pop';
+    pop.textContent = `+${delta}`;
+    
+    // Slight random horizontal offset for natural scatter
+    const randomX = Math.floor(Math.random() * 60) - 20;
+    pop.style.left = `${100 + randomX}px`;
+    pop.style.top = '10px';
+
+    particlesLayerEl.appendChild(pop);
+    setTimeout(() => {
+      pop.remove();
+    }, 1100);
+  }
+
+  function triggerPulse() {
+    progressFillEl.classList.remove('pulse-active');
+    void progressFillEl.offsetWidth; // Trigger reflow
+    progressFillEl.classList.add('pulse-active');
+  }
+
+  function triggerMilestoneCelebration(milestone) {
+    milestoneValueEl.textContent = `${milestone.toLocaleString()} STEPS!`;
+    milestoneBannerEl.classList.add('show');
+    
+    // Play celebratory web audio beep
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+      osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3); // A5
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.5);
+    } catch (e) {
+      // Audio might be restricted by browser policy if unclicked
+    }
+
+    setTimeout(() => {
+      milestoneBannerEl.classList.remove('show');
+    }, 3200);
+  }
+
+  function updateUI(data, delta = 0) {
+    userNameEl.textContent = data.name || data.userId || userId;
+    currentSteps = data.currentSteps || 0;
+    targetSteps = data.targetSteps || 5000;
+
+    currentStepValEl.textContent = currentSteps.toLocaleString();
+    targetValEl.textContent = targetSteps.toLocaleString();
+
+    const percentage = Math.min(100, Math.round((currentSteps / Math.max(1, targetSteps)) * 100));
+    progressFillEl.style.width = `${percentage}%`;
+    percentDisplayEl.textContent = `${percentage}%`;
+
+    applyTier(currentSteps);
+
+    if (delta > 0) {
+      spawnStepParticle(delta);
+      triggerPulse();
+    }
+
+    if (data.milestone) {
+      triggerMilestoneCelebration(data.milestone);
+    }
+  }
+
+  // WebSocket Client with Auto Reconnect
+  function connectWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      statusDotEl.classList.add('online');
+      ws.send(JSON.stringify({ type: 'subscribe', userId }));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'init' && msg.data) {
+          updateUI(msg.data, 0);
+        } else if (msg.type === 'step_update' && msg.data && msg.data.userId === userId) {
+          updateUI(msg.data, msg.data.delta || 1);
+        }
+      } catch (err) {
+        console.error('[WS Data Error]', err);
+      }
+    };
+
+    ws.onclose = () => {
+      statusDotEl.classList.remove('online');
+      setTimeout(connectWebSocket, 2500);
+    };
+
+    ws.onerror = () => {
+      ws.close();
+    };
+  }
+
+  // Test mode for easy previewing in OBS / Browser
+  if (isTest) {
+    statusDotEl.classList.add('online');
+    let mockSteps = 980;
+    updateUI({ userId: 'Streamer (Test)', currentSteps: mockSteps, targetSteps: 2000 });
+
+    setInterval(() => {
+      mockSteps += 5;
+      const reachedMilestone = mockSteps >= 1000 && mockSteps < 1010 ? 1000 : null;
+      updateUI({
+        userId: 'Streamer (Test)',
+        currentSteps: mockSteps,
+        targetSteps: 2000,
+        milestone: reachedMilestone
+      }, 5);
+    }, 1800);
+  } else {
+    connectWebSocket();
+  }
+})();

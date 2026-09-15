@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StepAway - Streamer Control Panel</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+
+  <div class="dashboard-container">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="brand-badge">
+        <div class="brand-icon">👟</div>
+        <div>
+          <h1 class="brand-title">StepAway</h1>
+          <p class="brand-subtitle">Real-time Step Counter OBS Overlay System</p>
+        </div>
+      </div>
+      <div class="domain-pill">stepaway.endrisusanto.my.id</div>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="dashboard-grid">
+      <!-- Live Status & Simulator Card -->
+      <section class="card">
+        <h2 class="card-title">📊 Live Status & Test Simulator</h2>
+        
+        <div class="stat-row">
+          <div>
+            <div class="form-label">CURRENT STEPS</div>
+            <div id="liveSteps" class="big-stat">0</div>
+          </div>
+          <div class="target-badge">
+            Target: <span id="liveTarget">5,000</span> (<span id="livePercent">0%</span>)
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Simulasi Langkah (Kirim ke OBS Widget)</label>
+          <div class="sim-btn-group">
+            <button id="btnSim1" class="btn btn-secondary">+1 Step</button>
+            <button id="btnSim10" class="btn btn-secondary">+10</button>
+            <button id="btnSim100" class="btn btn-secondary">+100</button>
+            <button id="btnSim1000" class="btn btn-secondary">+1,000 🔥</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <button id="btnReset" class="btn btn-danger" style="width: 100%;">Reset Langkah Hari Ini</button>
+        </div>
+      </section>
+
+      <!-- Target Settings & User Config -->
+      <section class="card">
+        <h2 class="card-title">🎯 Pengaturan Target Langkah</h2>
+        
+        <div class="form-group">
+          <label class="form-label" for="inputUserId">User ID / Channel Name</label>
+          <input type="text" id="inputUserId" class="input-text" value="streamer">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="inputTarget">Target Langkah (Goal)</label>
+          <div class="form-row">
+            <input type="number" id="inputTarget" class="input-text" value="5000" min="100" step="500">
+            <button id="btnSaveTarget" class="btn btn-primary">Simpan</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Preset Cepat Target</label>
+          <div class="form-row">
+            <button class="btn btn-secondary preset-btn" data-target="3000">3,000</button>
+            <button class="btn btn-secondary preset-btn" data-target="5000">5,000</button>
+            <button class="btn btn-secondary preset-btn" data-target="10000">10,000</button>
+            <button class="btn btn-secondary preset-btn" data-target="20000">20,000</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- OBS Links Section -->
+    <section class="card">
+      <h2 class="card-title">📺 Link OBS Browser Source</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-top: -8px;">
+        Copy link di bawah ini dan paste ke dalam <strong>Browser Source</strong> di OBS Studio (Resolusi rekomen: <strong>420 x 140</strong> px, centang <em>Shutdown source when not visible</em> jika perlu).
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">1. Single User Overlay</label>
+        <div class="url-box">
+          <span id="urlSingle" class="url-text">Loading...</span>
+          <button class="btn btn-secondary copy-btn" data-target="urlSingle">Copy</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">2. Multi-User Overlay (Co-op / Walking Battle)</label>
+        <div class="url-box">
+          <span id="urlMulti" class="url-text">Loading...</span>
+          <button class="btn btn-secondary copy-btn" data-target="urlMulti">Copy</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">3. Live Test Demo Link (Buka langsung di tab baru)</label>
+        <div class="url-box">
+          <span id="urlTest" class="url-text">Loading...</span>
+          <button id="btnOpenTest" class="btn btn-primary">Buka Test Preview</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Android Integration Guide -->
+    <section class="card">
+      <h2 class="card-title">📱 Panduan Integrasi Android APK</h2>
+      <ol class="instructions-list">
+        <li>Install aplikasi <strong>StepAway Android</strong> di smartphone Anda.</li>
+        <li>Buka aplikasi, masukkan Server URL: <span class="code-inline">https://stepaway.endrisusanto.my.id</span></li>
+        <li>Masukkan User ID yang sama: <span id="guideUserId" class="code-inline">streamer</span></li>
+        <li>Klik tombol <strong>Start Tracking</strong>. Sensor langkah bawaan HP akan aktif di background service dan mengirim setiap langkah ke OBS widget secara otomatis.</li>
+      </ol>
+    </section>
+  </div>
+
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

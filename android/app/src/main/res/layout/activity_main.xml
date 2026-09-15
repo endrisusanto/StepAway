@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0B0F19"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Header -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="👟 StepAway"
+        android:textColor="#F8FAFC"
+        android:textSize="26sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="OBS Step Sensor Sync"
+        android:textColor="#94A3B8"
+        android:textSize="14sp" />
+
+    <!-- Configuration Box -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:background="#131B2E"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Server URL"
+            android:textColor="#94A3B8"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/etServerUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="#1A243D"
+            android:hint="https://stepaway.endrisusanto.my.id"
+            android:inputType="textUri"
+            android:padding="12dp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#64748B"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="User ID / Streamer Name"
+            android:textColor="#94A3B8"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/etUserId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="#1A243D"
+            android:hint="streamer"
+            android:inputType="text"
+            android:padding="12dp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#64748B"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+    <!-- Status & Action Button -->
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:gravity="center"
+        android:text="Status: Tidak Aktif"
+        android:textColor="#94A3B8"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/btnToggleTracking"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#10B981"
+        android:text="Start Tracking"
+        android:textAllCaps="false"
+        android:textColor="#0B0F19"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:lineSpacingMultiplier="1.2"
+        android:text="Pastikan izin Activity Recognition dan Notifikasi diizinkan agar tracking tetap berjalan di background saat layar mati."
+        android:textColor="#64748B"
+        android:textSize="12sp" />
+
+</LinearLayout>

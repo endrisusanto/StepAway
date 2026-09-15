@@ -1,0 +1,85 @@
+name: Build & Auto Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Verify build & syntax
+        run: node --check server.js
+
+      # ponytail: simple semantic tag calculator & changelog generator using native git + standard gh CLI
+      - name: Determine Next Version & Generate Changelog
+        id: versioning
+        run: |
+          # Dapatkan tag terakhir, default v1.0.0 jika belum ada
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          echo "Latest tag: $LATEST_TAG"
+
+          # Parse version number
+          VERSION_NUM="${LATEST_TAG#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NUM"
+          
+          # Increment patch
+          PATCH=$((PATCH + 1))
+          NEXT_TAG="v$MAJOR.$MINOR.$PATCH"
+          echo "Next tag: $NEXT_TAG"
+          echo "next_tag=$NEXT_TAG" >> $GITHUB_OUTPUT
+
+          # Buat changelog dari commit log sejak tag sebelumnya
+          echo "## Changelog ($NEXT_TAG)" > changelog.md
+          echo "" >> changelog.md
+          if git rev-parse "$LATEST_TAG" >/dev/null 2>&1; then
+            git log "$LATEST_TAG..HEAD" --pretty=format:"* %s ([%h](https://github.com/${{ github.repository }}/commit/%H)) - @%an" >> changelog.md
+          else
+            git log -n 10 --pretty=format:"* %s ([%h](https://github.com/${{ github.repository }}/commit/%H)) - @%an" >> changelog.md
+          fi
+          echo "" >> changelog.md
+
+          # Tampilkan changelog untuk preview di action log
+          cat changelog.md
+
+      - name: Update package.json version
+        run: |
+          NEW_VER="${{ steps.versioning.outputs.next_tag }}"
+          NEW_VER="${NEW_VER#v}"
+          npm version $NEW_VER --no-git-tag-version
+
+      - name: Commit & Push Version Bump
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "chore(release): bump version to ${{ steps.versioning.outputs.next_tag }} [skip ci]" || echo "No changes to commit"
+          git push origin HEAD:${{ github.ref }}
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.versioning.outputs.next_tag }}" \
+            --title "Release ${{ steps.versioning.outputs.next_tag }}" \
+            --notes-file changelog.md

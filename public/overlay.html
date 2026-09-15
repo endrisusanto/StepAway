@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StepAway - OBS Step Counter Overlay</title>
+  <link rel="stylesheet" href="/css/overlay.css">
+</head>
+<body>
+
+  <div id="stepWidget" class="step-widget tier-starter">
+    <!-- Milestone Celebration Overlay Banner -->
+    <div id="milestoneBanner" class="milestone-banner">
+      <div class="milestone-title">🔥 MILESTONE UNLOCKED!</div>
+      <div id="milestoneValue" class="milestone-value">1,000 STEPS</div>
+    </div>
+
+    <!-- Floating Particles Layer -->
+    <div id="particlesLayer" class="particles-layer"></div>
+
+    <!-- Header info -->
+    <div class="widget-header">
+      <div class="user-badge">
+        <div id="statusDot" class="status-dot"></div>
+        <span id="userName" class="user-name">Streamer</span>
+      </div>
+      <div id="tierTag" class="tier-tag">Starter</div>
+    </div>
+
+    <!-- Counter Display -->
+    <div class="counter-box">
+      <div class="step-numbers">
+        <span id="currentStepVal" class="current-step-val">0</span>
+        <span class="step-label">steps</span>
+      </div>
+      <div class="target-info">
+        Goal: <span id="targetVal" class="target-val">5,000</span>
+      </div>
+    </div>
+
+    <!-- Progress Bar & Percentage -->
+    <div class="progress-section">
+      <div class="progress-track">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
+      <div id="percentDisplay" class="percent-display">0%</div>
+    </div>
+  </div>
+
+  <script src="/js/overlay.js"></script>
+</body>
+</html>

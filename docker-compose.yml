@@ -1,0 +1,14 @@
+services:
+  stepaway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stepaway-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3001}:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+    volumes:
+      - ./data:/app/data
