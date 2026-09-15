@@ -11,7 +11,7 @@ Dibuat dan dikelola oleh **@endrisusanto**.
 ### 1. Widget Home Screen Android & Aplikasi Mobile
 | 3 Varian Widget Homescreen | Aplikasi Android StepAway |
 | :---: | :---: |
-| ![Android Widgets](docs/screenshots/Screenshot_20260915_132654_One%20UI%20Home.jpg) | ![Android App Interface](docs/screenshots/screenshots/Screenshot_20260915_133145.jpg) |
+| ![Android Widgets](docs/screenshots/Screenshot_20260915_132654_One%20UI%20Home.jpg) | ![Android App Interface](docs/screenshots/Screenshot_20260915_133145.jpg) |
 | *Widget Combo 4x2, Step 2x2, dan Heart Rate 2x2* | *Kontrol tracking, scanner smartband BLE, dan simulator* |
 
 ### 2. Web Dashboard & Live Preview
