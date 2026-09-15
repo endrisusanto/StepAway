@@ -11,13 +11,13 @@ Dibuat dan dikelola oleh **@endrisusanto**.
 ### 1. Widget Home Screen Android & Aplikasi Mobile
 | 3 Varian Widget Homescreen | Aplikasi Android StepAway |
 | :---: | :---: |
-| ![Android Widgets](docs/screenshots/android_widgets.png) | ![Android App Interface](docs/screenshots/android_app.png) |
+| ![Android Widgets](docs/screenshots/Screenshot_20260915_132654_One%20UI%20Home.jpg) | ![Android App Interface](docs/screenshots/screenshots/Screenshot_20260915_133145.jpg) |
 | *Widget Combo 4x2, Step 2x2, dan Heart Rate 2x2* | *Kontrol tracking, scanner smartband BLE, dan simulator* |
 
 ### 2. Web Dashboard & Live Preview
 | Dashboard Streamer & Live Overlay Preview | Multi-User Room Overlay |
 | :---: | :---: |
-| ![Web Dashboard Preview](docs/screenshots/web_dashboard.png) | ![Multi-User Room](docs/screenshots/room_overlay.png) |
+| ![Web Dashboard Preview](docs/screenshots/stepaway.endrisusanto.my.id-dashboard(iPad%20Pro%2013).png) | ![Multi-User Room](docs/screenshots/stepaway.endrisusanto.my.id-overlay(iPhone%20SE).png) |
 | *Preview interaktif, tab switcher, dan simulator* | *Mode co-op / battle multi streamer* |
 
 ---
