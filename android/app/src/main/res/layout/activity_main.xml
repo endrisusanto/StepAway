@@ -11,7 +11,7 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <!-- Playful Header -->
+        <!-- Header -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -19,8 +19,8 @@
             android:gravity="center_vertical">
 
             <ImageView
-                android:layout_width="44dp"
-                android:layout_height="44dp"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
                 android:src="@drawable/ic_launcher_foreground"
                 android:contentDescription="StepAway Logo" />
 
@@ -43,7 +43,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="OBS Step Counter &amp; Tracker"
+                    android:text="Real-time OBS Step Sensor"
                     android:textColor="#00D2D3"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
@@ -88,12 +88,13 @@
                     android:layout_weight="1"
                     android:text="Streamer"
                     android:textColor="#CBD5E1"
-                    android:textSize="14sp"
+                    android:textSize="15sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
 
+                <!-- Dynamic Pace Activity Badge (WALKING/RUNNING/IDLE) -->
                 <TextView
-                    android:id="@+id/tvCardTier"
+                    android:id="@+id/tvCardPaceStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/widget_tier_bg"
@@ -101,9 +102,9 @@
                     android:paddingTop="3dp"
                     android:paddingEnd="10dp"
                     android:paddingBottom="3dp"
-                    android:text="STARTER"
-                    android:textColor="#10B981"
-                    android:textSize="11sp"
+                    android:text="🧘 IDLE"
+                    android:textColor="#94A3B8"
+                    android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -122,7 +123,7 @@
                     android:layout_height="wrap_content"
                     android:text="0"
                     android:textColor="#FFFFFF"
-                    android:textSize="44sp"
+                    android:textSize="46sp"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
 
@@ -184,7 +185,7 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Playful Toggle Button -->
+            <!-- Tracking Action Button -->
             <Button
                 android:id="@+id/btnToggleTracking"
                 android:layout_width="match_parent"
@@ -199,7 +200,7 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Goal & Target Setting Card -->
+        <!-- Profile & Target Goal Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -211,45 +212,59 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🎯 Pengaturan Target Langkah"
+                android:text="🎯 Profil &amp; Target Langkah"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
 
-            <LinearLayout
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Nama Tampilan (Display Name)"
+                android:textColor="#94A3B8"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etDisplayName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="#1E293B"
+                android:hint="Streamer"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#64748B"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-rounded" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:text="Target Langkah (Goal)"
+                android:textColor="#94A3B8"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
 
-                <EditText
-                    android:id="@+id/etTargetGoal"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="#1E293B"
-                    android:hint="5000"
-                    android:inputType="number"
-                    android:padding="12dp"
-                    android:textColor="#FFFFFF"
-                    android:textColorHint="#64748B"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif-rounded" />
-
-                <Button
-                    android:id="@+id/btnSaveTarget"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:backgroundTint="#6C5CE7"
-                    android:text="Simpan"
-                    android:textAllCaps="false"
-                    android:textColor="#FFFFFF"
-                    android:fontFamily="sans-serif-rounded"
-                    android:textStyle="bold" />
-            </LinearLayout>
+            <EditText
+                android:id="@+id/etTargetGoal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="#1E293B"
+                android:hint="5000"
+                android:inputType="number"
+                android:padding="12dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#64748B"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-rounded" />
 
             <!-- Preset Buttons -->
             <LinearLayout
@@ -264,7 +279,7 @@
                     android:layout_height="38dp"
                     android:layout_weight="1"
                     android:backgroundTint="#1E293B"
-                    android:text="3,000"
+                    android:text="3k"
                     android:textAllCaps="false"
                     android:textColor="#00D2D3"
                     android:textSize="12sp"
@@ -278,7 +293,7 @@
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
                     android:backgroundTint="#1E293B"
-                    android:text="5,000"
+                    android:text="5k"
                     android:textAllCaps="false"
                     android:textColor="#00D2D3"
                     android:textSize="12sp"
@@ -292,7 +307,7 @@
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
                     android:backgroundTint="#1E293B"
-                    android:text="10,000"
+                    android:text="10k"
                     android:textAllCaps="false"
                     android:textColor="#00D2D3"
                     android:textSize="12sp"
@@ -306,10 +321,122 @@
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
                     android:backgroundTint="#1E293B"
-                    android:text="20,000"
+                    android:text="20k"
                     android:textAllCaps="false"
                     android:textColor="#00D2D3"
                     android:textSize="12sp"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnSaveSettings"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="14dp"
+                android:backgroundTint="#6C5CE7"
+                android:text="💾 Simpan Pengaturan ke Server"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Room System Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/card_bg"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👥 Multi-User Room (Co-op / Battle)"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="ID Room"
+                android:textColor="#94A3B8"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etRoomId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="#1E293B"
+                android:hint="global"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#64748B"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-rounded" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Passcode Room (Kosongkan jika publik)"
+                android:textColor="#94A3B8"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etRoomPasscode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="#1E293B"
+                android:hint="Opsional"
+                android:inputType="textPassword"
+                android:padding="12dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#64748B"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-rounded" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnJoinRoom"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#1E293B"
+                    android:text="🚀 Gabung Room"
+                    android:textAllCaps="false"
+                    android:textColor="#00D2D3"
+                    android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnCreateRoom"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="#8B5CF6"
+                    android:text="➕ Buat Room"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
                     android:fontFamily="sans-serif-rounded"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -454,7 +581,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="User ID / Streamer Name"
+                android:text="User ID (Key Unik)"
                 android:textColor="#94A3B8"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-rounded"
@@ -514,13 +641,13 @@
                     android:textStyle="bold" />
 
                 <Button
-                    android:id="@+id/btnCopyMulti"
+                    android:id="@+id/btnCopyRoom"
                     android:layout_width="0dp"
                     android:layout_height="44dp"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
                     android:backgroundTint="#1E293B"
-                    android:text="Multi OBS Link"
+                    android:text="Room OBS Link"
                     android:textAllCaps="false"
                     android:textColor="#00D2D3"
                     android:textSize="12sp"

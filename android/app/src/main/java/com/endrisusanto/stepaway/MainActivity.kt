@@ -33,20 +33,27 @@ class MainActivity : AppCompatActivity() {
     // Header & Monitor Views
     private lateinit var tvLiveStatusBadge: TextView
     private lateinit var tvCardUserName: TextView
-    private lateinit var tvCardTier: TextView
+    private lateinit var tvCardPaceStatus: TextView
     private lateinit var tvLiveSteps: TextView
     private lateinit var tvGoalInfo: TextView
     private lateinit var pbStepProgress: ProgressBar
     private lateinit var tvLivePercent: TextView
     private lateinit var btnToggleTracking: Button
 
-    // Target Setting Views
+    // Profile & Target Setting Views
+    private lateinit var etDisplayName: EditText
     private lateinit var etTargetGoal: EditText
-    private lateinit var btnSaveTarget: Button
+    private lateinit var btnSaveSettings: Button
     private lateinit var btnPreset3k: Button
     private lateinit var btnPreset5k: Button
     private lateinit var btnPreset10k: Button
     private lateinit var btnPreset20k: Button
+
+    // Room System Views
+    private lateinit var etRoomId: EditText
+    private lateinit var etRoomPasscode: EditText
+    private lateinit var btnJoinRoom: Button
+    private lateinit var btnCreateRoom: Button
 
     // Simulation Views
     private lateinit var btnSim1: Button
@@ -59,7 +66,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var etServerUrl: EditText
     private lateinit var etUserId: EditText
     private lateinit var btnCopySingle: Button
-    private lateinit var btnCopyMulti: Button
+    private lateinit var btnCopyRoom: Button
 
     private var isTracking = false
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -89,19 +96,25 @@ class MainActivity : AppCompatActivity() {
     private fun initViews() {
         tvLiveStatusBadge = findViewById(R.id.tvLiveStatusBadge)
         tvCardUserName = findViewById(R.id.tvCardUserName)
-        tvCardTier = findViewById(R.id.tvCardTier)
+        tvCardPaceStatus = findViewById(R.id.tvCardPaceStatus)
         tvLiveSteps = findViewById(R.id.tvLiveSteps)
         tvGoalInfo = findViewById(R.id.tvGoalInfo)
         pbStepProgress = findViewById(R.id.pbStepProgress)
         tvLivePercent = findViewById(R.id.tvLivePercent)
         btnToggleTracking = findViewById(R.id.btnToggleTracking)
 
+        etDisplayName = findViewById(R.id.etDisplayName)
         etTargetGoal = findViewById(R.id.etTargetGoal)
-        btnSaveTarget = findViewById(R.id.btnSaveTarget)
+        btnSaveSettings = findViewById(R.id.btnSaveSettings)
         btnPreset3k = findViewById(R.id.btnPreset3k)
         btnPreset5k = findViewById(R.id.btnPreset5k)
         btnPreset10k = findViewById(R.id.btnPreset10k)
         btnPreset20k = findViewById(R.id.btnPreset20k)
+
+        etRoomId = findViewById(R.id.etRoomId)
+        etRoomPasscode = findViewById(R.id.etRoomPasscode)
+        btnJoinRoom = findViewById(R.id.btnJoinRoom)
+        btnCreateRoom = findViewById(R.id.btnCreateRoom)
 
         btnSim1 = findViewById(R.id.btnSim1)
         btnSim10 = findViewById(R.id.btnSim10)
@@ -112,18 +125,22 @@ class MainActivity : AppCompatActivity() {
         etServerUrl = findViewById(R.id.etServerUrl)
         etUserId = findViewById(R.id.etUserId)
         btnCopySingle = findViewById(R.id.btnCopySingle)
-        btnCopyMulti = findViewById(R.id.btnCopyMulti)
+        btnCopyRoom = findViewById(R.id.btnCopyRoom)
     }
 
     private fun loadSavedPreferences() {
         val serverUrl = prefs.getString("server_url", "https://stepaway.endrisusanto.my.id")
         val userId = prefs.getString("user_id", "streamer")
+        val displayName = prefs.getString("display_name", "Streamer")
         val target = prefs.getInt("target_steps", 5000)
+        val roomId = prefs.getString("room_id", "global")
         isTracking = prefs.getBoolean("is_tracking", false)
 
         etServerUrl.setText(serverUrl)
         etUserId.setText(userId)
+        etDisplayName.setText(displayName)
         etTargetGoal.setText(target.toString())
+        etRoomId.setText(roomId)
 
         updateLiveUIFromPrefs()
         updateTrackingButtonState()
@@ -132,30 +149,44 @@ class MainActivity : AppCompatActivity() {
     private fun updateLiveUIFromPrefs() {
         val steps = prefs.getInt("widget_steps", 0)
         val target = prefs.getInt("target_steps", 5000).coerceAtLeast(1)
-        val userId = prefs.getString("user_id", "streamer") ?: "streamer"
+        val displayName = prefs.getString("display_name", "Streamer") ?: "Streamer"
+        val status = prefs.getString("activity_status", "IDLE") ?: "IDLE"
 
         val pct = ((steps.toDouble() / target.toDouble()) * 100).toInt().coerceIn(0, 100)
-        val tier = StepAwayWidgetProvider.getTierName(steps)
 
-        tvCardUserName.text = userId
-        tvCardTier.text = tier
+        tvCardUserName.text = displayName
         tvLiveSteps.text = "%,d".format(steps)
         tvGoalInfo.text = "Goal: %,d".format(target)
         pbStepProgress.progress = pct
         tvLivePercent.text = "$pct%"
+
+        when (status.uppercase()) {
+            "RUNNING" -> {
+                tvCardPaceStatus.text = "🏃 RUNNING"
+                tvCardPaceStatus.setTextColor(0xFFFF5252.toInt())
+            }
+            "WALKING" -> {
+                tvCardPaceStatus.text = "🚶 WALKING"
+                tvCardPaceStatus.setTextColor(0xFF10B981.toInt())
+            }
+            else -> {
+                tvCardPaceStatus.text = "🧘 IDLE"
+                tvCardPaceStatus.setTextColor(0xFF94A3B8.toInt())
+            }
+        }
     }
 
     private fun updateTrackingButtonState() {
         if (isTracking) {
             btnToggleTracking.text = "Stop Tracking"
-            btnToggleTracking.setBackgroundColor(0xFFFF5252.toInt()) // Coral Red
+            btnToggleTracking.setBackgroundColor(0xFFFF5252.toInt()) // Coral
             tvLiveStatusBadge.text = "● ACTIVE SYNC"
-            tvLiveStatusBadge.setTextColor(0xFF10B981.toInt()) // Emerald
+            tvLiveStatusBadge.setTextColor(0xFF10B981.toInt())
         } else {
             btnToggleTracking.text = "Start Tracking"
             btnToggleTracking.setBackgroundColor(0xFF10B981.toInt()) // Emerald
             tvLiveStatusBadge.text = "● STANDBY"
-            tvLiveStatusBadge.setTextColor(0xFF94A3B8.toInt()) // Slate
+            tvLiveStatusBadge.setTextColor(0xFF94A3B8.toInt())
         }
     }
 
@@ -168,15 +199,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        btnSaveTarget.setOnClickListener {
-            val target = etTargetGoal.text.toString().toIntOrNull() ?: 5000
-            saveTargetGoal(target)
+        btnSaveSettings.setOnClickListener {
+            saveAllSettingsToDB()
         }
 
-        btnPreset3k.setOnClickListener { setAndSavePreset(3000) }
-        btnPreset5k.setOnClickListener { setAndSavePreset(5000) }
-        btnPreset10k.setOnClickListener { setAndSavePreset(10000) }
-        btnPreset20k.setOnClickListener { setAndSavePreset(20000) }
+        btnPreset3k.setOnClickListener { setPresetGoal(3000) }
+        btnPreset5k.setOnClickListener { setPresetGoal(5000) }
+        btnPreset10k.setOnClickListener { setPresetGoal(10000) }
+        btnPreset20k.setOnClickListener { setPresetGoal(20000) }
+
+        btnJoinRoom.setOnClickListener { joinRoomAction() }
+        btnCreateRoom.setOnClickListener { createRoomAction() }
 
         btnSim1.setOnClickListener { sendSimulationStep(1) }
         btnSim10.setOnClickListener { sendSimulationStep(10) }
@@ -186,37 +219,155 @@ class MainActivity : AppCompatActivity() {
         btnResetSteps.setOnClickListener { resetTodaySteps() }
 
         btnCopySingle.setOnClickListener { copyObsLink(false) }
-        btnCopyMulti.setOnClickListener { copyObsLink(true) }
+        btnCopyRoom.setOnClickListener { copyObsLink(true) }
     }
 
-    private fun setAndSavePreset(target: Int) {
+    private fun setPresetGoal(target: Int) {
         etTargetGoal.setText(target.toString())
-        saveTargetGoal(target)
     }
 
-    private fun saveTargetGoal(target: Int) {
-        prefs.edit().putInt("target_steps", target).apply()
-        updateLiveUIFromPrefs()
-        StepAwayWidgetProvider.sendUpdateBroadcast(this, prefs.getInt("widget_steps", 0), isTracking)
-
+    private fun saveAllSettingsToDB() {
         val serverUrl = etServerUrl.text.toString().trim()
         val userId = etUserId.text.toString().trim()
+        val displayName = etDisplayName.text.toString().trim().ifEmpty { userId }
+        val target = etTargetGoal.text.toString().toIntOrNull() ?: 5000
+
+        if (serverUrl.isEmpty() || userId.isEmpty()) {
+            Toast.makeText(this, "Isi Server URL dan User ID", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        prefs.edit()
+            .putString("server_url", serverUrl)
+            .putString("user_id", userId)
+            .putString("display_name", displayName)
+            .putInt("target_steps", target)
+            .apply()
+
+        updateLiveUIFromPrefs()
+        StepAwayWidgetProvider.sendUpdateBroadcast(this, prefs.getInt("widget_steps", 0), isTracking, prefs.getString("activity_status", "IDLE") ?: "IDLE")
 
         scope.launch {
             try {
-                val endpoint = "$serverUrl/api/users/$userId/target"
+                val endpoint = "$serverUrl/api/users/$userId/settings"
                 val conn = (URL(endpoint).openConnection() as HttpURLConnection).apply {
                     requestMethod = "POST"
                     setRequestProperty("Content-Type", "application/json")
                     doOutput = true
                 }
-                val payload = JSONObject().apply { put("targetSteps", target) }
+                val payload = JSONObject().apply {
+                    put("name", displayName)
+                    put("targetSteps", target)
+                }
                 OutputStreamWriter(conn.outputStream).use { it.write(payload.toString()); it.flush() }
-                conn.responseCode
+                val code = conn.responseCode
                 conn.disconnect()
-            } catch (e: Exception) {}
+
+                withContext(Dispatchers.Main) {
+                    if (code in 200..299) {
+                        Toast.makeText(this@MainActivity, "✅ Pengaturan disimpan ke database server!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@MainActivity, "Tersimpan lokal (Server response $code)", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity, "Tersimpan lokal (${e.message})", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
-        Toast.makeText(this, "Target diubah ke %,d langkah".format(target), Toast.LENGTH_SHORT).show()
+    }
+
+    private fun createRoomAction() {
+        val serverUrl = etServerUrl.text.toString().trim()
+        val userId = etUserId.text.toString().trim()
+        val roomId = etRoomId.text.toString().trim()
+        val passcode = etRoomPasscode.text.toString().trim()
+
+        if (roomId.isEmpty()) {
+            Toast.makeText(this, "Isi ID Room terlebih dahulu", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        prefs.edit().putString("room_id", roomId).apply()
+
+        scope.launch {
+            try {
+                val endpoint = "$serverUrl/api/rooms"
+                val conn = (URL(endpoint).openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    setRequestProperty("Content-Type", "application/json")
+                    doOutput = true
+                }
+                val payload = JSONObject().apply {
+                    put("roomId", roomId)
+                    put("name", roomId)
+                    put("isPrivate", passcode.isNotEmpty())
+                    put("passcode", passcode)
+                    put("creatorId", userId)
+                }
+                OutputStreamWriter(conn.outputStream).use { it.write(payload.toString()); it.flush() }
+                val code = conn.responseCode
+                conn.disconnect()
+
+                withContext(Dispatchers.Main) {
+                    if (code in 200..299) {
+                        Toast.makeText(this@MainActivity, "✅ Room '$roomId' berhasil dibuat!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@MainActivity, "Gagal membuat room (Error $code)", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity, "Koneksi gagal: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun joinRoomAction() {
+        val serverUrl = etServerUrl.text.toString().trim()
+        val userId = etUserId.text.toString().trim()
+        val roomId = etRoomId.text.toString().trim()
+        val passcode = etRoomPasscode.text.toString().trim()
+
+        if (roomId.isEmpty()) {
+            Toast.makeText(this, "Isi ID Room yang dituju", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        scope.launch {
+            try {
+                val endpoint = "$serverUrl/api/rooms/$roomId/join"
+                val conn = (URL(endpoint).openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    setRequestProperty("Content-Type", "application/json")
+                    doOutput = true
+                }
+                val payload = JSONObject().apply {
+                    put("userId", userId)
+                    put("passcode", passcode)
+                }
+                OutputStreamWriter(conn.outputStream).use { it.write(payload.toString()); it.flush() }
+                val code = conn.responseCode
+                conn.disconnect()
+
+                withContext(Dispatchers.Main) {
+                    if (code in 200..299) {
+                        prefs.edit().putString("room_id", roomId).apply()
+                        Toast.makeText(this@MainActivity, "✅ Berhasil bergabung ke Room '$roomId'!", Toast.LENGTH_SHORT).show()
+                    } else if (code == 403) {
+                        Toast.makeText(this@MainActivity, "Passcode room salah!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@MainActivity, "Room tidak ditemukan", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity, "Koneksi gagal: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     private fun sendSimulationStep(delta: Int) {
@@ -241,16 +392,21 @@ class MainActivity : AppCompatActivity() {
 
                 if (code in 200..299) {
                     val newSteps = prefs.getInt("widget_steps", 0) + delta
-                    prefs.edit().putInt("widget_steps", newSteps).apply()
+                    val pace = if (delta >= 100) "RUNNING" else "WALKING"
+                    prefs.edit()
+                        .putInt("widget_steps", newSteps)
+                        .putString("activity_status", pace)
+                        .apply()
+
                     withContext(Dispatchers.Main) {
                         updateLiveUIFromPrefs()
-                        StepAwayWidgetProvider.sendUpdateBroadcast(this@MainActivity, newSteps, isTracking)
+                        StepAwayWidgetProvider.sendUpdateBroadcast(this@MainActivity, newSteps, isTracking, pace)
                         Toast.makeText(this@MainActivity, "+$delta langkah terkirim ke OBS!", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@MainActivity, "Gagal koneksi ke server: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "Gagal koneksi: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -270,10 +426,14 @@ class MainActivity : AppCompatActivity() {
                 conn.responseCode
                 conn.disconnect()
 
-                prefs.edit().putInt("widget_steps", 0).apply()
+                prefs.edit()
+                    .putInt("widget_steps", 0)
+                    .putString("activity_status", "IDLE")
+                    .apply()
+
                 withContext(Dispatchers.Main) {
                     updateLiveUIFromPrefs()
-                    StepAwayWidgetProvider.sendUpdateBroadcast(this@MainActivity, 0, isTracking)
+                    StepAwayWidgetProvider.sendUpdateBroadcast(this@MainActivity, 0, isTracking, "IDLE")
                     Toast.makeText(this@MainActivity, "Langkah berhasil direset ke 0", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
@@ -299,15 +459,21 @@ class MainActivity : AppCompatActivity() {
                         val userObj = json.getJSONObject("user")
                         val steps = userObj.optInt("currentSteps", 0)
                         val target = userObj.optInt("targetSteps", 5000)
+                        val name = userObj.optString("name", userId)
+                        val pace = userObj.optString("activityStatus", "IDLE")
 
                         prefs.edit()
                             .putInt("widget_steps", steps)
                             .putInt("target_steps", target)
+                            .putString("display_name", name)
+                            .putString("activity_status", pace)
                             .apply()
 
                         withContext(Dispatchers.Main) {
+                            etDisplayName.setText(name)
+                            etTargetGoal.setText(target.toString())
                             updateLiveUIFromPrefs()
-                            StepAwayWidgetProvider.sendUpdateBroadcast(this@MainActivity, steps, isTracking)
+                            StepAwayWidgetProvider.sendUpdateBroadcast(this@MainActivity, steps, isTracking, pace)
                         }
                     }
                 }
@@ -316,11 +482,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun copyObsLink(isMulti: Boolean) {
+    private fun copyObsLink(isRoom: Boolean) {
         val serverUrl = etServerUrl.text.toString().trim().removeSuffix("/")
         val userId = etUserId.text.toString().trim()
-        val url = if (isMulti) {
-            "$serverUrl/overlay/multi?users=$userId,guest"
+        val roomId = etRoomId.text.toString().trim().ifEmpty { "global" }
+
+        val url = if (isRoom) {
+            "$serverUrl/overlay/multi?room=$roomId"
         } else {
             "$serverUrl/overlay?user=$userId"
         }
@@ -329,7 +497,7 @@ class MainActivity : AppCompatActivity() {
         val clip = ClipData.newPlainText("StepAway OBS URL", url)
         clipboard.setPrimaryClip(clip)
 
-        val label = if (isMulti) "Link Multi-User OBS" else "Link Single OBS"
+        val label = if (isRoom) "Link Room OBS ($roomId)" else "Link Single OBS ($userId)"
         Toast.makeText(this, "$label disalin ke clipboard!", Toast.LENGTH_SHORT).show()
     }
 
@@ -382,7 +550,7 @@ class MainActivity : AppCompatActivity() {
 
         isTracking = true
         updateTrackingButtonState()
-        StepAwayWidgetProvider.sendUpdateBroadcast(this, prefs.getInt("widget_steps", 0), true)
+        StepAwayWidgetProvider.sendUpdateBroadcast(this, prefs.getInt("widget_steps", 0), true, prefs.getString("activity_status", "IDLE") ?: "IDLE")
         Toast.makeText(this, "Sensor tracking background aktif!", Toast.LENGTH_SHORT).show()
     }
 
@@ -395,7 +563,7 @@ class MainActivity : AppCompatActivity() {
         isTracking = false
         prefs.edit().putBoolean("is_tracking", false).apply()
         updateTrackingButtonState()
-        StepAwayWidgetProvider.sendUpdateBroadcast(this, prefs.getInt("widget_steps", 0), false)
+        StepAwayWidgetProvider.sendUpdateBroadcast(this, prefs.getInt("widget_steps", 0), false, "IDLE")
         Toast.makeText(this, "Tracking dihentikan", Toast.LENGTH_SHORT).show()
     }
 }

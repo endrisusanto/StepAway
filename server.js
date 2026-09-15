@@ -26,7 +26,21 @@ let db = {
       targetSteps: 5000,
       todayStart: new Date().toISOString().split("T")[0],
       lastMilestone: 0,
+      activityStatus: "IDLE", // IDLE, WALKING, RUNNING
+      lastStepTimestamp: Date.now(),
+      recentPaces: [],
       lastUpdated: new Date().toISOString()
+    }
+  },
+  rooms: {
+    global: {
+      roomId: "global",
+      name: "Global Walking Room",
+      isPrivate: false,
+      passcode: "",
+      targetSteps: 10000,
+      members: ["streamer"],
+      createdAt: new Date().toISOString()
     }
   }
 };
@@ -34,7 +48,9 @@ let db = {
 if (fs.existsSync(DATA_FILE)) {
   try {
     const raw = fs.readFileSync(DATA_FILE, "utf-8");
-    db = JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    db.users = { ...db.users, ...(parsed.users || {}) };
+    db.rooms = { ...db.rooms, ...(parsed.rooms || {}) };
   } catch (err) {
     console.error("[Storage] Failed to read storage.json, using defaults:", err.message);
   }
@@ -55,7 +71,6 @@ app.use(express.static(path.join(__dirname, "public")));
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: "/ws" });
 
-// Connected overlay clients map: clientId -> { ws, subscribedUsers: Set<string> }
 const clients = new Map();
 let clientCounter = 0;
 
@@ -68,12 +83,56 @@ function getUser(userId) {
       targetSteps: 5000,
       todayStart: new Date().toISOString().split("T")[0],
       lastMilestone: 0,
+      activityStatus: "IDLE",
+      lastStepTimestamp: Date.now(),
+      recentPaces: [],
       lastUpdated: new Date().toISOString()
     };
     saveDB();
   }
   return db.users[userId];
 }
+
+function calculateActivityStatus(user, delta) {
+  const now = Date.now();
+  if (!user.recentPaces) user.recentPaces = [];
+
+  // Record step event with timestamp
+  user.recentPaces.push({ time: now, delta: Math.max(1, delta) });
+  // Keep only events within last 4 seconds
+  user.recentPaces = user.recentPaces.filter(p => now - p.time <= 4000);
+
+  const totalStepsInWindow = user.recentPaces.reduce((sum, p) => sum + p.delta, 0);
+  const stepsPerSec = totalStepsInWindow / 4.0; // steps per second
+  const spm = stepsPerSec * 60; // steps per minute
+
+  if (spm >= 130) {
+    user.activityStatus = "RUNNING"; // Lari
+  } else if (spm >= 25) {
+    user.activityStatus = "WALKING"; // Jalan
+  } else {
+    user.activityStatus = "IDLE"; // Santai/Diam
+  }
+
+  user.lastStepTimestamp = now;
+  return user.activityStatus;
+}
+
+// Periodic check to reset activity to IDLE if no steps in 6 seconds
+setInterval(() => {
+  const now = Date.now();
+  let changed = false;
+  for (const userId in db.users) {
+    const user = db.users[userId];
+    if (user.activityStatus !== "IDLE" && now - (user.lastStepTimestamp || 0) > 5500) {
+      user.activityStatus = "IDLE";
+      user.recentPaces = [];
+      changed = true;
+      broadcastUserUpdate(user, 0, null);
+    }
+  }
+  if (changed) saveDB();
+}, 2500);
 
 function checkMilestone(prevSteps, newSteps) {
   const prevThousands = Math.floor(prevSteps / 1000);
@@ -93,6 +152,7 @@ function broadcastUserUpdate(user, delta = 0, milestone = null) {
       name: user.name,
       currentSteps: user.currentSteps,
       targetSteps: user.targetSteps,
+      activityStatus: user.activityStatus || "IDLE",
       percentage,
       delta,
       milestone,
@@ -101,13 +161,25 @@ function broadcastUserUpdate(user, delta = 0, milestone = null) {
   });
 
   for (const [, client] of clients) {
-    if (client.ws.readyState === WebSocket.OPEN && (client.subscribedUsers.has(user.userId) || client.subscribedUsers.has("*"))) {
-      client.ws.send(payload);
+    if (client.ws.readyState === WebSocket.OPEN) {
+      if (client.subscribedUsers.has(user.userId) || client.subscribedUsers.has("*")) {
+        client.ws.send(payload);
+      }
+      // Broadcast to room subscribers if user is member
+      if (client.subscribedRooms.size > 0) {
+        for (const roomId of client.subscribedRooms) {
+          const room = db.rooms[roomId];
+          if (room && room.members.includes(user.userId)) {
+            client.ws.send(payload);
+            break;
+          }
+        }
+      }
     }
   }
 }
 
-// REST APIs
+// REST APIs - User & Settings
 app.get("/api/users", (req, res) => {
   res.json({ success: true, users: Object.values(db.users) });
 });
@@ -116,6 +188,23 @@ app.get("/api/users/:userId", (req, res) => {
   const user = getUser(req.params.userId);
   const percentage = Math.min(100, Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100));
   res.json({ success: true, user: { ...user, percentage } });
+});
+
+// Save permanent settings
+app.post("/api/users/:userId/settings", (req, res) => {
+  const { name, targetSteps } = req.body;
+  const user = getUser(req.params.userId);
+  if (name && name.trim()) {
+    user.name = name.trim();
+  }
+  if (targetSteps && Number(targetSteps) >= 100) {
+    user.targetSteps = Number(targetSteps);
+  }
+  user.lastUpdated = new Date().toISOString();
+  saveDB();
+
+  broadcastUserUpdate(user, 0, null);
+  res.json({ success: true, message: "Pengaturan berhasil disimpan di database", user });
 });
 
 app.post("/api/steps/sync", (req, res) => {
@@ -133,6 +222,8 @@ app.post("/api/steps/sync", (req, res) => {
   }
 
   const effectiveDelta = user.currentSteps - prevSteps;
+  calculateActivityStatus(user, effectiveDelta > 0 ? effectiveDelta : 1);
+
   const reachedMilestone = checkMilestone(prevSteps, user.currentSteps);
   if (reachedMilestone) {
     user.lastMilestone = reachedMilestone;
@@ -146,8 +237,10 @@ app.post("/api/steps/sync", (req, res) => {
     success: true,
     user: {
       userId: user.userId,
+      name: user.name,
       currentSteps: user.currentSteps,
       targetSteps: user.targetSteps,
+      activityStatus: user.activityStatus,
       milestone: reachedMilestone
     }
   });
@@ -172,6 +265,8 @@ app.post("/api/users/:userId/reset", (req, res) => {
   const user = getUser(req.params.userId);
   user.currentSteps = 0;
   user.lastMilestone = 0;
+  user.activityStatus = "IDLE";
+  user.recentPaces = [];
   user.lastUpdated = new Date().toISOString();
   saveDB();
 
@@ -179,12 +274,96 @@ app.post("/api/users/:userId/reset", (req, res) => {
   res.json({ success: true, user });
 });
 
+// Room Management APIs (Public & Private Multi-User Rooms)
+app.get("/api/rooms", (req, res) => {
+  const publicRooms = Object.values(db.rooms).map(r => ({
+    roomId: r.roomId,
+    name: r.name,
+    isPrivate: r.isPrivate,
+    targetSteps: r.targetSteps,
+    memberCount: (r.members || []).length,
+    createdAt: r.createdAt
+  }));
+  res.json({ success: true, rooms: publicRooms });
+});
+
+app.get("/api/rooms/:roomId", (req, res) => {
+  const room = db.rooms[req.params.roomId];
+  if (!room) return res.status(404).json({ success: false, message: "Room tidak ditemukan" });
+
+  const membersData = (room.members || []).map(uId => {
+    const u = getUser(uId);
+    const percentage = Math.min(100, Math.round((u.currentSteps / Math.max(1, u.targetSteps)) * 100));
+    return { ...u, percentage };
+  });
+
+  res.json({
+    success: true,
+    room: {
+      roomId: room.roomId,
+      name: room.name,
+      isPrivate: room.isPrivate,
+      targetSteps: room.targetSteps,
+      members: membersData
+    }
+  });
+});
+
+app.post("/api/rooms", (req, res) => {
+  const { roomId, name, isPrivate = false, passcode = "", targetSteps = 10000, creatorId = "streamer" } = req.body;
+  if (!roomId || !roomId.trim()) {
+    return res.status(400).json({ success: false, message: "Room ID wajib diisi" });
+  }
+
+  const cleanRoomId = roomId.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
+  db.rooms[cleanRoomId] = {
+    roomId: cleanRoomId,
+    name: name || cleanRoomId,
+    isPrivate: Boolean(isPrivate),
+    passcode: isPrivate ? String(passcode || "") : "",
+    targetSteps: Number(targetSteps) || 10000,
+    members: [creatorId],
+    createdAt: new Date().toISOString()
+  };
+  saveDB();
+
+  res.json({ success: true, message: "Room berhasil dibuat", room: db.rooms[cleanRoomId] });
+});
+
+app.post("/api/rooms/:roomId/join", (req, res) => {
+  const { userId = "streamer", passcode = "" } = req.body;
+  const room = db.rooms[req.params.roomId];
+  if (!room) return res.status(404).json({ success: false, message: "Room tidak ditemukan" });
+
+  if (room.isPrivate && room.passcode && room.passcode !== passcode) {
+    return res.status(403).json({ success: false, message: "Passcode room salah" });
+  }
+
+  if (!room.members.includes(userId)) {
+    room.members.push(userId);
+    saveDB();
+  }
+
+  res.json({ success: true, message: `Berhasil bergabung ke room ${room.name}`, room });
+});
+
+app.post("/api/rooms/:roomId/leave", (req, res) => {
+  const { userId } = req.body;
+  const room = db.rooms[req.params.roomId];
+  if (room && userId) {
+    room.members = room.members.filter(m => m !== userId);
+    saveDB();
+  }
+  res.json({ success: true, message: "Berhasil keluar dari room" });
+});
+
 // WebSocket Connection Management
 wss.on("connection", (ws) => {
   const clientId = ++clientCounter;
   const clientInfo = {
     ws,
-    subscribedUsers: new Set()
+    subscribedUsers: new Set(),
+    subscribedRooms: new Set()
   };
   clients.set(clientId, clientInfo);
 
@@ -211,6 +390,24 @@ wss.on("connection", (ws) => {
         }
         ws.send(JSON.stringify({
           type: "init_multi",
+          data: initData
+        }));
+      } else if (msg.type === "subscribe_room") {
+        const roomId = msg.roomId || "global";
+        clientInfo.subscribedRooms.add(roomId);
+        const room = db.rooms[roomId];
+        const initData = [];
+        if (room && Array.isArray(room.members)) {
+          for (const u of room.members) {
+            const userData = getUser(u);
+            const percentage = Math.min(100, Math.round((userData.currentSteps / Math.max(1, userData.targetSteps)) * 100));
+            initData.push({ ...userData, percentage });
+          }
+        }
+        ws.send(JSON.stringify({
+          type: "init_room",
+          roomId,
+          roomName: room ? room.name : roomId,
           data: initData
         }));
       } else if (msg.type === "ping") {

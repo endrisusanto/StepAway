@@ -39,6 +39,10 @@ class StepSensorService : Service(), SensorEventListener {
     private var sessionSteps: Int = 0
     private var lastSentSteps: Int = 0
 
+    // Cadence / Pace Tracking
+    private val recentStepTimes = mutableListOf<Long>()
+    private var currentActivityStatus: String = "IDLE"
+
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
 
@@ -59,7 +63,7 @@ class StepSensorService : Service(), SensorEventListener {
 
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "StepAway::SensorWakeLock")
-        wakeLock?.acquire(24 * 60 * 60 * 1000L) // 24 hours max
+        wakeLock?.acquire(24 * 60 * 60 * 1000L)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -73,12 +77,13 @@ class StepSensorService : Service(), SensorEventListener {
         userId = intent?.getStringExtra(EXTRA_USER_ID) ?: userId
 
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, buildNotification("Sensor langkah aktif...", 0))
+        startForeground(NOTIFICATION_ID, buildNotification("Sensor langkah aktif...", 0, "IDLE"))
 
-        StepAwayWidgetProvider.sendUpdateBroadcast(this, sessionSteps, true)
+        StepAwayWidgetProvider.sendUpdateBroadcast(this, sessionSteps, true, "IDLE")
 
         registerSensors()
         startSyncLoop()
+        startIdleDetectorLoop()
 
         return START_STICKY
     }
@@ -93,6 +98,20 @@ class StepSensorService : Service(), SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event == null) return
+
+        val now = System.currentTimeMillis()
+        recentStepTimes.add(now)
+        recentStepTimes.removeAll { now - it > 4000 }
+
+        // Calculate Steps per Minute (SPM)
+        val stepsIn4Sec = recentStepTimes.size
+        val spm = (stepsIn4Sec / 4.0) * 60.0
+
+        currentActivityStatus = when {
+            spm >= 130 -> "RUNNING"
+            spm >= 25 -> "WALKING"
+            else -> "IDLE"
+        }
 
         if (event.sensor.type == Sensor.TYPE_STEP_COUNTER) {
             val totalBootSteps = event.values[0].toInt()
@@ -111,14 +130,29 @@ class StepSensorService : Service(), SensorEventListener {
 
     private fun updateNotificationLive() {
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(NOTIFICATION_ID, buildNotification("Berjalan aktif: $sessionSteps langkah", sessionSteps))
-        StepAwayWidgetProvider.sendUpdateBroadcast(this, sessionSteps, true)
+        val label = if (currentActivityStatus == "RUNNING") "🏃 Berlari" else "🚶 Berjalan"
+        manager.notify(NOTIFICATION_ID, buildNotification("$label: $sessionSteps langkah", sessionSteps, currentActivityStatus))
+        StepAwayWidgetProvider.sendUpdateBroadcast(this, sessionSteps, true, currentActivityStatus)
+    }
+
+    private fun startIdleDetectorLoop() {
+        serviceScope.launch {
+            while (true) {
+                delay(2500)
+                val now = System.currentTimeMillis()
+                if (recentStepTimes.isNotEmpty() && now - recentStepTimes.last() > 4500) {
+                    recentStepTimes.clear()
+                    currentActivityStatus = "IDLE"
+                    updateNotificationLive()
+                }
+            }
+        }
     }
 
     private fun startSyncLoop() {
         serviceScope.launch {
             while (true) {
-                delay(600) // Debounced real-time sync
+                delay(600)
                 if (sessionSteps != lastSentSteps) {
                     val delta = sessionSteps - lastSentSteps
                     val success = sendStepData(sessionSteps, delta)
@@ -175,15 +209,17 @@ class StepSensorService : Service(), SensorEventListener {
         }
     }
 
-    private fun buildNotification(contentText: String, currentSteps: Int): Notification {
+    private fun buildNotification(contentText: String, currentSteps: Int, status: String): Notification {
         val mainIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this, 0, mainIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val statusTag = if (status == "RUNNING") " [LARI]" else if (status == "WALKING") " [JALAN]" else ""
+
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("StepAway Active Tracking")
+            .setContentTitle("StepAway Active Tracking$statusTag")
             .setContentText(contentText)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentIntent(pendingIntent)
@@ -199,7 +235,7 @@ class StepSensorService : Service(), SensorEventListener {
             if (it.isHeld) it.release()
         }
         serviceJob.cancel()
-        StepAwayWidgetProvider.sendUpdateBroadcast(this, sessionSteps, false)
+        StepAwayWidgetProvider.sendUpdateBroadcast(this, sessionSteps, false, "IDLE")
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

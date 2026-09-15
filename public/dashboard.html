@@ -37,7 +37,7 @@
     <div class="dashboard-grid">
       <!-- Live Status & Simulator Card -->
       <section class="card">
-        <h2 class="card-title">📊 Live Status & Test Simulator</h2>
+        <h2 class="card-title">📊 Live Status &amp; Test Simulator</h2>
         
         <div class="stat-row">
           <div>
@@ -45,6 +45,7 @@
             <div id="liveSteps" class="big-stat">0</div>
           </div>
           <div class="target-badge">
+            <span id="livePaceBadge" class="activity-badge activity-idle">🧘 IDLE</span><br>
             Target: <span id="liveTarget">5,000</span> (<span id="livePercent">0%</span>)
           </div>
         </div>
@@ -66,19 +67,21 @@
 
       <!-- Target Settings & User Config -->
       <section class="card">
-        <h2 class="card-title">🎯 Pengaturan Target Langkah</h2>
+        <h2 class="card-title">🎯 Profil &amp; Target Goal</h2>
         
         <div class="form-group">
-          <label class="form-label" for="inputUserId">User ID / Channel Name</label>
+          <label class="form-label" for="inputUserId">User ID (Key Unik)</label>
           <input type="text" id="inputUserId" class="input-text" value="streamer">
         </div>
 
         <div class="form-group">
+          <label class="form-label" for="inputDisplayName">Nama Tampilan (Display Name)</label>
+          <input type="text" id="inputDisplayName" class="input-text" value="Streamer">
+        </div>
+
+        <div class="form-group">
           <label class="form-label" for="inputTarget">Target Langkah (Goal)</label>
-          <div class="form-row">
-            <input type="number" id="inputTarget" class="input-text" value="5000" min="100" step="500">
-            <button id="btnSaveTarget" class="btn btn-primary">Simpan</button>
-          </div>
+          <input type="number" id="inputTarget" class="input-text" value="5000" min="100" step="500">
         </div>
 
         <div class="form-group">
@@ -90,14 +93,49 @@
             <button class="btn btn-secondary preset-btn" data-target="20000">20,000</button>
           </div>
         </div>
+
+        <button id="btnSaveSettings" class="btn btn-primary" style="width: 100%; margin-top: 4px;">💾 Simpan Pengaturan ke Database</button>
       </section>
     </div>
+
+    <!-- Multi-User Room Management Section -->
+    <section class="card">
+      <h2 class="card-title">👥 Multi-User Room System (Co-op / Battle)</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-top: -8px;">
+        Buat atau gabung ke Room bersama streamer lain. Overlay room akan otomatis menampilkan seluruh member yang bergabung.
+      </p>
+
+      <div class="dashboard-grid" style="margin-top: 8px;">
+        <!-- Create Room -->
+        <div class="form-group">
+          <label class="form-label">Buat Room Baru</label>
+          <input type="text" id="inputRoomId" class="input-text" placeholder="ID Room (contoh: walk-squad)">
+          <input type="text" id="inputRoomName" class="input-text" placeholder="Nama Room (contoh: Squad Jalan Sehat)" style="margin-top: 6px;">
+          
+          <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px;">
+            <label style="font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="chkPrivateRoom"> Private Room
+            </label>
+            <input type="password" id="inputRoomPasscode" class="input-text" placeholder="Passcode (jika private)" style="display: none;">
+          </div>
+          <button id="btnCreateRoom" class="btn btn-purple" style="margin-top: 8px;">➕ Buat Room</button>
+        </div>
+
+        <!-- Join Room -->
+        <div class="form-group">
+          <label class="form-label">Gabung ke Room Lain</label>
+          <input type="text" id="inputJoinRoomId" class="input-text" placeholder="ID Room yang dituju">
+          <input type="password" id="inputJoinPasscode" class="input-text" placeholder="Passcode (jika private)" style="margin-top: 6px;">
+          <button id="btnJoinRoom" class="btn btn-secondary" style="margin-top: 8px;">🚀 Gabung Room</button>
+        </div>
+      </div>
+    </section>
 
     <!-- OBS Links Section -->
     <section class="card">
       <h2 class="card-title">📺 Link OBS Browser Source</h2>
       <p style="font-size: 13px; color: var(--text-muted); margin-top: -8px;">
-        Copy link di bawah ini dan paste ke dalam <strong>Browser Source</strong> di OBS Studio (Resolusi rekomen: <strong>420 x 140</strong> px, centang <em>Shutdown source when not visible</em> jika perlu).
+        Copy link di bawah ini dan paste ke dalam <strong>Browser Source</strong> di OBS Studio (Resolusi: <strong>420 x 140</strong> px, transparan otomatis).
       </p>
 
       <div class="form-group">
@@ -109,10 +147,10 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">2. Multi-User Overlay (Co-op / Walking Battle)</label>
+        <label class="form-label">2. Room Overlay (Multi-User Otomatis)</label>
         <div class="url-box">
-          <span id="urlMulti" class="url-text">Loading...</span>
-          <button class="btn btn-secondary copy-btn" data-target="urlMulti">Copy</button>
+          <span id="urlRoom" class="url-text">Loading...</span>
+          <button class="btn btn-secondary copy-btn" data-target="urlRoom">Copy</button>
         </div>
       </div>
 
@@ -131,8 +169,8 @@
       <ol class="instructions-list">
         <li>Install aplikasi <strong>StepAway Android</strong> di smartphone Anda.</li>
         <li>Buka aplikasi, masukkan Server URL: <span class="code-inline">https://stepaway.endrisusanto.my.id</span></li>
-        <li>Masukkan User ID yang sama: <span id="guideUserId" class="code-inline">streamer</span></li>
-        <li>Klik tombol <strong>Start Tracking</strong>. Sensor langkah bawaan HP akan aktif di background service dan mengirim setiap langkah ke OBS widget secara otomatis.</li>
+        <li>Masukkan User ID: <span id="guideUserId" class="code-inline">streamer</span></li>
+        <li>Klik tombol <strong>Start Tracking</strong>. Sensor langkah bawaan HP akan aktif dan mengirim setiap langkah serta ritme kecepatan (jalan/lari) ke OBS secara otomatis.</li>
       </ol>
     </section>
   </div>

@@ -1,6 +1,7 @@
-// StepAway Multi-User Overlay Logic
+// StepAway Multi-User Overlay Logic (Rooms & Direct Users)
 (() => {
   const params = new URLSearchParams(window.location.search);
+  const roomId = params.get('room');
   const usersParam = params.get('users') || 'streamer,guest';
   const targetUserIds = usersParam.split(',').map(u => u.trim()).filter(Boolean);
   const isTest = params.get('test') === 'true';
@@ -9,17 +10,24 @@
   const userCards = new Map();
   let ws = null;
 
-  function getTier(steps) {
-    if (steps >= 10000) return { name: 'Master', class: 'tier-master' };
-    if (steps >= 5000) return { name: 'Gold', class: 'tier-gold' };
-    if (steps >= 2000) return { name: 'Silver', class: 'tier-silver' };
-    if (steps >= 1000) return { name: 'Bronze', class: 'tier-bronze' };
-    return { name: 'Starter', class: 'tier-starter' };
+  function applyActivity(badgeEl, cardEl, status) {
+    const s = (status || 'IDLE').toUpperCase();
+    badgeEl.className = 'activity-badge';
+    if (s === 'RUNNING') {
+      badgeEl.textContent = '🏃 RUNNING';
+      badgeEl.classList.add('activity-running');
+    } else if (s === 'WALKING') {
+      badgeEl.textContent = '🚶 WALKING';
+      badgeEl.classList.add('activity-walking');
+    } else {
+      badgeEl.textContent = '🧘 IDLE';
+      badgeEl.classList.add('activity-idle');
+    }
   }
 
   function createUserCard(userId) {
     const card = document.createElement('div');
-    card.className = 'step-widget tier-starter';
+    card.className = 'step-widget';
     card.id = `widget-${userId}`;
     card.innerHTML = `
       <div id="milestone-${userId}" class="milestone-banner">
@@ -32,7 +40,7 @@
           <div id="dot-${userId}" class="status-dot online"></div>
           <span id="name-${userId}" class="user-name">${userId}</span>
         </div>
-        <div id="tier-${userId}" class="tier-tag">Starter</div>
+        <div id="activity-${userId}" class="activity-badge activity-idle">🧘 IDLE</div>
       </div>
       <div class="counter-box">
         <div class="step-numbers">
@@ -55,7 +63,7 @@
     userCards.set(userId, {
       card,
       nameEl: card.querySelector(`#name-${userId}`),
-      tierEl: card.querySelector(`#tier-${userId}`),
+      activityEl: card.querySelector(`#activity-${userId}`),
       stepsEl: card.querySelector(`#steps-${userId}`),
       targetEl: card.querySelector(`#target-${userId}`),
       barEl: card.querySelector(`#bar-${userId}`),
@@ -86,7 +94,7 @@
       cardObj = createUserCard(userData.userId);
     }
 
-    const { card, nameEl, tierEl, stepsEl, targetEl, barEl, percentEl, particlesEl, milestoneEl, milestoneValEl } = cardObj;
+    const { card, nameEl, activityEl, stepsEl, targetEl, barEl, percentEl, particlesEl, milestoneEl, milestoneValEl } = cardObj;
     nameEl.textContent = userData.name || userData.userId;
 
     const steps = userData.currentSteps || 0;
@@ -98,10 +106,7 @@
     barEl.style.width = `${percentage}%`;
     percentEl.textContent = `${percentage}%`;
 
-    const tier = getTier(steps);
-    tierEl.textContent = tier.name;
-    card.classList.remove('tier-starter', 'tier-bronze', 'tier-silver', 'tier-gold', 'tier-master');
-    card.classList.add(tier.class);
+    applyActivity(activityEl, card, userData.activityStatus || (delta > 3 ? 'RUNNING' : (delta > 0 ? 'WALKING' : 'IDLE')));
 
     if (delta > 0) {
       spawnStepParticle(particlesEl, delta);
@@ -117,8 +122,9 @@
     }
   }
 
-  // Init all requested users
-  targetUserIds.forEach(u => createUserCard(u));
+  if (!roomId) {
+    targetUserIds.forEach(u => createUserCard(u));
+  }
 
   function connectWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -126,7 +132,11 @@
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-      ws.send(JSON.stringify({ type: 'subscribe_multi', userIds: targetUserIds }));
+      if (roomId) {
+        ws.send(JSON.stringify({ type: 'subscribe_room', roomId }));
+      } else {
+        ws.send(JSON.stringify({ type: 'subscribe_multi', userIds: targetUserIds }));
+      }
     };
 
     ws.onmessage = (event) => {
@@ -134,8 +144,10 @@
         const msg = JSON.parse(event.data);
         if (msg.type === 'init_multi' && Array.isArray(msg.data)) {
           msg.data.forEach(u => updateCard(u, 0));
+        } else if (msg.type === 'init_room' && Array.isArray(msg.data)) {
+          msg.data.forEach(u => updateCard(u, 0));
         } else if (msg.type === 'step_update' && msg.data) {
-          updateCard(msg.data, msg.data.delta || 1);
+          updateCard(msg.data, msg.data.delta || 0);
         }
       } catch (err) {
         console.error('[Multi-WS Error]', err);
@@ -149,15 +161,15 @@
 
   if (isTest) {
     let s1 = 1200, s2 = 2400;
-    updateCard({ userId: targetUserIds[0] || 'streamer', currentSteps: s1, targetSteps: 5000 });
-    updateCard({ userId: targetUserIds[1] || 'guest', currentSteps: s2, targetSteps: 5000 });
+    updateCard({ userId: 'Streamer 1', currentSteps: s1, targetSteps: 5000, activityStatus: 'WALKING' });
+    updateCard({ userId: 'Streamer 2', currentSteps: s2, targetSteps: 5000, activityStatus: 'RUNNING' });
 
     setInterval(() => {
-      s1 += 3;
-      s2 += 7;
-      updateCard({ userId: targetUserIds[0] || 'streamer', currentSteps: s1, targetSteps: 5000 }, 3);
-      updateCard({ userId: targetUserIds[1] || 'guest', currentSteps: s2, targetSteps: 5000 }, 7);
-    }, 2000);
+      s1 += 2;
+      s2 += 6;
+      updateCard({ userId: 'Streamer 1', currentSteps: s1, targetSteps: 5000, activityStatus: 'WALKING' }, 2);
+      updateCard({ userId: 'Streamer 2', currentSteps: s2, targetSteps: 5000, activityStatus: 'RUNNING' }, 6);
+    }, 1800);
   } else {
     connectWebSocket();
   }
