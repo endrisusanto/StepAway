@@ -5,10 +5,12 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:gravity="center_vertical">
+    android:paddingStart="16dp"
+    android:paddingTop="14dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="12dp">
 
-    <!-- Header: User Name & HR Chip & Pace Badge -->
+    <!-- Top Corner Header: User Name (Left) & HR Chip + Pace Badge (Right) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,7 +24,7 @@
             android:layout_weight="1"
             android:text="Streamer"
             android:textColor="#F4F4F5"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:fontFamily="sans-serif-medium"
             android:textStyle="bold"
             android:maxLines="1"
@@ -37,10 +39,10 @@
             android:paddingTop="3dp"
             android:paddingEnd="8dp"
             android:paddingBottom="3dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="6dp"
             android:text="-- BPM"
             android:textColor="#F43F5E"
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:fontFamily="sans-serif-medium"
             android:textStyle="bold" />
 
@@ -49,22 +51,27 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/widget_tier_bg"
-            android:paddingStart="10dp"
+            android:paddingStart="9dp"
             android:paddingTop="3dp"
-            android:paddingEnd="10dp"
+            android:paddingEnd="9dp"
             android:paddingBottom="3dp"
             android:text="IDLE"
             android:textColor="#9E9EA7"
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:fontFamily="sans-serif-medium"
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Counter Display: Large Step Counter & Goal Target -->
+    <!-- Center Spacer -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Center: Large Bold Step Counter & Goal + Percentage in Corners -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:orientation="horizontal"
         android:gravity="bottom">
 
@@ -81,7 +88,7 @@
                 android:layout_height="wrap_content"
                 android:text="0"
                 android:textColor="#FFFFFF"
-                android:textSize="34sp"
+                android:textSize="44sp"
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold"
                 android:includeFontPadding="false" />
@@ -90,54 +97,54 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
-                android:layout_marginBottom="4dp"
+                android:layout_marginBottom="6dp"
                 android:text="steps"
                 android:textColor="#FECA57"
-                android:textSize="13sp"
+                android:textSize="14sp"
                 android:fontFamily="sans-serif-rounded"
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/widgetTargetInfo"
+        <!-- Right Corner: Goal & Percentage -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:text="Goal: 5,000"
-            android:textColor="#A1A1AA"
-            android:textSize="13sp"
-            android:fontFamily="sans-serif-medium"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:gravity="bottom"
+            android:layout_marginBottom="6dp">
+
+            <TextView
+                android:id="@+id/widgetTargetInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Goal: 5,000"
+                android:textColor="#A1A1AA"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widgetPercentDisplay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="0%"
+                android:textColor="#00E5FF"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-rounded"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- Progress Bar & Percentage -->
-    <LinearLayout
+    <!-- Bottom: Progress Bar Flush with Bottom Edge -->
+    <ProgressBar
+        android:id="@+id/widgetProgressBar"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <ProgressBar
-            android:id="@+id/widgetProgressBar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="0dp"
-            android:layout_height="10dp"
-            android:layout_weight="1"
-            android:max="100"
-            android:progress="0"
-            android:progressDrawable="@drawable/widget_progress_track" />
-
-        <TextView
-            android:id="@+id/widgetPercentDisplay"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:text="0%"
-            android:textColor="#00E5FF"
-            android:textSize="14sp"
-            android:fontFamily="sans-serif-rounded"
-            android:textStyle="bold" />
-    </LinearLayout>
+        android:layout_height="8dp"
+        android:layout_marginTop="4dp"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/widget_progress_track" />
 
 </LinearLayout>

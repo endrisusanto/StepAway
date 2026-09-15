@@ -13,50 +13,49 @@
         android:strokeWidth="1.5"
         android:pathData="M12,0.75 L238,0.75 A11.25,11.25 0 0,1 249.25,12 L249.25,98 A11.25,11.25 0 0,1 238,109.25 L12,109.25 A11.25,11.25 0 0,1 0.75,98 L0.75,12 A11.25,11.25 0 0,1 12,0.75 Z" />
 
-    <!-- Top User Placeholder Bar -->
+    <!-- Top User Placeholder Bar (Left Corner) -->
     <path
-        android:fillColor="#3F3F46"
-        android:pathData="M14,16 L74,16 A4,4 0 0,1 78,20 L78,24 A4,4 0 0,1 74,28 L14,28 A4,4 0 0,1 10,24 L10,20 A4,4 0 0,1 14,16 Z" />
+        android:fillColor="#F4F4F5"
+        android:pathData="M16,14 L80,14 A3,3 0 0,1 83,17 L83,21 A3,3 0 0,1 80,24 L16,24 A3,3 0 0,1 13,21 L13,17 A3,3 0 0,1 16,14 Z" />
         
-    <!-- HR Chip Preview (Red) -->
+    <!-- HR Chip Preview (Red) (Right Corner) -->
     <path
         android:fillColor="#33F43F5E"
-        android:pathData="M140,16 L186,16 A4,4 0 0,1 190,20 L190,24 A4,4 0 0,1 186,28 L140,28 A4,4 0 0,1 136,20 L136,20 A4,4 0 0,1 140,16 Z" />
+        android:pathData="M144,13 L188,13 A4,4 0 0,1 192,17 L192,23 A4,4 0 0,1 188,27 L144,27 A4,4 0 0,1 140,23 L140,17 A4,4 0 0,1 144,13 Z" />
     <path
         android:fillColor="#F43F5E"
-        android:pathData="M146,20 L180,20 A2,2 0 0,1 182,22 L182,22 A2,2 0 0,1 180,24 L146,24 A2,2 0 0,1 144,22 L144,22 A2,2 0 0,1 146,20 Z" />
+        android:pathData="M148,18 L184,18 A2,2 0 0,1 186,20 L186,20 A2,2 0 0,1 184,22 L148,22 A2,2 0 0,1 146,20 L146,20 A2,2 0 0,1 148,18 Z" />
 
-    <!-- Pace Badge Preview (Green) -->
+    <!-- Pace Badge Preview (Right Corner) -->
     <path
         android:fillColor="#3310B981"
-        android:pathData="M198,16 L236,16 A4,4 0 0,1 240,20 L240,24 A4,4 0 0,1 236,28 L198,28 A4,4 0 0,1 194,20 L194,20 A4,4 0 0,1 198,16 Z" />
+        android:pathData="M196,13 L234,13 A4,4 0 0,1 238,17 L238,23 A4,4 0 0,1 234,27 L196,27 A4,4 0 0,1 192,23 L192,17 A4,4 0 0,1 196,13 Z" />
     <path
         android:fillColor="#10B981"
-        android:pathData="M202,20 L232,20 A2,2 0 0,1 234,22 L234,22 A2,2 0 0,1 232,24 L202,24 A2,2 0 0,1 200,22 L200,22 A2,2 0 0,1 202,20 Z" />
+        android:pathData="M200,18 L230,18 A2,2 0 0,1 232,20 L232,20 A2,2 0 0,1 230,22 L200,22 A2,2 0 0,1 198,20 L198,20 A2,2 0 0,1 200,18 Z" />
 
-    <!-- Hero Step Number Indicator (Large White) -->
+    <!-- Massive Hero Step Number Indicator (Left Center) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M14,48 L100,48 A6,6 0 0,1 106,54 L106,62 A6,6 0 0,1 100,68 L14,68 A6,6 0 0,1 8,62 L8,54 A6,6 0 0,1 14,48 Z" />
+        android:pathData="M16,42 L110,42 A6,6 0 0,1 116,48 L116,68 A6,6 0 0,1 110,74 L16,74 A6,6 0 0,1 10,68 L10,48 A6,6 0 0,1 16,42 Z" />
     <!-- Yellow Steps Label -->
     <path
         android:fillColor="#FECA57"
-        android:pathData="M112,56 L144,56 A3,3 0 0,1 147,59 L147,63 A3,3 0 0,1 144,66 L112,66 A3,3 0 0,1 109,63 L109,59 A3,3 0 0,1 112,56 Z" />
-    <!-- Goal Label -->
-    <path
-        android:fillColor="#71717A"
-        android:pathData="M182,56 L236,56 A3,3 0 0,1 239,59 L239,63 A3,3 0 0,1 236,66 L182,66 A3,3 0 0,1 179,59 L179,59 A3,3 0 0,1 182,56 Z" />
+        android:pathData="M122,58 L152,58 A3,3 0 0,1 155,61 L155,67 A3,3 0 0,1 152,70 L122,70 A3,3 0 0,1 119,67 L119,61 A3,3 0 0,1 122,58 Z" />
 
-    <!-- Progress Track & Cyan Progress Fill -->
+    <!-- Goal & Percentage (Right Corner) -->
+    <path
+        android:fillColor="#A1A1AA"
+        android:pathData="M168,58 L206,58 A3,3 0 0,1 209,61 L209,67 A3,3 0 0,1 206,70 L168,70 A3,3 0 0,1 165,61 L165,61 A3,3 0 0,1 168,58 Z" />
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M214,56 L234,56 A3,3 0 0,1 237,59 L237,67 A3,3 0 0,1 234,70 L214,70 A3,3 0 0,1 211,67 L211,59 A3,3 0 0,1 214,56 Z" />
+
+    <!-- Bottom Pinned Progress Bar -->
     <path
         android:fillColor="#27272A"
-        android:pathData="M12,86 L204,86 A4,4 0 0,1 208,90 L208,90 A4,4 0 0,1 204,94 L12,94 A4,4 0 0,1 8,90 L8,90 A4,4 0 0,1 12,86 Z" />
+        android:pathData="M16,92 L234,92 A3,3 0 0,1 237,95 L237,97 A3,3 0 0,1 234,100 L16,100 A3,3 0 0,1 13,97 L13,95 A3,3 0 0,1 16,92 Z" />
     <path
         android:fillColor="#00E5FF"
-        android:pathData="M12,86 L154,86 A4,4 0 0,1 158,90 L158,90 A4,4 0 0,1 154,94 L12,94 A4,4 0 0,1 8,90 L8,90 A4,4 0 0,1 12,86 Z" />
-
-    <!-- Percentage Badge (Cyan) -->
-    <path
-        android:fillColor="#00E5FF"
-        android:pathData="M216,86 L238,86 A4,4 0 0,1 242,90 L242,90 A4,4 0 0,1 238,94 L216,94 A4,4 0 0,1 212,90 L212,90 A4,4 0 0,1 216,86 Z" />
+        android:pathData="M16,92 L140,92 A3,3 0 0,1 143,95 L143,97 A3,3 0 0,1 140,100 L16,100 A3,3 0 0,1 13,97 L13,95 A3,3 0 0,1 16,92 Z" />
 </vector>

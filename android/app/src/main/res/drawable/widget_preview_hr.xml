@@ -13,30 +13,25 @@
         android:strokeWidth="1.5"
         android:pathData="M12,0.75 L108,0.75 A11.25,11.25 0 0,1 119.25,12 L119.25,108 A11.25,11.25 0 0,1 108,119.25 L12,119.25 A11.25,11.25 0 0,1 0.75,108 L0.75,12 A11.25,11.25 0 0,1 12,0.75 Z" />
 
-    <!-- Top Row: HR Live Title & Aerobic Zone Badge -->
+    <!-- Top Row: HR Live Title (Left Corner) & Zone Badge (Right Corner) -->
     <path
         android:fillColor="#F43F5E"
-        android:pathData="M14,16 L44,16 A3,3 0 0,1 47,19 L47,21 A3,3 0 0,1 44,24 L14,24 A3,3 0 0,1 11,21 L11,19 A3,3 0 0,1 14,16 Z" />
+        android:pathData="M14,14 L48,14 A3,3 0 0,1 51,17 L51,21 A3,3 0 0,1 48,24 L14,24 A3,3 0 0,1 11,21 L11,17 A3,3 0 0,1 14,14 Z" />
 
     <path
-        android:fillColor="#33F59E0B"
-        android:pathData="M66,14 L106,14 A4,4 0 0,1 110,18 L110,22 A4,4 0 0,1 106,26 L66,26 A4,4 0 0,1 62,22 L62,18 A4,4 0 0,1 66,14 Z" />
+        android:fillColor="#3306B6D4"
+        android:pathData="M70,12 L106,12 A4,4 0 0,1 110,16 L110,22 A4,4 0 0,1 106,26 L70,26 A4,4 0 0,1 66,22 L66,16 A4,4 0 0,1 70,12 Z" />
     <path
-        android:fillColor="#F59E0B"
-        android:pathData="M70,18 L102,18 A2,2 0 0,1 104,20 L104,20 A2,2 0 0,1 102,22 L70,22 A2,2 0 0,1 68,20 L68,20 A2,2 0 0,1 70,18 Z" />
+        android:fillColor="#06B6D4"
+        android:pathData="M74,17 L102,17 A2,2 0 0,1 104,19 L104,19 A2,2 0 0,1 102,21 L74,21 A2,2 0 0,1 72,19 L72,19 A2,2 0 0,1 74,17 Z" />
 
-    <!-- Center Hero BPM Value (Red) -->
+    <!-- Center Hero BPM Value (Massive Bold Red) -->
     <path
         android:fillColor="#F43F5E"
-        android:pathData="M22,46 L98,46 A6,6 0 0,1 104,52 L104,64 A6,6 0 0,1 98,70 L22,70 A6,6 0 0,1 16,64 L16,52 A6,6 0 0,1 22,46 Z" />
+        android:pathData="M18,38 L102,38 A6,6 0 0,1 108,44 L108,66 A6,6 0 0,1 102,72 L18,72 A6,6 0 0,1 12,66 L12,44 A6,6 0 0,1 18,38 Z" />
         
     <!-- BPM Subtitle (Gray) -->
     <path
         android:fillColor="#A1A1AA"
-        android:pathData="M44,78 L76,78 A3,3 0 0,1 79,81 L79,83 A3,3 0 0,1 76,86 L44,86 A3,3 0 0,1 41,83 L41,81 A3,3 0 0,1 44,78 Z" />
-
-    <!-- Bottom Pulse Indicator -->
-    <path
-        android:fillColor="#33F43F5E"
-        android:pathData="M28,100 L92,100 A2,2 0 0,1 94,102 L94,102 A2,2 0 0,1 92,104 L28,104 A2,2 0 0,1 26,102 L26,102 A2,2 0 0,1 28,100 Z" />
+        android:pathData="M42,80 L78,80 A3,3 0 0,1 81,83 L81,87 A3,3 0 0,1 78,90 L42,90 A3,3 0 0,1 39,87 L39,83 A3,3 0 0,1 42,80 Z" />
 </vector>
