@@ -47,10 +47,10 @@ StepAway/
    ```bash
    docker compose ps
    ```
-   Web server akan berjalan di port `3000` (`http://localhost:3000`).
+   Web server akan berjalan di port `3344` (`http://localhost:3344`).
 
 3. **Domain & Reverse Proxy (`stepaway.endrisusanto.my.id`)**:
-   Hubungkan reverse proxy (Nginx, Caddy, atau Cloudflare Tunnel) ke `localhost:3000` dengan dukungan WebSocket headers (`Upgrade` & `Connection`).
+   Hubungkan reverse proxy (Nginx, Caddy, atau Cloudflare Tunnel) ke `localhost:3344` dengan dukungan WebSocket headers (`Upgrade` & `Connection`).
 
    Contoh Nginx config:
    ```nginx
@@ -58,7 +58,7 @@ StepAway/
        server_name stepaway.endrisusanto.my.id;
 
        location / {
-           proxy_pass http://127.0.0.1:3000;
+           proxy_pass http://127.0.0.1:3344;
            proxy_http_version 1.1;
            proxy_set_header Upgrade $http_upgrade;
            proxy_set_header Connection "upgrade";
