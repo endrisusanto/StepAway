@@ -24,6 +24,10 @@ if [ "$CURRENT_BRANCH" != "main" ]; then
   git branch -M main
 fi
 
+# Tarik perubahan terbaru dari remote jika ada commit dari GitHub Actions
+echo "🔄 Menyelaraskan dengan remote origin..."
+git pull --rebase origin main 2>/dev/null || true
+
 # Stage semua perubahan
 git add .
 

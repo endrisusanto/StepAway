@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Left Footprint -->
+    <group
+        android:pivotX="160"
+        android:pivotY="300"
+        android:rotation="-6">
+        <!-- Main Sole -->
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M 115,185 C 90,230 85,310 115,355 C 135,385 185,385 205,345 C 230,295 235,215 195,160 C 165,120 135,145 115,185 Z" />
+        <!-- Heel -->
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M 120,405 C 110,435 125,475 160,475 C 195,475 210,435 200,405 C 190,395 130,395 120,405 Z" />
+    </group>
+
+    <!-- Right Footprint -->
+    <group
+        android:pivotX="370"
+        android:pivotY="200"
+        android:rotation="4">
+        <!-- Main Sole -->
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M 325,85 C 300,130 295,210 325,255 C 345,285 395,285 415,245 C 440,195 445,115 405,60 C 375,20 345,45 325,85 Z" />
+        <!-- Heel -->
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M 330,305 C 320,335 335,375 370,375 C 405,375 420,335 410,305 C 400,295 340,295 330,305 Z" />
+    </group>
+
+</vector>
