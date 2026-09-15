@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,7 @@
     <header class="dashboard-header">
       <div class="brand-badge">
         <div id="brandLogoIcon" class="brand-icon online" title="Koneksi: Live Sync Terhubung">
-          <svg viewBox="0 0 512 512" width="24" height="24" fill="#ffffff">
+          <svg viewBox="0 0 512 512" width="22" height="22" fill="#ffffff">
             <g transform="rotate(-6 160 300)">
               <path d="M 115,185 C 90,230 85,310 115,355 C 135,385 185,385 205,345 C 230,295 235,215 195,160 C 165,120 135,145 115,185 Z" />
               <path d="M 120,405 C 110,435 125,475 160,475 C 195,475 210,435 200,405 C 190,395 130,395 120,405 Z" />
@@ -27,25 +27,45 @@
         </div>
         <div>
           <h1 class="brand-title">StepAway</h1>
-          <p class="brand-subtitle">Real-time Step Counter &amp; Heart Rate OBS Overlay</p>
           <span class="domain-sublabel">stepaway.endrisusanto.my.id</span>
         </div>
       </div>
+
       <div class="header-status-group">
+        <!-- Live Status Indicator -->
         <div id="wsStatusBadge" class="status-indicator online" title="Status Sinkronisasi Real-Time">
           <span class="status-dot"></span>
           <span id="wsStatusText" class="status-text">LIVE SYNC</span>
         </div>
+
+        <!-- Theme Toggle Button (Dark / Light Mode) -->
+        <button id="btnThemeToggle" class="btn-theme-toggle" title="Ganti Mode Gelap / Terang" aria-label="Ganti Tema">
+          <svg id="themeIconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg id="themeIconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
         <!-- SaaS Auth User State -->
-        <div id="authGuestBox" style="display: flex; gap: 8px;">
-          <button id="btnOpenLoginModal" class="btn btn-primary btn-header">Masuk / Daftar Akun</button>
+        <div id="authGuestBox">
+          <button id="btnOpenLoginModal" class="btn btn-primary btn-header">Masuk Akun</button>
         </div>
         <div id="authUserBox" class="user-auth-bar" style="display: none;">
           <div class="user-info-col">
             <span id="headerUserName" class="user-info-text">Streamer</span>
             <span id="headerPlanBadge" class="plan-badge">Creator Free</span>
           </div>
-          <button id="btnOpenQrModal" class="btn btn-secondary btn-header-small">Scan QR Android</button>
+          <button id="btnOpenQrModal" class="btn btn-secondary btn-header-small" title="Scan QR Code Android">QR App</button>
           <button id="btnLogout" class="btn btn-danger btn-header-small">Keluar</button>
         </div>
       </div>
@@ -95,11 +115,33 @@
       </div>
     </div>
 
-    <!-- Main Grid -->
-    <div class="dashboard-grid">
-      <!-- Left Column: Controls & Settings -->
-      <div style="display: flex; flex-direction: column; gap: 24px;">
-        
+    <!-- Tab Access Navigation Bar -->
+    <nav class="dashboard-tabs-bar" aria-label="Dashboard Tabs">
+      <button class="dash-tab-btn active" data-tab="pane-telemetry">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg>
+        <span>Telemetri &amp; Kontrol</span>
+      </button>
+      <button class="dash-tab-btn" data-tab="pane-donations">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+        <span>Subathon &amp; Donasi</span>
+      </button>
+      <button class="dash-tab-btn" data-tab="pane-overlay">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+        <span>OBS Overlay &amp; Widget</span>
+      </button>
+      <button class="dash-tab-btn" data-tab="pane-android">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+        <span>Android &amp; Koneksi</span>
+      </button>
+      <button class="dash-tab-btn" data-tab="pane-rooms">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        <span>Multi-Room Squad</span>
+      </button>
+    </nav>
+
+    <!-- Tab 1: Telemetri & Kontrol -->
+    <div id="pane-telemetry" class="tab-pane active">
+      <div class="tab-grid-2">
         <!-- Live Simulator Card -->
         <section class="card">
           <h2 class="card-title">Test Simulator</h2>
@@ -165,153 +207,122 @@
             </div>
           </div>
 
-          <button id="btnSaveSettings" class="btn btn-primary" style="width: 100%; margin-top: 6px;">Simpan Pengaturan ke Database</button>
+          <button id="btnSaveSettings" class="btn btn-primary" style="width: 100%; margin-top: 6px;">Simpan Pengaturan</button>
         </section>
-
-        <!-- TipTap.gg / Donation Webhook Integration -->
-        <section class="card">
-          <h2 class="card-title">Integrasi Donasi (TipTap.gg / Webhook)</h2>
-          <p style="font-size: 13px; color: var(--text-muted); margin-top: -6px;">
-            Otomatis konversi nominal donasi menjadi penambahan target langkah (*Subathon Goal*) atau bonus langkah dengan alert realtime di OBS.
-          </p>
-
-          <!-- Webhook URL Box -->
-          <div class="form-group" style="margin-top: 10px;">
-            <label class="form-label">Webhook URL (Paste ke Dashboard TipTap.gg)</label>
-            <div class="url-box">
-              <span id="urlWebhookTipTap" class="url-text">Loading...</span>
-              <button class="btn btn-secondary copy-btn" data-target="urlWebhookTipTap">Salin</button>
-            </div>
-          </div>
-
-          <!-- Donation Configuration -->
-          <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <label style="font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="checkbox" id="chkDonationEnabled" checked> Aktifkan Webhook Donasi
-              </label>
-              <span id="donationStatusBadge" class="badge-subathon">Subathon Mode</span>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="selectDonationMode">Mode Penambahan Steps</label>
-              <select id="selectDonationMode" class="input-text" style="height: 38px; cursor: pointer;">
-                <option value="subathon_target">Subathon Goal Booster (Menambah Target Langkah)</option>
-                <option value="direct_step">Community Step Booster (Menambah Langkah Saat Ini)</option>
-              </select>
-            </div>
-
-            <div class="form-grid-2">
-              <div class="form-group">
-                <label class="form-label" for="inputDonationRate" style="white-space: nowrap;">Rasio (Rp / Step)</label>
-                <input type="number" id="inputDonationRate" class="input-text" value="10" min="1" step="1" placeholder="Contoh: 10">
-                <span style="font-size: 11px; color: var(--text-muted); margin-top: 2px; white-space: nowrap;">Rp 10.000 = +1.000 Steps</span>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="inputDonationMin" style="white-space: nowrap;">Minimal Donasi (Rp)</label>
-                <input type="number" id="inputDonationMin" class="input-text" value="1000" min="0" step="500" placeholder="1000">
-                <span style="font-size: 11px; color: var(--text-muted); margin-top: 2px; white-space: nowrap;">Batas minimal diproses</span>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="inputDonationSecret">Webhook Secret Token (Opsional)</label>
-              <input type="password" id="inputDonationSecret" class="input-text" placeholder="Masukkan token rahasia (jika diaktifkan di TipTap)">
-            </div>
-
-            <button id="btnSaveDonationSettings" class="btn btn-primary" style="width: 100%;">Simpan Pengaturan Donasi</button>
-          </div>
-
-          <!-- Simulator Test Donasi -->
-          <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 16px;">
-            <label class="form-label">Simulasi Uji Coba Donasi (Kirim ke OBS)</label>
-            <div class="sim-btn-group">
-              <button id="btnTestDonation10k" class="btn btn-amber">+Rp 10.000</button>
-              <button id="btnTestDonation50k" class="btn btn-amber">+Rp 50.000</button>
-              <button id="btnTestDonation100k" class="btn btn-amber">+Rp 100.000</button>
-            </div>
-          </div>
-
-          <!-- Riwayat Donasi Terakhir -->
-          <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 16px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-              <label class="form-label" style="margin: 0;">Riwayat Donasi Masuk</label>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <button id="btnRefreshDonations" class="btn btn-secondary" style="padding: 3px 10px; font-size: 11px;">Refresh</button>
-              </div>
-            </div>
-
-            <!-- Batch Action Bar (Multiple Select) -->
-            <div id="donationBatchBar" class="batch-action-bar" style="display: none; margin-top: 10px;">
-              <span id="selectedDonationsCount" class="batch-count">0 terpilih</span>
-              <div class="batch-btn-group">
-                <button id="btnBatchRetrigger" class="btn btn-amber batch-btn">Retrigger Terpilih</button>
-                <button id="btnBatchDelete" class="btn btn-danger batch-btn">Hapus Terpilih</button>
-              </div>
-            </div>
-
-            <div class="table-scroll-container" style="margin-top: 8px;">
-              <table class="donation-history-table">
-                <thead>
-                  <tr>
-                    <th style="width: 28px; text-align: center;">
-                      <input type="checkbox" id="chkSelectAllDonations" title="Pilih Semua" style="cursor: pointer;">
-                    </th>
-                    <th>Donatur</th>
-                    <th>Nominal</th>
-                    <th>Steps</th>
-                    <th>Pesan</th>
-                    <th style="text-align: right; width: 90px;">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="donationHistoryTbody">
-                  <tr>
-                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 14px;">Belum ada donasi masuk</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- Multi-User Room System -->
-        <section class="card">
-          <h2 class="card-title">Room System (Co-op / Battle)</h2>
-          <p style="font-size: 13px; color: var(--text-muted); margin-top: -6px;">
-            Buat atau gabung ke Room bersama streamer lain. Overlay room otomatis menampilkan seluruh member yang bergabung.
-          </p>
-
-          <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 6px;">
-            <!-- Create Room -->
-            <div class="form-group">
-              <label class="form-label" for="inputRoomId">Buat Room Baru</label>
-              <input type="text" id="inputRoomId" class="input-text" placeholder="ID Room (contoh: walk-squad)">
-              <input type="text" id="inputRoomName" class="input-text" placeholder="Nama Room (contoh: Squad Jalan Sehat)" style="margin-top: 6px;">
-              
-              <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px;">
-                <label style="font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                  <input type="checkbox" id="chkPrivateRoom"> Private Room
-                </label>
-                <input type="password" id="inputRoomPasscode" class="input-text" placeholder="Passcode (jika private)" style="display: none;">
-              </div>
-              <button id="btnCreateRoom" class="btn btn-purple" style="margin-top: 8px;">Buat Room</button>
-            </div>
-
-            <!-- Join Room -->
-            <div class="form-group" style="border-top: 1px solid var(--border-color); padding-top: 14px;">
-              <label class="form-label" for="inputJoinRoomId">Gabung ke Room Lain</label>
-              <input type="text" id="inputJoinRoomId" class="input-text" placeholder="ID Room yang dituju">
-              <input type="password" id="inputJoinPasscode" class="input-text" placeholder="Passcode (jika private)" style="margin-top: 6px;">
-              <button id="btnJoinRoom" class="btn btn-secondary" style="margin-top: 8px;">Gabung Room</button>
-            </div>
-          </div>
-        </section>
-
       </div>
+    </div>
 
-      <!-- Right Column: OBS Links & Live Preview -->
-      <div style="display: flex; flex-direction: column; gap: 24px;">
+    <!-- Tab 2: Subathon & Donasi -->
+    <div id="pane-donations" class="tab-pane">
+      <section class="card">
+        <h2 class="card-title">Integrasi Donasi (TipTap.gg / Saweria Webhook)</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: -6px;">
+          Otomatis konversi nominal donasi menjadi penambahan target langkah (Subathon Goal) atau bonus langkah dengan alert realtime di OBS.
+        </p>
 
+        <!-- Webhook URL Box -->
+        <div class="form-group" style="margin-top: 10px;">
+          <label class="form-label">Webhook URL (Paste ke Dashboard TipTap.gg / Saweria)</label>
+          <div class="url-box">
+            <span id="urlWebhookTipTap" class="url-text">Loading...</span>
+            <button class="btn btn-secondary copy-btn" data-target="urlWebhookTipTap">Salin</button>
+          </div>
+        </div>
+
+        <!-- Donation Configuration -->
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <label style="font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="chkDonationEnabled" checked> Aktifkan Webhook Donasi
+            </label>
+            <span id="donationStatusBadge" class="badge-subathon">Subathon Mode</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="selectDonationMode">Mode Penambahan Steps</label>
+            <select id="selectDonationMode" class="input-text" style="height: 38px; cursor: pointer;">
+              <option value="subathon_target">Subathon Goal Booster (Menambah Target Langkah)</option>
+              <option value="direct_step">Community Step Booster (Menambah Langkah Saat Ini)</option>
+            </select>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="inputDonationRate" style="white-space: nowrap;">Rasio (Rp / Step)</label>
+              <input type="number" id="inputDonationRate" class="input-text" value="10" min="1" step="1" placeholder="Contoh: 10">
+              <span style="font-size: 11px; color: var(--text-muted); margin-top: 2px; white-space: nowrap;">Rp 10.000 = +1.000 Steps</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputDonationMin" style="white-space: nowrap;">Minimal Donasi (Rp)</label>
+              <input type="number" id="inputDonationMin" class="input-text" value="1000" min="0" step="500" placeholder="1000">
+              <span style="font-size: 11px; color: var(--text-muted); margin-top: 2px; white-space: nowrap;">Batas minimal diproses</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inputDonationSecret">Webhook Secret Token (Opsional)</label>
+            <input type="password" id="inputDonationSecret" class="input-text" placeholder="Masukkan token rahasia (jika diaktifkan di TipTap)">
+          </div>
+
+          <button id="btnSaveDonationSettings" class="btn btn-primary" style="width: 100%;">Simpan Pengaturan Donasi</button>
+        </div>
+
+        <!-- Simulator Test Donasi -->
+        <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 16px;">
+          <label class="form-label">Simulasi Uji Coba Donasi (Kirim ke OBS)</label>
+          <div class="sim-btn-group">
+            <button id="btnTestDonation10k" class="btn btn-amber">+Rp 10.000</button>
+            <button id="btnTestDonation50k" class="btn btn-amber">+Rp 50.000</button>
+            <button id="btnTestDonation100k" class="btn btn-amber">+Rp 100.000</button>
+          </div>
+        </div>
+
+        <!-- Riwayat Donasi Terakhir -->
+        <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <label class="form-label" style="margin: 0;">Riwayat Donasi Masuk</label>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button id="btnRefreshDonations" class="btn btn-secondary" style="padding: 3px 10px; font-size: 11px;">Refresh</button>
+            </div>
+          </div>
+
+          <!-- Batch Action Bar (Multiple Select) -->
+          <div id="donationBatchBar" class="batch-action-bar" style="display: none; margin-top: 10px;">
+            <span id="selectedDonationsCount" class="batch-count">0 terpilih</span>
+            <div class="batch-btn-group">
+              <button id="btnBatchRetrigger" class="btn btn-amber batch-btn">Retrigger Terpilih</button>
+              <button id="btnBatchDelete" class="btn btn-danger batch-btn">Hapus Terpilih</button>
+            </div>
+          </div>
+
+          <div class="table-scroll-container" style="margin-top: 8px;">
+            <table class="donation-history-table">
+              <thead>
+                <tr>
+                  <th style="width: 28px; text-align: center;">
+                    <input type="checkbox" id="chkSelectAllDonations" title="Pilih Semua" style="cursor: pointer;">
+                  </th>
+                  <th>Donatur</th>
+                  <th>Nominal</th>
+                  <th>Steps</th>
+                  <th>Pesan</th>
+                  <th style="text-align: right; width: 90px;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="donationHistoryTbody">
+                <tr>
+                  <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 14px;">Belum ada donasi masuk</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Tab 3: OBS Overlay & Widget -->
+    <div id="pane-overlay" class="tab-pane">
+      <div class="tab-grid-2">
         <!-- OBS Links Card -->
         <section class="card">
           <h2 class="card-title">Link OBS Browser Source</h2>
@@ -390,20 +401,88 @@
             <span id="previewHeightLabel">Tinggi: 340px</span>
           </div>
         </section>
+      </div>
+    </div>
 
-        <!-- Android Integration Guide -->
+    <!-- Tab 4: Android & Koneksi -->
+    <div id="pane-android" class="tab-pane">
+      <div class="tab-grid-2">
+        <!-- Android Setup Guide -->
         <section class="card">
-          <h2 class="card-title">Panduan Integrasi Android APK</h2>
-          <ol class="instructions-list">
-            <li>Install aplikasi <strong>StepAway Android</strong> di smartphone Anda.</li>
+          <h2 class="card-title">Panduan Aplikasi Android APK</h2>
+          <ol class="instructions-list" style="margin-bottom: 16px;">
+            <li>Unduh dan install aplikasi <strong>StepAway APK</strong> di smartphone Android Anda.</li>
             <li>Buka aplikasi, masukkan Server URL: <span class="code-inline">https://stepaway.endrisusanto.my.id</span></li>
             <li>Masukkan User ID: <span id="guideUserId" class="code-inline">streamer</span></li>
             <li>Klik tombol <strong>Start Tracking</strong>. Sensor langkah HP dan Smartband BLE (0x180D) akan otomatis terhubung dan mengirim data real-time ke OBS.</li>
           </ol>
+
+          <button id="btnOpenQrModalTab" class="btn btn-primary" style="width: 100%;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>Buka QR Code Pairing Android</span>
+          </button>
         </section>
 
+        <!-- Smartband & Widgets Info -->
+        <section class="card">
+          <h2 class="card-title">Smartband BLE &amp; Widget Home Screen</h2>
+          
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="background: var(--bg-card-alt); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <h4 style="font-size: 14px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 4px;">Monitor Detak Jantung Bluetooth LE</h4>
+              <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+                Aplikasi StepAway mendukung smartband standar GATT 0x180D (Xiaomi Smart Band, Huawei Band, Polar H10, Garmin, dan chest strap BLE).
+              </p>
+            </div>
+
+            <div style="background: var(--bg-card-alt); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <h4 style="font-size: 14px; font-weight: 700; color: var(--accent-green); margin-bottom: 4px;">3 Pilihan Widget Layar Utama</h4>
+              <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+                Gunakan widget 4x2 Side-by-Side Versus, 2x2 Compact Steps, atau 2x2 Heart Rate Live langsung di layar utama smartphone tanpa harus membuka aplikasi.
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
+
+    <!-- Tab 5: Multi-Room Squad -->
+    <div id="pane-rooms" class="tab-pane">
+      <section class="card" style="max-width: 760px; margin: 0 auto;">
+        <h2 class="card-title">Room System (Co-op / Battle Squad)</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: -6px;">
+          Buat atau gabung ke Room bersama streamer lain. Overlay room otomatis menampilkan seluruh member yang bergabung.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 10px;">
+          <!-- Create Room -->
+          <div class="form-group">
+            <label class="form-label" for="inputRoomId">Buat Room Baru</label>
+            <input type="text" id="inputRoomId" class="input-text" placeholder="ID Room (contoh: walk-squad)">
+            <input type="text" id="inputRoomName" class="input-text" placeholder="Nama Room (contoh: Squad Jalan Sehat)" style="margin-top: 6px;">
+            
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px;">
+              <label style="font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="checkbox" id="chkPrivateRoom"> Private Room
+              </label>
+              <input type="password" id="inputRoomPasscode" class="input-text" placeholder="Passcode (jika private)" style="display: none;">
+            </div>
+            <button id="btnCreateRoom" class="btn btn-purple" style="margin-top: 8px;">Buat Room</button>
+          </div>
+
+          <!-- Join Room -->
+          <div class="form-group" style="border-top: 1px solid var(--border-color); padding-top: 14px;">
+            <label class="form-label" for="inputJoinRoomId">Gabung ke Room Lain</label>
+            <input type="text" id="inputJoinRoomId" class="input-text" placeholder="ID Room yang dituju">
+            <input type="password" id="inputJoinPasscode" class="input-text" placeholder="Passcode (jika private)" style="margin-top: 6px;">
+            <button id="btnJoinRoom" class="btn btn-secondary" style="margin-top: 8px;">Gabung Room</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </div>
+
   <!-- Donation Detail & Action Modal -->
   <div id="donationDetailModal" class="modal-overlay" style="display: none;">
     <div class="modal-card">

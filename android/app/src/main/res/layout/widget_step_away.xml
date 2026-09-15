@@ -114,7 +114,7 @@
             android:paddingStart="8dp"
             android:paddingEnd="8dp">
 
-            <View
+            <FrameLayout
                 android:layout_width="1dp"
                 android:layout_height="0dp"
                 android:layout_weight="1"
@@ -131,7 +131,7 @@
                 android:paddingTop="2dp"
                 android:paddingBottom="2dp" />
 
-            <View
+            <FrameLayout
                 android:layout_width="1dp"
                 android:layout_height="0dp"
                 android:layout_weight="1"

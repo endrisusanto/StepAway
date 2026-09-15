@@ -83,6 +83,60 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnOpenLoginModal = document.getElementById('btnOpenLoginModal');
   const btnLogout = document.getElementById('btnLogout');
   const btnOpenQrModal = document.getElementById('btnOpenQrModal');
+  const btnOpenQrModalTab = document.getElementById('btnOpenQrModalTab');
+
+  // Theme Toggle Elements
+  const btnThemeToggle = document.getElementById('btnThemeToggle');
+  const themeIconSun = document.getElementById('themeIconSun');
+  const themeIconMoon = document.getElementById('themeIconMoon');
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('stepaway_theme', theme);
+    if (theme === 'light') {
+      if (themeIconSun) themeIconSun.style.display = 'none';
+      if (themeIconMoon) themeIconMoon.style.display = 'block';
+    } else {
+      if (themeIconSun) themeIconSun.style.display = 'block';
+      if (themeIconMoon) themeIconMoon.style.display = 'none';
+    }
+  }
+
+  const savedTheme = localStorage.getItem('stepaway_theme') || 
+    (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  applyTheme(savedTheme);
+
+  if (btnThemeToggle) {
+    btnThemeToggle.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    });
+  }
+
+  // Tab Access Switching
+  const tabBtns = document.querySelectorAll('.dash-tab-btn');
+  const tabPanes = document.querySelectorAll('.tab-pane');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetTab = btn.getAttribute('data-tab');
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabPanes.forEach(p => p.classList.remove('active'));
+
+      btn.classList.add('active');
+      const targetPane = document.getElementById(targetTab);
+      if (targetPane) targetPane.classList.add('active');
+
+      localStorage.setItem('stepaway_active_tab', targetTab);
+    });
+  });
+
+  // Restore Last Active Tab
+  const savedActiveTab = localStorage.getItem('stepaway_active_tab');
+  if (savedActiveTab) {
+    const savedBtn = document.querySelector(`.dash-tab-btn[data-tab="${savedActiveTab}"]`);
+    if (savedBtn) savedBtn.click();
+  }
 
   const displayStreamKey = document.getElementById('displayStreamKey');
   const btnRegenStreamKey = document.getElementById('btnRegenStreamKey');
@@ -1270,6 +1324,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (btnOpenQrModal) btnOpenQrModal.addEventListener('click', openQrModal);
+  if (btnOpenQrModalTab) btnOpenQrModalTab.addEventListener('click', openQrModal);
   if (btnCloseQrModal) btnCloseQrModal.addEventListener('click', closeQrModal);
   if (btnCloseQrFooter) btnCloseQrFooter.addEventListener('click', closeQrModal);
   if (qrPairingModal) {
