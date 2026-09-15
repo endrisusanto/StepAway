@@ -73,13 +73,13 @@
     const s = (status || 'IDLE').toUpperCase();
     livePaceBadge.className = 'activity-badge';
     if (s === 'RUNNING') {
-      livePaceBadge.textContent = '🏃 RUNNING';
+      livePaceBadge.textContent = 'RUNNING';
       livePaceBadge.classList.add('activity-running');
     } else if (s === 'WALKING') {
-      livePaceBadge.textContent = '🚶 WALKING';
+      livePaceBadge.textContent = 'WALKING';
       livePaceBadge.classList.add('activity-walking');
     } else {
-      livePaceBadge.textContent = '🧘 IDLE';
+      livePaceBadge.textContent = 'IDLE';
       livePaceBadge.classList.add('activity-idle');
     }
   }
@@ -114,7 +114,7 @@
       const json = await res.json();
       if (json.success) {
         localStorage.setItem('stepaway_userid', currentUserId);
-        alert('✅ Pengaturan berhasil disimpan di database server!');
+        alert('Pengaturan berhasil disimpan di database server.');
         fetchUserStats();
       }
     } catch (e) {
@@ -150,7 +150,7 @@
         activeRoomId = json.room.roomId;
         localStorage.setItem('stepaway_roomid', activeRoomId);
         updateUrls();
-        alert(`✅ Room '${json.room.name}' berhasil dibuat! Link OBS Room telah diperbarui.`);
+        alert(`Room '${json.room.name}' berhasil dibuat.`);
       }
     } catch (e) {
       alert('Gagal membuat room: ' + e.message);
@@ -176,7 +176,7 @@
         activeRoomId = roomId;
         localStorage.setItem('stepaway_roomid', activeRoomId);
         updateUrls();
-        alert(`✅ Berhasil bergabung ke Room '${roomId}'!`);
+        alert(`Berhasil bergabung ke Room '${roomId}'.`);
       } else {
         alert('Gagal join: ' + json.message);
       }

@@ -133,7 +133,7 @@ class StepSensorService : Service(), SensorEventListener {
 
     private fun updateNotificationLive() {
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val label = if (currentActivityStatus == "RUNNING") "🏃 Berlari" else "🚶 Berjalan"
+        val label = if (currentActivityStatus == "RUNNING") "Berlari" else "Berjalan"
         manager.notify(NOTIFICATION_ID, buildNotification("$label: $sessionSteps langkah", sessionSteps, currentActivityStatus))
         StepAwayWidgetProvider.sendUpdateBroadcast(this, sessionSteps, true, currentActivityStatus)
     }

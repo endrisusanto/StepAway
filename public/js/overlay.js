@@ -27,13 +27,13 @@
     activityTagEl.className = 'activity-badge';
 
     if (s === 'RUNNING') {
-      activityTagEl.textContent = '🏃 RUNNING';
+      activityTagEl.textContent = 'RUNNING';
       activityTagEl.classList.add('activity-running');
     } else if (s === 'WALKING') {
-      activityTagEl.textContent = '🚶 WALKING';
+      activityTagEl.textContent = 'WALKING';
       activityTagEl.classList.add('activity-walking');
     } else {
-      activityTagEl.textContent = '🧘 IDLE';
+      activityTagEl.textContent = 'IDLE';
       activityTagEl.classList.add('activity-idle');
     }
   }

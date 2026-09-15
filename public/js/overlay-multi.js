@@ -14,13 +14,13 @@
     const s = (status || 'IDLE').toUpperCase();
     badgeEl.className = 'activity-badge';
     if (s === 'RUNNING') {
-      badgeEl.textContent = '🏃 RUNNING';
+      badgeEl.textContent = 'RUNNING';
       badgeEl.classList.add('activity-running');
     } else if (s === 'WALKING') {
-      badgeEl.textContent = '🚶 WALKING';
+      badgeEl.textContent = 'WALKING';
       badgeEl.classList.add('activity-walking');
     } else {
-      badgeEl.textContent = '🧘 IDLE';
+      badgeEl.textContent = 'IDLE';
       badgeEl.classList.add('activity-idle');
     }
   }
@@ -31,7 +31,7 @@
     card.id = `widget-${userId}`;
     card.innerHTML = `
       <div id="milestone-${userId}" class="milestone-banner">
-        <div class="milestone-title">🔥 MILESTONE!</div>
+        <div class="milestone-title">MILESTONE REACHED</div>
         <div id="milestoneVal-${userId}" class="milestone-value">1,000 STEPS</div>
       </div>
       <div id="particles-${userId}" class="particles-layer"></div>
@@ -40,7 +40,7 @@
           <div id="dot-${userId}" class="status-dot online"></div>
           <span id="name-${userId}" class="user-name">${userId}</span>
         </div>
-        <div id="activity-${userId}" class="activity-badge activity-idle">🧘 IDLE</div>
+        <div id="activity-${userId}" class="activity-badge activity-idle">IDLE</div>
       </div>
       <div class="counter-box">
         <div class="step-numbers">

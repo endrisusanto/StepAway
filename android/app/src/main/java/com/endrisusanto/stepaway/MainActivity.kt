@@ -201,15 +201,15 @@ class MainActivity : AppCompatActivity() {
 
         when (status.uppercase()) {
             "RUNNING" -> {
-                tvCardPaceStatus.text = "🏃 RUNNING"
+                tvCardPaceStatus.text = "RUNNING"
                 tvCardPaceStatus.setTextColor(0xFFFF5252.toInt())
             }
             "WALKING" -> {
-                tvCardPaceStatus.text = "🚶 WALKING"
+                tvCardPaceStatus.text = "WALKING"
                 tvCardPaceStatus.setTextColor(0xFF10B981.toInt())
             }
             else -> {
-                tvCardPaceStatus.text = "🧘 IDLE"
+                tvCardPaceStatus.text = "IDLE"
                 tvCardPaceStatus.setTextColor(0xFF94A3B8.toInt())
             }
         }
@@ -235,10 +235,10 @@ class MainActivity : AppCompatActivity() {
             tvLiveBpm.text = if (bpm > 0) bpm.toString() else "--"
 
             val zone = when {
-                bpm >= 170 -> "🔥 PEAK"
-                bpm >= 140 -> "⚡ ANAEROBIC"
-                bpm >= 100 -> "🏃 AEROBIC"
-                bpm > 0 -> "💙 REST"
+                bpm >= 170 -> "PEAK"
+                bpm >= 140 -> "ANAEROBIC"
+                bpm >= 100 -> "AEROBIC"
+                bpm > 0 -> "REST"
                 else -> "IDLE"
             }
             tvBleZoneBadge.text = zone
@@ -459,7 +459,7 @@ class MainActivity : AppCompatActivity() {
 
                 withContext(Dispatchers.Main) {
                     if (code in 200..299) {
-                        Toast.makeText(this@MainActivity, "✅ Pengaturan disimpan ke database server!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@MainActivity, "Pengaturan disimpan ke database server.", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(this@MainActivity, "Tersimpan lokal (Server code $code)", Toast.LENGTH_SHORT).show()
                     }
@@ -506,7 +506,7 @@ class MainActivity : AppCompatActivity() {
 
                 withContext(Dispatchers.Main) {
                     if (code in 200..299) {
-                        Toast.makeText(this@MainActivity, "✅ Room '$roomId' berhasil dibuat!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@MainActivity, "Room '$roomId' berhasil dibuat.", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(this@MainActivity, "Gagal membuat room (Error $code)", Toast.LENGTH_SHORT).show()
                     }
@@ -549,11 +549,11 @@ class MainActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     if (code in 200..299) {
                         prefs.edit().putString("room_id", roomId).apply()
-                        Toast.makeText(this@MainActivity, "✅ Berhasil bergabung ke Room '$roomId'!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@MainActivity, "Berhasil bergabung ke Room '$roomId'.", Toast.LENGTH_SHORT).show()
                     } else if (code == 403) {
-                        Toast.makeText(this@MainActivity, "Passcode room salah!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@MainActivity, "Passcode room salah.", Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(this@MainActivity, "Room tidak ditemukan", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@MainActivity, "Room tidak ditemukan.", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
