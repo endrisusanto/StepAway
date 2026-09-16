@@ -581,7 +581,7 @@ class MainActivity : AppCompatActivity() {
         val slotOptions = slotIds.mapIndexed { idx, id ->
             val slot = bleManager.getSlot(id)
             val isOccupied = slot?.isConnected == true
-            val statusTag = if (isOccupied) " [Terhubung: ${slot.deviceName}]" else " [Kosong]"
+            val statusTag = if (isOccupied) " [Terhubung: ${slot?.deviceName}]" else " [Kosong]"
             "Slot ${idx + 1}: ${defaultSlotNames[idx]}$statusTag"
         }.toTypedArray()
 
