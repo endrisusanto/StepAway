@@ -5,9 +5,9 @@
     android:layout_marginBottom="10dp"
     android:background="@drawable/bg_band_card"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:padding="14dp">
 
-    <!-- Card Header: Slot Title & Status Badge -->
+    <!-- 1. Card Header: Slot Title & Status Zone Badge -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -24,7 +24,7 @@
             android:maxLines="1"
             android:text="Slot 1: Host / Streamer"
             android:textColor="#00E5FF"
-            android:textSize="13sp"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <TextView
@@ -33,17 +33,17 @@
             android:layout_height="wrap_content"
             android:background="@drawable/widget_tier_bg"
             android:fontFamily="sans-serif-rounded"
-            android:paddingStart="8dp"
-            android:paddingTop="2dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="2dp"
+            android:paddingStart="10dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="3dp"
             android:text="● Connected"
             android:textColor="#10B981"
             android:textSize="11sp"
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Card Body: BPM Display & Device Info & Actions -->
+    <!-- 2. Card Body: Live BPM Value & Device Name Info -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -51,7 +51,7 @@
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <!-- Big BPM Number -->
+        <!-- Live Heart Rate Display -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -65,26 +65,26 @@
                 android:fontFamily="sans-serif-rounded"
                 android:text="--"
                 android:textColor="#F43F5E"
-                android:textSize="26sp"
+                android:textSize="32sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="4dp"
                 android:fontFamily="sans-serif-rounded"
                 android:text="BPM"
                 android:textColor="#9E9EA7"
-                android:textSize="11sp"
+                android:textSize="12sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Device Name & Address -->
+        <!-- Device Info & Address -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="16dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -97,58 +97,68 @@
                 android:maxLines="1"
                 android:text="Xiaomi Smart Band 8"
                 android:textColor="#F4F4F5"
-                android:textSize="12sp"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvCardSlotDeviceAddr"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
                 android:ellipsize="end"
                 android:fontFamily="monospace"
                 android:maxLines="1"
                 android:text="E4:5F:01:23:45:67"
                 android:textColor="#71717A"
-                android:textSize="10sp" />
+                android:textSize="11sp" />
         </LinearLayout>
+    </LinearLayout>
 
-        <!-- Action Buttons -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:orientation="horizontal">
+    <!-- 3. Bottom Action Row: 50:50 Full-Width Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/btnCardEditName"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:backgroundTint="#26262B"
-                android:fontFamily="sans-serif-rounded"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:paddingHorizontal="10dp"
-                android:text="Edit"
-                android:textAllCaps="false"
-                android:textColor="#00E5FF"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+        <Button
+            android:id="@+id/btnCardEditName"
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:backgroundTint="#26262B"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-rounded"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:maxLines="1"
+            android:paddingHorizontal="10dp"
+            android:singleLine="true"
+            android:text="Ubah Nama"
+            android:textAllCaps="false"
+            android:textColor="#00E5FF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/btnCardDisconnect"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:layout_marginStart="6dp"
-                android:backgroundTint="#26262B"
-                android:fontFamily="sans-serif-rounded"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:paddingHorizontal="10dp"
-                android:text="Putus"
-                android:textAllCaps="false"
-                android:textColor="#F43F5E"
-                android:textSize="11sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+        <Button
+            android:id="@+id/btnCardDisconnect"
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:backgroundTint="#26262B"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-rounded"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:maxLines="1"
+            android:paddingHorizontal="10dp"
+            android:singleLine="true"
+            android:text="Putus"
+            android:textAllCaps="false"
+            android:textColor="#F43F5E"
+            android:textSize="12sp"
+            android:textStyle="bold" />
     </LinearLayout>
 </LinearLayout>
