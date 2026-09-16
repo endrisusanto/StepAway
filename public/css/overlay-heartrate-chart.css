@@ -31,16 +31,16 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  background: rgba(12, 14, 20, var(--bg-alpha, 1));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(24, 24, 27, var(--bg-alpha, 0.92));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, calc(0.12 * var(--bg-alpha, 1)));
-  border-radius: 16px;
-  padding: 12px 14px 10px 14px;
+  border-radius: 18px;
+  padding: 12px 16px;
   min-width: 320px;
   max-width: 400px;
   width: 360px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, calc(0.55 * var(--bg-alpha, 1))), inset 0 1px 0 rgba(255, 255, 255, calc(0.1 * var(--bg-alpha, 1)));
+  box-shadow: 0 14px 40px rgba(0, 0, 0, calc(0.6 * var(--bg-alpha, 1))), inset 0 1px 0 rgba(255, 255, 255, calc(0.12 * var(--bg-alpha, 1)));
   transition: all 0.3s ease;
 }
 
