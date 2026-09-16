@@ -1,6 +1,6 @@
 {
   "name": "stepaway-server",
-  "version": "1.0.49",
+  "version": "1.0.50",
   "description": "Real-time OBS Step Counter Widget with Android Sensor Sync",
   "main": "server.js",
   "type": "module",
