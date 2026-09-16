@@ -484,9 +484,15 @@
                     android:text="Scan Smartband"
                     android:textAllCaps="false"
                     android:textColor="#121214"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:singleLine="true"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:paddingHorizontal="10dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp" />
 
                 <Button
                     android:id="@+id/btnDisconnectBle"
@@ -497,8 +503,14 @@
                     android:text="Putus"
                     android:textAllCaps="false"
                     android:textColor="#F43F5E"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:fontFamily="sans-serif-rounded"
+                    android:textStyle="bold"
+                    android:singleLine="true"
+                    android:maxLines="1"
+                    android:paddingHorizontal="14dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
                     android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>

@@ -563,7 +563,7 @@ class MainActivity : AppCompatActivity() {
             val summary = connectedSlots.joinToString(" | ") { "${it.slotName}: ${it.deviceName ?: it.deviceAddress}" }
             tvConnectedBleDevice.text = summary
             btnDisconnectBle.visibility = View.VISIBLE
-            btnScanBle.text = "+ Tambah Smartband Lain"
+            btnScanBle.text = "+ Tambah Smartband"
         } else {
             tvBleStatusBadge.text = "● DISCONNECTED"
             tvBleStatusBadge.setTextColor(0xFF9E9EA7.toInt())
