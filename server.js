@@ -1771,6 +1771,19 @@ wss.on("connection", (ws) => {
           type: "init_multi",
           data: initData
         }));
+      } else if (msg.type === "subscribe_group_heartrate") {
+        const roomId = (msg.roomId || "global").trim();
+        clientInfo.subscribedRooms.add(roomId);
+        const roomMap = groupHeartrates.get(roomId);
+        const members = roomMap ? Array.from(roomMap.values()) : [];
+        const customSlotNames = (db.slotNames && db.slotNames[roomId]) ? db.slotNames[roomId] : {};
+        ws.send(JSON.stringify({
+          type: "group_heartrate_update",
+          roomId,
+          members,
+          slotNames: customSlotNames,
+          timestamp: Date.now()
+        }));
       } else if (msg.type === "subscribe_room") {
         const roomId = (msg.roomId || "global").trim();
         clientInfo.subscribedRooms.add(roomId);

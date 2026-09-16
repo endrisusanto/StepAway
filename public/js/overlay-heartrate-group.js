@@ -354,8 +354,7 @@
 
     ws.onopen = () => {
       console.log('[Group HR Combo Overlay] WebSocket Connected to', wsUrl);
-      ws.send(JSON.stringify({ type: 'subscribe_room', roomId }));
-      ws.send(JSON.stringify({ type: 'subscribe', userId: '*' }));
+      ws.send(JSON.stringify({ type: 'subscribe_group_heartrate', roomId }));
     };
 
     ws.onmessage = (event) => {
@@ -363,32 +362,10 @@
         const msg = JSON.parse(event.data);
         if (msg.type === 'group_heartrate_update') {
           if (!msg.roomId || msg.roomId === roomId || roomId === 'global') {
-            if (msg.slotNames) {
+            if (msg.slotNames && typeof msg.slotNames === 'object') {
               customSlotNames = { ...customSlotNames, ...msg.slotNames };
             }
             handleGroupUpdate(msg.members, msg.slotNames);
-          }
-        } else if (msg.type === 'step_update' && msg.data) {
-          const d = msg.data;
-          if (d.bpm && d.bpm > 0) {
-            updateMember({
-              slotId: 'slot_1',
-              name: customSlotNames['slot_1'] || d.name || d.userId || 'Streamer (Host)',
-              bpm: d.bpm || 0,
-              zone: d.bpmZone || 'DISCONNECTED',
-              bpmHistory: d.bpmHistory || []
-            });
-          }
-        } else if (msg.type === 'init' && msg.data) {
-          const d = msg.data;
-          if (d.bpm && d.bpm > 0) {
-            updateMember({
-              slotId: 'slot_1',
-              name: customSlotNames['slot_1'] || d.name || d.userId || 'Streamer (Host)',
-              bpm: d.bpm || 0,
-              zone: d.bpmZone || 'DISCONNECTED',
-              bpmHistory: d.bpmHistory || []
-            });
           }
         }
       } catch (err) {
