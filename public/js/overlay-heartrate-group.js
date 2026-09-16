@@ -248,8 +248,12 @@
     const { card, nameEl, dotEl, heartEl, bpmEl, zoneEl } = rowObj;
     card.style.display = 'flex';
 
-    if ((member.name || member.displayName) && nameEl) {
-      nameEl.textContent = member.name || member.displayName;
+    const slotNum = slotId.replace(/\D/g, '');
+    const urlOverride = params.get(`name_${slotId}`) || params.get(`name${slotNum}`) || params.get(slotId);
+    const finalName = urlOverride || member.name || member.displayName || `Player ${slotNum || slotId}`;
+
+    if (nameEl) {
+      nameEl.textContent = finalName;
     }
 
     const prevBpm = parseInt(bpmEl.textContent, 10) || 0;

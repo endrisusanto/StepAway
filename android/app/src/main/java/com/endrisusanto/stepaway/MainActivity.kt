@@ -581,18 +581,43 @@ class MainActivity : AppCompatActivity() {
         val slotOptions = slotIds.mapIndexed { idx, id ->
             val slot = bleManager.getSlot(id)
             val isOccupied = slot?.isConnected == true
+            val currentName = slot?.slotName ?: defaultSlotNames[idx]
             val statusTag = if (isOccupied) " [Terhubung: ${slot?.deviceName}]" else " [Kosong]"
-            "Slot ${idx + 1}: ${defaultSlotNames[idx]}$statusTag"
+            "Slot ${idx + 1}: $currentName$statusTag"
         }.toTypedArray()
 
         AlertDialog.Builder(this)
             .setTitle("Pilih Slot untuk $devName")
             .setItems(slotOptions) { _, which ->
                 val slotId = slotIds[which]
-                val slotLabel = defaultSlotNames[which]
-                bleManager.connectSlot(slotId, device, slotLabel)
-                Toast.makeText(this, "Menghubungkan $devName ke Slot ${which + 1} ($slotLabel)...", Toast.LENGTH_SHORT).show()
-                updateConnectedDevicesSummary()
+                val currentName = bleManager.getSlot(slotId)?.slotName ?: defaultSlotNames[which]
+
+                val input = EditText(this).apply {
+                    setText(currentName)
+                    setSelection(text.length)
+                    setSingleLine(true)
+                }
+                val container = android.widget.FrameLayout(this).apply {
+                    setPadding(50, 20, 50, 10)
+                    addView(input)
+                }
+
+                AlertDialog.Builder(this)
+                    .setTitle("Nama Tampilan (Slot ${which + 1})")
+                    .setMessage("Masukkan nama streamer / pemain untuk overlay:")
+                    .setView(container)
+                    .setPositiveButton("Simpan & Hubungkan") { _, _ ->
+                        val customName = input.text.toString().trim().ifEmpty { defaultSlotNames[which] }
+                        bleManager.connectSlot(slotId, device, customName)
+                        Toast.makeText(this, "Menghubungkan $devName ke Slot ${which + 1} ($customName)...", Toast.LENGTH_SHORT).show()
+                        updateConnectedDevicesSummary()
+                    }
+                    .setNegativeButton("Gunakan Default") { _, _ ->
+                        bleManager.connectSlot(slotId, device, defaultSlotNames[which])
+                        Toast.makeText(this, "Menghubungkan $devName ke Slot ${which + 1} (${defaultSlotNames[which]})...", Toast.LENGTH_SHORT).show()
+                        updateConnectedDevicesSummary()
+                    }
+                    .show()
             }
             .setNegativeButton("Batal", null)
             .show()
