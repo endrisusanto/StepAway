@@ -22,8 +22,7 @@
   const bpmZoneLabelEl = document.getElementById('bpmZoneLabel');
   const trioStrokePath = document.getElementById('trioStrokePath');
   const trioAreaPath = document.getElementById('trioAreaPath');
-  const trioBeaconDot = document.getElementById('trioBeaconDot');
-  const trioBeaconPulse = document.getElementById('trioBeaconPulse');
+  const trioBeaconEl = document.getElementById('trioBeacon');
   const milestoneBanner = document.getElementById('milestoneBanner');
   const milestoneValue = document.getElementById('milestoneValue');
 
@@ -115,8 +114,7 @@
     if (validPoints.length === 0) {
       if (trioStrokePath) trioStrokePath.setAttribute('d', '');
       if (trioAreaPath) trioAreaPath.setAttribute('d', '');
-      if (trioBeaconDot) { trioBeaconDot.setAttribute('cx', '-10'); trioBeaconDot.setAttribute('cy', '-10'); }
-      if (trioBeaconPulse) { trioBeaconPulse.setAttribute('cx', '-10'); trioBeaconPulse.setAttribute('cy', '-10'); }
+      if (trioBeaconEl) trioBeaconEl.style.display = 'none';
       return;
     }
 
@@ -146,11 +144,10 @@
     if (trioAreaPath) trioAreaPath.setAttribute('d', areaD);
 
     const latest = points[points.length - 1];
-    if (trioBeaconDot && trioBeaconPulse && latest) {
-      trioBeaconDot.setAttribute('cx', latest.x.toFixed(1));
-      trioBeaconDot.setAttribute('cy', latest.y.toFixed(1));
-      trioBeaconPulse.setAttribute('cx', latest.x.toFixed(1));
-      trioBeaconPulse.setAttribute('cy', latest.y.toFixed(1));
+    if (trioBeaconEl && latest) {
+      trioBeaconEl.style.display = 'block';
+      trioBeaconEl.style.left = `${(latest.x / width) * 100}%`;
+      trioBeaconEl.style.top = `${(latest.y / height) * 100}%`;
     }
   }
 

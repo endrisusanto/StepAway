@@ -16,8 +16,7 @@
   const maxBpmEl = document.getElementById('comboMaxBpm');
   const chartStrokePath = document.getElementById('comboStrokePath');
   const chartAreaPath = document.getElementById('comboAreaPath');
-  const beaconDot = document.getElementById('comboBeaconDot');
-  const beaconPulse = document.getElementById('comboBeaconPulse');
+  const beaconEl = document.getElementById('comboBeacon');
   const placeholderEl = document.getElementById('comboPlaceholder');
 
   // Apply Background Alpha
@@ -80,8 +79,7 @@
       if (placeholderEl) placeholderEl.style.display = 'block';
       if (chartStrokePath) chartStrokePath.setAttribute('d', '');
       if (chartAreaPath) chartAreaPath.setAttribute('d', '');
-      if (beaconDot) { beaconDot.setAttribute('cx', '-10'); beaconDot.setAttribute('cy', '-10'); }
-      if (beaconPulse) { beaconPulse.setAttribute('cx', '-10'); beaconPulse.setAttribute('cy', '-10'); }
+      if (beaconEl) beaconEl.style.display = 'none';
       if (minBpmEl) minBpmEl.textContent = '--';
       if (maxBpmEl) maxBpmEl.textContent = '--';
       return;
@@ -117,11 +115,10 @@
     if (chartAreaPath) chartAreaPath.setAttribute('d', areaD);
 
     const latest = points[points.length - 1];
-    if (beaconDot && beaconPulse && latest) {
-      beaconDot.setAttribute('cx', latest.x.toFixed(1));
-      beaconDot.setAttribute('cy', latest.y.toFixed(1));
-      beaconPulse.setAttribute('cx', latest.x.toFixed(1));
-      beaconPulse.setAttribute('cy', latest.y.toFixed(1));
+    if (beaconEl && latest) {
+      beaconEl.style.display = 'block';
+      beaconEl.style.left = `${(latest.x / width) * 100}%`;
+      beaconEl.style.top = `${(latest.y / height) * 100}%`;
     }
   }
 

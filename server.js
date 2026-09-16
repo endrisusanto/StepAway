@@ -891,7 +891,9 @@ app.post("/api/heartrate/group-sync", (req, res) => {
   }
   const roomMap = groupHeartrates.get(roomId);
 
-  const updatedMembers = members.map(m => {
+  const activeSlotIds = new Set(members.map(m => m.slotId || m.userId || "slot_1"));
+
+  members.forEach(m => {
     const slotId = m.slotId || m.userId || "slot_1";
     const bpm = Math.max(0, Math.round(Number(m.bpm) || 0));
     const zone = bpm > 0 ? getBpmZone(bpm) : "DISCONNECTED";
@@ -913,7 +915,14 @@ app.post("/api/heartrate/group-sync", (req, res) => {
       lastUpdated: Date.now()
     };
     roomMap.set(slotId, item);
-    return item;
+  });
+
+  // Mark slots omitted from sync as disconnected
+  roomMap.forEach((member, slotId) => {
+    if (!activeSlotIds.has(slotId)) {
+      member.bpm = 0;
+      member.zone = "DISCONNECTED";
+    }
   });
 
   const allMembers = Array.from(roomMap.values());
@@ -959,14 +968,32 @@ setInterval(() => {
     }
   }
 
-  // Also timeout group members
+  // Also timeout group members and broadcast if changed
   groupHeartrates.forEach((roomMap, rId) => {
+    let groupChanged = false;
     roomMap.forEach((member, slotId) => {
       if (member.bpm > 0 && (now - member.lastUpdated > 8000)) {
         member.bpm = 0;
         member.zone = "DISCONNECTED";
+        groupChanged = true;
+      }
+      if (member.bpm === 0 && (now - member.lastUpdated > 25000)) {
+        roomMap.delete(slotId);
+        groupChanged = true;
       }
     });
+    if (groupChanged) {
+      const allMembers = Array.from(roomMap.values());
+      const payload = JSON.stringify({
+        type: "group_heartrate_update",
+        roomId: rId,
+        members: allMembers,
+        timestamp: Date.now()
+      });
+      wss.clients.forEach(client => {
+        if (client.readyState === 1) client.send(payload);
+      });
+    }
   });
 
   if (changed) {

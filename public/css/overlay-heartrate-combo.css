@@ -194,24 +194,35 @@ body {
   filter: drop-shadow(0 0 6px var(--theme-glow));
 }
 
-.combo-beacon-dot {
-  fill: #ffffff;
-  stroke: var(--theme-color);
-  stroke-width: 2;
-  filter: drop-shadow(0 0 6px var(--theme-color));
+.chart-beacon {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 6px var(--theme-color);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 5;
+  transition: left 0.15s ease, top 0.15s ease;
 }
 
-.combo-beacon-pulse {
-  fill: none;
-  stroke: var(--theme-color);
-  stroke-width: 1.5;
-  opacity: 0.8;
-  animation: beaconWave 1.4s infinite ease-out;
+.chart-beacon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1.5px solid var(--theme-color);
+  transform: translate(-50%, -50%);
+  animation: beaconPing 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-@keyframes beaconWave {
-  0% { r: 4; opacity: 0.9; }
-  100% { r: 12; opacity: 0; }
+@keyframes beaconPing {
+  0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) scale(3.2); opacity: 0; }
 }
 
 .combo-placeholder {

@@ -18,6 +18,7 @@
 
   const memberRows = new Map();
   let ws = null;
+  let emptyStateEl = null;
 
   const ZONES = {
     REST: { label: 'REST', class: 'zone-rest' },
@@ -33,6 +34,28 @@
     if (bpm < 140) return 'AEROBIC';
     if (bpm < 170) return 'ANAEROBIC';
     return 'PEAK';
+  }
+
+  function updateEmptyState() {
+    let hasVisibleCard = false;
+    memberRows.forEach(row => {
+      if (row.card.style.display !== 'none') {
+        hasVisibleCard = true;
+      }
+    });
+
+    if (!hasVisibleCard) {
+      if (!emptyStateEl) {
+        emptyStateEl = document.createElement('div');
+        emptyStateEl.id = 'groupEmptyState';
+        emptyStateEl.className = 'group-empty-state';
+        emptyStateEl.textContent = 'Menunggu Smartband Terhubung...';
+        stackEl.appendChild(emptyStateEl);
+      }
+      emptyStateEl.style.display = 'flex';
+    } else if (emptyStateEl) {
+      emptyStateEl.style.display = 'none';
+    }
   }
 
   function generateSplinePath(points, closeArea = false, width = 210, height = 44) {
@@ -119,9 +142,8 @@
             <line x1="0" y1="28" x2="210" y2="28" class="combo-grid-line" />
             <path id="area-${slotId}" fill="url(#grad-${slotId})" d="" />
             <path id="stroke-${slotId}" class="combo-stroke" d="" />
-            <circle id="beaconDot-${slotId}" class="combo-beacon-dot" cx="-10" cy="-10" r="3.5" />
-            <circle id="beaconPulse-${slotId}" class="combo-beacon-pulse" cx="-10" cy="-10" r="7" />
           </svg>
+          <div id="beacon-${slotId}" class="chart-beacon" style="display: none;"></div>
           <div id="ph-${slotId}" class="combo-placeholder">Listening...</div>
         </div>
       </div>
@@ -140,8 +162,7 @@
       maxEl: card.querySelector(`#max-${slotId}`),
       areaPath: card.querySelector(`#area-${slotId}`),
       strokePath: card.querySelector(`#stroke-${slotId}`),
-      beaconDot: card.querySelector(`#beaconDot-${slotId}`),
-      beaconPulse: card.querySelector(`#beaconPulse-${slotId}`),
+      beaconEl: card.querySelector(`#beacon-${slotId}`),
       placeholderEl: card.querySelector(`#ph-${slotId}`),
       bpmHistory: []
     };
@@ -151,15 +172,14 @@
   }
 
   function renderMemberChart(rowObj) {
-    const { bpmHistory, placeholderEl, areaPath, strokePath, beaconDot, beaconPulse, minEl, maxEl } = rowObj;
+    const { bpmHistory, placeholderEl, areaPath, strokePath, beaconEl, minEl, maxEl } = rowObj;
     const validPoints = bpmHistory.filter(v => typeof v === 'number' && v > 0);
 
     if (validPoints.length === 0) {
       if (placeholderEl) placeholderEl.style.display = 'block';
       if (strokePath) strokePath.setAttribute('d', '');
       if (areaPath) areaPath.setAttribute('d', '');
-      if (beaconDot) { beaconDot.setAttribute('cx', '-10'); beaconDot.setAttribute('cy', '-10'); }
-      if (beaconPulse) { beaconPulse.setAttribute('cx', '-10'); beaconPulse.setAttribute('cy', '-10'); }
+      if (beaconEl) beaconEl.style.display = 'none';
       if (minEl) minEl.textContent = '--';
       if (maxEl) maxEl.textContent = '--';
       return;
@@ -198,32 +218,41 @@
     if (areaPath) areaPath.setAttribute('d', areaD);
 
     const last = coords[coords.length - 1];
-    if (beaconDot) {
-      beaconDot.setAttribute('cx', last.x.toFixed(1));
-      beaconDot.setAttribute('cy', last.y.toFixed(1));
-    }
-    if (beaconPulse) {
-      beaconPulse.setAttribute('cx', last.x.toFixed(1));
-      beaconPulse.setAttribute('cy', last.y.toFixed(1));
+    if (beaconEl && last) {
+      beaconEl.style.display = 'block';
+      beaconEl.style.left = `${(last.x / width) * 100}%`;
+      beaconEl.style.top = `${(last.y / height) * 100}%`;
     }
   }
 
   function updateMember(member) {
     if (!member) return;
     const slotId = member.slotId || member.userId || 'slot_1';
+    const bpm = Math.max(0, Number(member.bpm) || 0);
+
+    // If no band connected / 0 bpm and not in test mode, hide this card
+    if (bpm <= 0 && !isTest) {
+      const existing = memberRows.get(slotId);
+      if (existing) {
+        existing.card.style.display = 'none';
+      }
+      updateEmptyState();
+      return;
+    }
+
     let rowObj = memberRows.get(slotId);
     if (!rowObj) {
       rowObj = createMemberRow(slotId, member.name || member.displayName);
     }
 
     const { card, nameEl, dotEl, heartEl, bpmEl, zoneEl } = rowObj;
+    card.style.display = 'flex';
+
     if ((member.name || member.displayName) && nameEl) {
       nameEl.textContent = member.name || member.displayName;
     }
 
-    const bpm = Math.max(0, Number(member.bpm) || 0);
     const prevBpm = parseInt(bpmEl.textContent, 10) || 0;
-
     const zoneKey = getZone(bpm);
     const zoneInfo = ZONES[zoneKey] || ZONES.DISCONNECTED;
 
@@ -260,11 +289,32 @@
     }
 
     renderMemberChart(rowObj);
+    updateEmptyState();
   }
 
-  // 1. Initialize default placeholder rows immediately on screen load
-  createMemberRow('slot_1', 'Streamer (Host)');
-  createMemberRow('slot_2', 'Player 2 (Co-Host)');
+  function handleGroupUpdate(members) {
+    if (!Array.isArray(members)) return;
+    const activeSlotIds = new Set();
+
+    members.forEach(m => {
+      const slotId = m.slotId || m.userId || 'slot_1';
+      if ((Number(m.bpm) || 0) > 0 || isTest) {
+        activeSlotIds.add(slotId);
+        updateMember(m);
+      }
+    });
+
+    // Hide any cached slots that are no longer active/connected
+    if (!isTest) {
+      memberRows.forEach((rowObj, sId) => {
+        if (!activeSlotIds.has(sId)) {
+          rowObj.card.style.display = 'none';
+        }
+      });
+    }
+
+    updateEmptyState();
+  }
 
   async function fetchInitialData() {
     try {
@@ -272,11 +322,16 @@
       if (res.ok) {
         const data = await res.json();
         if (data.members && data.members.length > 0) {
-          data.members.forEach(updateMember);
+          handleGroupUpdate(data.members);
+        } else {
+          updateEmptyState();
         }
+      } else {
+        updateEmptyState();
       }
     } catch (e) {
       console.warn('Initial group HR fetch error:', e);
+      updateEmptyState();
     }
   }
 
@@ -295,29 +350,30 @@
         const msg = JSON.parse(event.data);
         if (msg.type === 'group_heartrate_update') {
           if (!msg.roomId || msg.roomId === roomId || roomId === 'global') {
-            if (Array.isArray(msg.members)) {
-              msg.members.forEach(updateMember);
-            }
+            handleGroupUpdate(msg.members);
           }
         } else if (msg.type === 'step_update' && msg.data) {
-          // Keep slot_1 in sync if single user telemetry is broadcasting
           const d = msg.data;
-          updateMember({
-            slotId: 'slot_1',
-            name: d.name || d.userId || 'Streamer (Host)',
-            bpm: d.bpm || 0,
-            zone: d.bpmZone || 'DISCONNECTED',
-            bpmHistory: d.bpmHistory || []
-          });
+          if (d.bpm && d.bpm > 0) {
+            updateMember({
+              slotId: 'slot_1',
+              name: d.name || d.userId || 'Streamer (Host)',
+              bpm: d.bpm || 0,
+              zone: d.bpmZone || 'DISCONNECTED',
+              bpmHistory: d.bpmHistory || []
+            });
+          }
         } else if (msg.type === 'init' && msg.data) {
           const d = msg.data;
-          updateMember({
-            slotId: 'slot_1',
-            name: d.name || d.userId || 'Streamer (Host)',
-            bpm: d.bpm || 0,
-            zone: d.bpmZone || 'DISCONNECTED',
-            bpmHistory: d.bpmHistory || []
-          });
+          if (d.bpm && d.bpm > 0) {
+            updateMember({
+              slotId: 'slot_1',
+              name: d.name || d.userId || 'Streamer (Host)',
+              bpm: d.bpm || 0,
+              zone: d.bpmZone || 'DISCONNECTED',
+              bpmHistory: d.bpmHistory || []
+            });
+          }
         }
       } catch (err) {
         console.error('Error processing group HR message:', err);
@@ -329,7 +385,7 @@
     };
   }
 
-  // Test Simulation Mode
+  // Test Simulation Mode vs Live Mode
   if (isTest) {
     const testMembers = [
       {
@@ -368,6 +424,7 @@
       });
     }, 1800);
   } else {
+    updateEmptyState();
     fetchInitialData();
     connectWs();
   }

@@ -278,21 +278,53 @@ body {
   transition: stroke 0.3s ease;
 }
 
-.combo-beacon-dot {
-  fill: #ffffff;
-  filter: drop-shadow(0 0 4px var(--theme-color));
+.chart-beacon {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 6px var(--theme-color);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 5;
+  transition: left 0.15s ease, top 0.15s ease;
 }
 
-.combo-beacon-pulse {
-  fill: var(--theme-color);
-  opacity: 0.4;
-  animation: beaconPing 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
-  transform-origin: center;
+.chart-beacon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1.5px solid var(--theme-color);
+  transform: translate(-50%, -50%);
+  animation: beaconPing 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
 @keyframes beaconPing {
-  0% { transform: scale(0.8); opacity: 0.7; }
-  75%, 100% { transform: scale(2.2); opacity: 0; }
+  0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) scale(3.2); opacity: 0; }
+}
+
+.group-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 20px;
+  background: rgba(24, 24, 27, var(--bg-alpha, 0.92));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, calc(0.12 * var(--bg-alpha, 1)));
+  border-radius: 18px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, calc(0.6 * var(--bg-alpha, 1)));
 }
 
 .combo-placeholder {
