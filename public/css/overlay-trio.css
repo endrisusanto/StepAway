@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap');
 
 * {
   box-sizing: border-box;
@@ -7,7 +7,18 @@
 }
 
 :root {
-  --bg-alpha: 1;
+  --bg-alpha: 0.92;
+  --bg-widget: rgba(24, 24, 27, var(--bg-alpha, 0.92));
+  --border-widget: rgba(255, 255, 255, calc(0.12 * var(--bg-alpha, 1)));
+  --text-main: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --accent-primary: #10b981;
+  --accent-glow: rgba(16, 185, 129, 0.35);
+  --bar-bg: rgba(255, 255, 255, 0.08);
+  --bar-fill: #10b981;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
   --theme-color: #10b981;
   --theme-glow: rgba(16, 185, 129, 0.4);
   --beat-speed: 1s;
@@ -15,8 +26,8 @@
 
 body {
   background: transparent;
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  color: #f8fafc;
+  font-family: var(--font-sans);
+  color: var(--text-main);
   overflow: hidden;
   padding: 12px;
   width: 100vw;
@@ -24,24 +35,65 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
+  user-select: none;
 }
 
-/* Trio Widget Container */
+/* Trio Widget Container - Matching Step Counter Overlay (420px) */
 .trio-widget {
   position: relative;
   display: flex;
   flex-direction: column;
-  background: rgba(12, 14, 20, var(--bg-alpha, 1));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, calc(0.12 * var(--bg-alpha, 1)));
-  border-radius: 16px;
-  padding: 12px 16px;
+  background: var(--bg-widget);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-widget);
+  border-radius: 18px;
+  padding: 12px 18px;
   width: 420px;
   max-width: 460px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, calc(0.55 * var(--bg-alpha, 1))), inset 0 1px 0 rgba(255, 255, 255, calc(0.1 * var(--bg-alpha, 1)));
+  box-shadow: 0 14px 40px rgba(0, 0, 0, calc(0.6 * var(--bg-alpha, 1))), inset 0 1px 0 rgba(255, 255, 255, calc(0.12 * var(--bg-alpha, 1)));
   transition: all 0.3s ease;
-  overflow: hidden;
+  overflow: visible;
+}
+
+/* Floating Step Animation Particle */
+.particles-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 20;
+}
+
+.step-float-pop {
+  position: absolute;
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--accent-primary);
+  text-shadow: 0 2px 10px rgba(16, 185, 129, 0.55);
+  animation: floatUpAndFade 1.1s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+  pointer-events: none;
+}
+
+@keyframes floatUpAndFade {
+  0% { opacity: 0; transform: translateY(10px) scale(0.6); }
+  20% { opacity: 1; transform: translateY(-2px) scale(1.2); }
+  60% { opacity: 0.95; transform: translateY(-20px) scale(1); }
+  100% { opacity: 0; transform: translateY(-36px) scale(0.85); }
+}
+
+.current-step-val.step-bump {
+  animation: numberBump 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+@keyframes numberBump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.1); color: var(--accent-primary); }
+  100% { transform: scale(1); }
 }
 
 /* Top Header */
@@ -49,7 +101,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   padding-bottom: 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -64,40 +116,55 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
+  background: var(--accent-primary);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
 }
 
 .user-name {
-  font-size: 11px;
+  font-family: var(--font-sans);
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #94a3b8;
+  letter-spacing: 0.04em;
+  color: var(--text-main);
 }
 
+/* Activity Status Badges (Pace-based) - Identical to overlay.css */
 .activity-tag {
-  font-size: 9px;
+  font-family: var(--font-sans);
+  font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   padding: 2px 8px;
   border-radius: 99px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #94a3b8;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.3s ease;
 }
 
-.activity-tag.activity-running {
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
-  border-color: rgba(239, 68, 68, 0.4);
+.activity-tag.activity-idle {
+  color: #a1a1aa;
+  background: rgba(161, 161, 170, 0.12);
+  border: 1px solid rgba(161, 161, 170, 0.25);
 }
 
 .activity-tag.activity-walking {
-  background: rgba(16, 185, 129, 0.2);
-  color: #34d399;
-  border-color: rgba(16, 185, 129, 0.4);
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.activity-tag.activity-running {
+  color: #f43f5e;
+  background: rgba(244, 63, 94, 0.16);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  animation: runPacePulse 0.8s infinite alternate;
+}
+
+@keyframes runPacePulse {
+  0% { transform: scale(0.98); opacity: 0.85; }
+  100% { transform: scale(1.05); opacity: 1; }
 }
 
 /* Step Section */
@@ -105,7 +172,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .step-main-row {
@@ -121,51 +188,58 @@ body {
 }
 
 .current-step-val {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 30px;
+  font-family: var(--font-mono);
+  font-size: 32px;
   font-weight: 900;
   line-height: 1;
   color: #ffffff;
+  text-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
 }
 
 .step-unit {
-  font-size: 10px;
+  font-family: var(--font-sans);
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #64748b;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  text-transform: uppercase;
 }
 
 .goal-group {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
 .goal-label {
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: #64748b;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
 .goal-val {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 800;
-  color: #cbd5e1;
+  color: #d4d4d8;
 }
 
 .trio-progress-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .trio-track {
+  position: relative;
   flex: 1;
-  height: 6px;
+  height: 8px;
   border-radius: 99px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bar-bg);
   overflow: hidden;
 }
 
@@ -173,17 +247,26 @@ body {
   height: 100%;
   width: 0%;
   border-radius: 99px;
-  background: linear-gradient(90deg, #10b981, #06b6d4);
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  background: #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.55);
   transition: width 0.4s ease;
 }
 
+.trio-fill.pulse-active {
+  animation: barFlash 0.5s ease-out;
+}
+
+@keyframes barFlash {
+  0% { filter: brightness(1.7); }
+  100% { filter: brightness(1); }
+}
+
 .trio-pct {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-family: var(--font-mono);
+  font-size: 12px;
   font-weight: 800;
-  color: #10b981;
-  min-width: 32px;
+  color: #ffffff;
+  min-width: 34px;
   text-align: right;
 }
 
@@ -201,21 +284,29 @@ body {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  min-width: 120px;
 }
 
 .hr-icon-pulse {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .hr-icon-pulse svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   fill: var(--theme-color);
-  filter: drop-shadow(0 0 8px var(--theme-glow));
+  filter: drop-shadow(0 0 6px var(--theme-glow));
+}
+
+.hr-icon-pulse svg.beating {
   animation: trioPulse var(--beat-speed) infinite cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
@@ -239,8 +330,8 @@ body {
 }
 
 .bpm-num {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 20px;
+  font-family: var(--font-mono);
+  font-size: 22px;
   font-weight: 900;
   line-height: 1;
   color: #ffffff;
@@ -248,32 +339,36 @@ body {
 }
 
 .bpm-sub {
+  font-family: var(--font-sans);
   font-size: 9px;
   font-weight: 800;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .bpm-zone-pill {
-  font-size: 8px;
+  font-family: var(--font-sans);
+  font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 1px 5px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.08);
   color: var(--theme-color);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: fit-content;
   margin-top: 2px;
 }
 
+/* ECG Sparkline Chart Viewport */
 .trio-chart-viewport {
+  position: relative;
   flex: 1;
-  height: 46px;
+  height: 40px;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.05);
   overflow: hidden;
-  position: relative;
 }
 
 .trio-svg {
@@ -283,93 +378,97 @@ body {
 }
 
 .trio-grid-line {
-  stroke: rgba(255, 255, 255, 0.06);
-  stroke-dasharray: 4 4;
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-dasharray: 3 3;
   stroke-width: 1;
 }
 
 .trio-stroke {
   fill: none;
   stroke: var(--theme-color);
-  stroke-width: 2;
+  stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
   filter: drop-shadow(0 0 6px var(--theme-glow));
+  transition: stroke 0.3s ease;
 }
 
 .trio-beacon-dot {
   fill: #ffffff;
-  stroke: var(--theme-color);
-  stroke-width: 2;
-  filter: drop-shadow(0 0 6px var(--theme-color));
+  filter: drop-shadow(0 0 4px var(--theme-color));
 }
 
 .trio-beacon-pulse {
-  fill: none;
-  stroke: var(--theme-color);
-  stroke-width: 1.5;
-  opacity: 0.8;
-  animation: beaconWave 1.4s infinite ease-out;
+  fill: var(--theme-color);
+  opacity: 0.4;
+  animation: beaconPing 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+  transform-origin: center;
 }
 
-@keyframes beaconWave {
-  0% { r: 3.5; opacity: 0.9; }
-  100% { r: 10; opacity: 0; }
+@keyframes beaconPing {
+  0% { transform: scale(0.8); opacity: 0.7; }
+  75%, 100% { transform: scale(2.2); opacity: 0; }
 }
 
-/* Zone Theme Colors */
+/* Zone Color Themes */
 .trio-widget.zone-rest {
   --theme-color: #10b981;
-  --theme-glow: rgba(16, 185, 129, 0.45);
+  --theme-glow: rgba(16, 185, 129, 0.4);
 }
 
 .trio-widget.zone-aerobic {
   --theme-color: #06b6d4;
-  --theme-glow: rgba(6, 182, 212, 0.45);
+  --theme-glow: rgba(6, 182, 212, 0.4);
 }
 
 .trio-widget.zone-anaerobic {
-  --theme-color: #8b5cf6;
-  --theme-glow: rgba(139, 92, 246, 0.45);
+  --theme-color: #f59e0b;
+  --theme-glow: rgba(245, 158, 11, 0.4);
 }
 
 .trio-widget.zone-peak {
   --theme-color: #f43f5e;
-  --theme-glow: rgba(244, 63, 94, 0.55);
+  --theme-glow: rgba(244, 63, 94, 0.4);
+}
+
+.trio-widget.zone-disconnected {
+  --theme-color: #64748b;
+  --theme-glow: rgba(100, 116, 139, 0.2);
 }
 
 /* Milestone Celebration Banner */
 .trio-milestone-banner {
-  display: none;
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(6, 182, 212, 0.95));
-  z-index: 50;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16px;
-  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  width: 100%;
+  padding: 8px;
+  background: var(--milestone-bg, linear-gradient(135deg, #10b981 0%, #059669 100%));
+  color: var(--milestone-text, #09090b);
+  border-radius: 18px 18px 0 0;
+  text-align: center;
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  z-index: 30;
+  box-shadow: 0 4px 20px var(--milestone-glow, rgba(16, 185, 129, 0.4));
+}
+
+.trio-milestone-banner.active {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .milestone-title {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #000;
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .milestone-val {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 24px;
+  font-family: var(--font-mono);
+  font-size: 15px;
   font-weight: 900;
-  color: #000;
-}
-
-@keyframes popIn {
-  from { transform: scale(0.85); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
 }

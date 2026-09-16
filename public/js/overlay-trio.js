@@ -7,9 +7,11 @@
   const initialUserKey = streamKey || userParam || 'streamer';
   let resolvedUserId = initialUserKey;
   const paramOpacity = params.get('opacity');
+  const isTest = params.get('test') === 'true';
 
   // DOM Elements
   const widgetEl = document.getElementById('trioWidget');
+  const particlesLayer = document.getElementById('particlesLayer');
   const userNameEl = document.getElementById('userName');
   const activityTagEl = document.getElementById('activityTag');
   const currentStepValEl = document.getElementById('currentStepVal');
@@ -34,15 +36,44 @@
     }
   }
 
+  let prevSteps = 0;
   let bpmHistory = [];
   let ws = null;
 
   const ZONES = {
-    REST: { label: 'Rest', class: 'zone-rest' },
-    AEROBIC: { label: 'Aerobic', class: 'zone-aerobic' },
-    ANAEROBIC: { label: 'Anaerobic', class: 'zone-anaerobic' },
-    PEAK: { label: 'Peak', class: 'zone-peak' }
+    REST: { label: 'REST', class: 'zone-rest' },
+    AEROBIC: { label: 'AEROBIC', class: 'zone-aerobic' },
+    ANAEROBIC: { label: 'ANAEROBIC', class: 'zone-anaerobic' },
+    PEAK: { label: 'PEAK', class: 'zone-peak' }
   };
+
+  function getMilestoneScheme(milestone) {
+    const schemes = [
+      { bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', text: '#09090b', glow: 'rgba(16, 185, 129, 0.6)' },
+      { bg: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)', text: '#09090b', glow: 'rgba(6, 182, 212, 0.6)' },
+      { bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)', text: '#ffffff', glow: 'rgba(139, 92, 246, 0.6)' },
+      { bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', text: '#09090b', glow: 'rgba(245, 158, 11, 0.6)' },
+      { bg: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)', text: '#ffffff', glow: 'rgba(244, 63, 94, 0.6)' },
+      { bg: 'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)', text: '#ffffff', glow: 'rgba(236, 72, 153, 0.6)' }
+    ];
+    const idx = Math.max(0, Math.floor(Number(milestone || 1000) / 1000) - 1) % schemes.length;
+    return schemes[idx];
+  }
+
+  function spawnStepParticle(delta) {
+    if (delta <= 0 || !particlesLayer) return;
+    const pop = document.createElement('div');
+    pop.className = 'step-float-pop';
+    pop.textContent = `+${delta}`;
+
+    const numWidth = currentStepValEl ? currentStepValEl.offsetWidth : 40;
+    const labelX = Math.max(70, 18 + numWidth + 12);
+    const randomOffset = Math.floor(Math.random() * 14) - 7;
+    pop.style.left = `${labelX + randomOffset}px`;
+    pop.style.top = '46px';
+    particlesLayer.appendChild(pop);
+    setTimeout(() => pop.remove(), 1100);
+  }
 
   function getZone(bpm) {
     if (bpm < 100) return 'REST';
@@ -51,7 +82,7 @@
     return 'PEAK';
   }
 
-  function generateSplinePath(points, closeArea = false, width = 240, height = 46) {
+  function generateSplinePath(points, closeArea = false, width = 240, height = 40) {
     if (points.length < 2) return '';
 
     let d = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
@@ -93,8 +124,8 @@
     const maxBpm = Math.max(...validPoints);
 
     const width = 240;
-    const height = 46;
-    const paddingY = 5;
+    const height = 40;
+    const paddingY = 4;
 
     const yMin = Math.max(40, minBpm - 6);
     const yMax = Math.max(yMin + 15, maxBpm + 6);
@@ -123,40 +154,66 @@
     }
   }
 
-  function updateSteps(data) {
+  function updateSteps(data, delta = 0) {
     if (!data) return;
     if (userNameEl && data.name) userNameEl.textContent = data.name;
-    if (currentStepValEl && data.currentSteps !== undefined) {
-      currentStepValEl.textContent = Number(data.currentSteps).toLocaleString();
-    }
-    if (targetValEl && data.targetSteps !== undefined) {
-      targetValEl.textContent = Number(data.targetSteps).toLocaleString();
-    }
 
     const cur = Number(data.currentSteps || 0);
     const tgt = Math.max(1, Number(data.targetSteps || 5000));
     const pct = Math.round((cur / tgt) * 100);
 
+    const effectiveDelta = delta > 0 ? delta : (data.delta > 0 ? data.delta : (cur > prevSteps && prevSteps > 0 ? cur - prevSteps : 0));
+    prevSteps = cur;
+
+    if (currentStepValEl) {
+      currentStepValEl.textContent = cur.toLocaleString();
+    }
+    if (targetValEl) {
+      targetValEl.textContent = tgt.toLocaleString();
+    }
+
     if (progressFillEl) progressFillEl.style.width = `${Math.min(100, pct)}%`;
     if (percentDisplayEl) percentDisplayEl.textContent = `${pct}%`;
 
-    if (activityTagEl && data.activityStatus) {
+    // Trigger Floating +Delta Particle Pop & Pulse
+    if (effectiveDelta > 0) {
+      spawnStepParticle(effectiveDelta);
+      if (currentStepValEl) {
+        currentStepValEl.classList.remove('step-bump');
+        void currentStepValEl.offsetWidth;
+        currentStepValEl.classList.add('step-bump');
+      }
+      if (progressFillEl) {
+        progressFillEl.classList.remove('pulse-active');
+        void progressFillEl.offsetWidth;
+        progressFillEl.classList.add('pulse-active');
+      }
+    }
+
+    if (activityTagEl) {
+      const status = (data.activityStatus || (effectiveDelta > 3 ? 'RUNNING' : (effectiveDelta > 0 ? 'WALKING' : 'IDLE'))).toUpperCase();
       activityTagEl.className = 'activity-tag';
-      if (data.activityStatus === 'RUNNING') {
+      if (status === 'RUNNING') {
         activityTagEl.classList.add('activity-running');
         activityTagEl.textContent = 'RUNNING';
-      } else if (data.activityStatus === 'WALKING') {
+      } else if (status === 'WALKING') {
         activityTagEl.classList.add('activity-walking');
         activityTagEl.textContent = 'WALKING';
       } else {
+        activityTagEl.classList.add('activity-idle');
         activityTagEl.textContent = 'REST';
       }
     }
 
     if (data.milestone && milestoneBanner) {
+      const scheme = getMilestoneScheme(data.milestone);
+      widgetEl.style.setProperty('--milestone-bg', scheme.bg);
+      widgetEl.style.setProperty('--milestone-text', scheme.text);
+      widgetEl.style.setProperty('--milestone-glow', scheme.glow);
+
       if (milestoneValue) milestoneValue.textContent = `${Number(data.milestone).toLocaleString()} STEPS`;
-      milestoneBanner.style.display = 'flex';
-      setTimeout(() => { milestoneBanner.style.display = 'none'; }, 4000);
+      milestoneBanner.classList.add('active');
+      setTimeout(() => { milestoneBanner.classList.remove('active'); }, 4000);
     }
   }
 
@@ -212,7 +269,7 @@
           updateHeartRate(msg.data.bpm || 0, msg.data.bpmZone, msg.data.bpmHistory);
         } else if (msg.type === 'step_update' && (msg.userId === resolvedUserId || msg.userId === initialUserKey)) {
           if (msg.data) {
-            updateSteps(msg.data);
+            updateSteps(msg.data, msg.data.delta);
             if (msg.data.bpm !== undefined) {
               updateHeartRate(msg.data.bpm, msg.data.bpmZone, msg.data.bpmHistory);
             }
@@ -241,6 +298,37 @@
       .catch(() => {});
   }
 
-  fetchStats();
-  connectWebSocket();
+  if (isTest) {
+    let testSteps = 3450;
+    let testBpm = 128;
+    const testData = {
+      name: 'Streamer (Test)',
+      currentSteps: testSteps,
+      targetSteps: 5000,
+      activityStatus: 'WALKING',
+      bpm: testBpm,
+      bpmZone: 'AEROBIC',
+      bpmHistory: [118, 120, 122, 125, 128, 126, 128, 130, 128]
+    };
+    updateSteps(testData);
+    updateHeartRate(testData.bpm, testData.bpmZone, testData.bpmHistory);
+
+    // Live +1 Step and HR Wave simulator
+    setInterval(() => {
+      testSteps += 1;
+      const hrDelta = Math.floor(Math.random() * 3) - 1;
+      testBpm = Math.max(90, Math.min(165, testBpm + hrDelta));
+      updateSteps({
+        name: 'Streamer (Test)',
+        currentSteps: testSteps,
+        targetSteps: 5000,
+        activityStatus: testSteps % 10 === 0 ? 'RUNNING' : 'WALKING',
+        delta: 1
+      }, 1);
+      updateHeartRate(testBpm, getZone(testBpm));
+    }, 1500);
+  } else {
+    fetchStats();
+    connectWebSocket();
+  }
 })();
