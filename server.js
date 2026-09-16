@@ -141,8 +141,120 @@ function saveDB() {
   }
 }
 
+function resolveCanonicalUserId(userId) {
+  if (!userId || typeof userId !== "string") return "streamer";
+  let raw = userId.trim().replace(/[\.\s]+$/, "").trim();
+  if (!raw || raw === "*" || raw === "null" || raw === "undefined") return "streamer";
+
+  // 1. Direct match with account.id
+  if (db.accounts[raw]) return raw;
+
+  // 2. Direct match with streamKey
+  if (raw.startsWith("sk_live_")) {
+    for (const accId in db.accounts) {
+      if (db.accounts[accId].streamKey === raw) return accId;
+    }
+    for (const uId in db.users) {
+      if (db.users[uId].streamKey === raw) return uId;
+    }
+  }
+
+  // 3. Exact user key in db.users if it's streamer
+  if (raw === "streamer") return "streamer";
+
+  // 4. Exact normalized match against accounts by name or email
+  const clean = raw.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (!clean) return "streamer";
+
+  // 4. Specifically for endri / endrisusanto -> map to Endri Susanto account
+  if (clean === "endri" || clean === "endrisusanto") {
+    for (const accId in db.accounts) {
+      const acc = db.accounts[accId];
+      if (acc.name && acc.name.toLowerCase().includes("susanto")) {
+        return accId;
+      }
+    }
+  }
+
+  // 5. Exact match with account clean name or email prefix
+  for (const accId in db.accounts) {
+    const acc = db.accounts[accId];
+    if (acc.name) {
+      const accNameClean = acc.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+      if (accNameClean === clean) return accId;
+    }
+    if (acc.email) {
+      const emailPrefix = acc.email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
+      if (emailPrefix === clean) return accId;
+    }
+  }
+
+  // 6. Fuzzy match on account name (prefer accounts with googleId)
+  const accountList = Object.keys(db.accounts).map(id => db.accounts[id]);
+  accountList.sort((a, b) => (b.googleId ? 1 : 0) - (a.googleId ? 1 : 0));
+
+  for (const acc of accountList) {
+    const accNameClean = (acc.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (accNameClean && (accNameClean.includes(clean) || clean.includes(accNameClean))) {
+      return acc.id;
+    }
+  }
+
+  if (clean === "streamer" || clean === "stream") {
+    return "streamer";
+  }
+
+  // 7. Match existing db.users key case-insensitively
+  for (const uId in db.users) {
+    if (uId.toLowerCase() === raw.toLowerCase()) return uId;
+  }
+
+  return raw;
+}
+
+function cleanupStaleUsers() {
+  let changed = false;
+  for (const key of Object.keys(db.users)) {
+    if (key === "streamer" || db.accounts[key]) continue;
+    const canonical = resolveCanonicalUserId(key);
+    if (canonical && canonical !== key && db.users[canonical]) {
+      if ((db.users[key].currentSteps || 0) > (db.users[canonical].currentSteps || 0)) {
+        db.users[canonical].currentSteps = db.users[key].currentSteps;
+      }
+      delete db.users[key];
+      changed = true;
+    } else if (["*", "e", "stream", "guest", "End", "Wndr", "Wndri", "sk_live_demo_streamer"].includes(key)) {
+      delete db.users[key];
+      changed = true;
+    }
+  }
+  if (changed) {
+    saveDB();
+    console.log("[Storage] Consolidated and cleaned up stale glitch user cache entries.");
+  }
+}
+
+if (fs.existsSync(DATA_FILE)) {
+  try {
+    const raw = fs.readFileSync(DATA_FILE, "utf-8");
+    const parsed = JSON.parse(raw);
+    db.accounts = parsed.accounts || {};
+    db.sessions = parsed.sessions || {};
+    db.users = { ...db.users, ...(parsed.users || {}) };
+    db.rooms = { ...db.rooms, ...(parsed.rooms || {}) };
+    db.slotNames = parsed.slotNames || {};
+    cleanupStaleUsers();
+  } catch (err) {
+    console.error("[Storage] Failed to read storage.json, using defaults:", err.message);
+  }
+}
+
 function findUserByStreamKey(streamKey) {
   if (!streamKey) return null;
+  const canonical = resolveCanonicalUserId(streamKey);
+  if (canonical && db.users[canonical]) {
+    return db.users[canonical];
+  }
   for (const userId in db.users) {
     if (db.users[userId].streamKey === streamKey) {
       return db.users[userId];
@@ -192,10 +304,15 @@ const clients = new Map();
 let clientCounter = 0;
 
 function getUser(userId) {
-  if (!db.users[userId]) {
-    db.users[userId] = {
-      userId,
-      name: userId,
+  const canonicalId = resolveCanonicalUserId(userId);
+  if (!db.users[canonicalId]) {
+    const acc = db.accounts[canonicalId];
+    const name = acc ? acc.name : (canonicalId === "streamer" ? "Streamer" : canonicalId);
+    const streamKey = acc ? acc.streamKey : (canonicalId === "streamer" ? "sk_live_demo_streamer" : undefined);
+    db.users[canonicalId] = {
+      userId: canonicalId,
+      name,
+      streamKey,
       currentSteps: 0,
       targetSteps: 5000,
       bpm: 0,
@@ -226,15 +343,22 @@ function getUser(userId) {
         theme: "neon",
         soundAlert: true,
         lastAction: null,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
+        history: [],
+        showHistory: true,
+        opacity: 100
       },
       lastUpdated: new Date().toISOString()
     };
     saveDB();
   } else {
+    // Ensure streamKey is bound if account has one
+    if (db.accounts[canonicalId] && db.accounts[canonicalId].streamKey && !db.users[canonicalId].streamKey) {
+      db.users[canonicalId].streamKey = db.accounts[canonicalId].streamKey;
+    }
     // Ensure default donation settings exist for legacy entries
-    if (!db.users[userId].donationSettings) {
-      db.users[userId].donationSettings = {
+    if (!db.users[canonicalId].donationSettings) {
+      db.users[canonicalId].donationSettings = {
         enabled: true,
         secretToken: "",
         conversionRate: 10,
@@ -242,11 +366,11 @@ function getUser(userId) {
         minAmount: 1000
       };
     }
-    if (!Array.isArray(db.users[userId].donations)) {
-      db.users[userId].donations = [];
+    if (!Array.isArray(db.users[canonicalId].donations)) {
+      db.users[canonicalId].donations = [];
     }
-    if (!db.users[userId].scoreData) {
-      db.users[userId].scoreData = {
+    if (!db.users[canonicalId].scoreData) {
+      db.users[canonicalId].scoreData = {
         wins: 0,
         losses: 0,
         streak: 0,
@@ -263,21 +387,21 @@ function getUser(userId) {
         lastUpdated: new Date().toISOString()
       };
     } else {
-      if (!Array.isArray(db.users[userId].scoreData.history)) {
-        db.users[userId].scoreData.history = [];
+      if (!Array.isArray(db.users[canonicalId].scoreData.history)) {
+        db.users[canonicalId].scoreData.history = [];
       }
-      if (db.users[userId].scoreData.showHistory === undefined) {
-        db.users[userId].scoreData.showHistory = true;
+      if (db.users[canonicalId].scoreData.showHistory === undefined) {
+        db.users[canonicalId].scoreData.showHistory = true;
       }
-      if (typeof db.users[userId].scoreData.opacity !== "number") {
-        db.users[userId].scoreData.opacity = 100;
+      if (typeof db.users[canonicalId].scoreData.opacity !== "number") {
+        db.users[canonicalId].scoreData.opacity = 100;
       }
     }
-    if (!Array.isArray(db.users[userId].bpmHistory)) {
-      db.users[userId].bpmHistory = [];
+    if (!Array.isArray(db.users[canonicalId].bpmHistory)) {
+      db.users[canonicalId].bpmHistory = [];
     }
   }
-  return db.users[userId];
+  return db.users[canonicalId];
 }
 
 function calculateActivityStatus(user, delta) {
@@ -351,11 +475,20 @@ function broadcastUserUpdate(user, delta = 0, milestone = null) {
 
   for (const [, client] of clients) {
     if (client.ws.readyState === WebSocket.OPEN) {
-      if (
+      let shouldSend = client.subscribedUsers.has("*") ||
         client.subscribedUsers.has(user.userId) ||
-        (user.streamKey && client.subscribedUsers.has(user.streamKey)) ||
-        client.subscribedUsers.has("*")
-      ) {
+        (user.streamKey && client.subscribedUsers.has(user.streamKey));
+
+      if (!shouldSend) {
+        for (const sub of client.subscribedUsers) {
+          if (resolveCanonicalUserId(sub) === user.userId) {
+            shouldSend = true;
+            break;
+          }
+        }
+      }
+
+      if (shouldSend) {
         client.ws.send(payload);
       }
       if (client.subscribedRooms.size > 0) {
@@ -1620,20 +1753,13 @@ wss.on("connection", (ws) => {
     try {
       const msg = JSON.parse(message.toString());
       if (msg.type === "subscribe") {
-        let userId = msg.userId || "streamer";
-        if (msg.key) {
-          const u = findUserByStreamKey(msg.key);
-          if (u) userId = u.userId;
-        } else if (userId.startsWith("sk_live_")) {
-          const u = findUserByStreamKey(userId);
-          if (u) userId = u.userId;
-        }
+        const rawKey = msg.userId || msg.key || "streamer";
+        const user = getUser(rawKey);
+        clientInfo.subscribedUsers.add(user.userId);
+        if (msg.userId) clientInfo.subscribedUsers.add(msg.userId.trim());
+        if (msg.key) clientInfo.subscribedUsers.add(msg.key.trim());
+        if (user.streamKey) clientInfo.subscribedUsers.add(user.streamKey);
 
-        clientInfo.subscribedUsers.add(userId);
-        if (msg.userId) clientInfo.subscribedUsers.add(msg.userId);
-        if (msg.key) clientInfo.subscribedUsers.add(msg.key);
-
-        const user = getUser(userId);
         const percentage = Math.round((user.currentSteps / Math.max(1, user.targetSteps)) * 100);
         ws.send(JSON.stringify({
           type: "init",
@@ -1643,13 +1769,10 @@ wss.on("connection", (ws) => {
         const userIds = Array.isArray(msg.userIds) ? msg.userIds : ["streamer"];
         const initData = [];
         for (const rawId of userIds) {
-          let u = rawId;
-          if (rawId.startsWith("sk_live_")) {
-            const found = findUserByStreamKey(rawId);
-            if (found) u = found.userId;
-          }
-          clientInfo.subscribedUsers.add(u);
-          const userData = getUser(u);
+          const userData = getUser(rawId);
+          clientInfo.subscribedUsers.add(userData.userId);
+          clientInfo.subscribedUsers.add(rawId);
+          if (userData.streamKey) clientInfo.subscribedUsers.add(userData.streamKey);
           const percentage = Math.round((userData.currentSteps / Math.max(1, userData.targetSteps)) * 100);
           initData.push({ ...userData, percentage });
         }
@@ -1658,13 +1781,14 @@ wss.on("connection", (ws) => {
           data: initData
         }));
       } else if (msg.type === "subscribe_room") {
-        const roomId = msg.roomId || "global";
+        const roomId = (msg.roomId || "global").trim();
         clientInfo.subscribedRooms.add(roomId);
         const room = db.rooms[roomId];
         const initData = [];
         if (room && Array.isArray(room.members)) {
           for (const u of room.members) {
             const userData = getUser(u);
+            clientInfo.subscribedUsers.add(userData.userId);
             const percentage = Math.round((userData.currentSteps / Math.max(1, userData.targetSteps)) * 100);
             initData.push({ ...userData, percentage });
           }
@@ -1676,19 +1800,13 @@ wss.on("connection", (ws) => {
           data: initData
         }));
       } else if (msg.type === "subscribe_score") {
-        let userId = msg.userId || "streamer";
-        if (msg.key) {
-          const u = findUserByStreamKey(msg.key);
-          if (u) userId = u.userId;
-        } else if (userId.startsWith("sk_live_")) {
-          const u = findUserByStreamKey(userId);
-          if (u) userId = u.userId;
-        }
-        clientInfo.subscribedUsers.add(userId);
-        if (msg.userId) clientInfo.subscribedUsers.add(msg.userId);
-        if (msg.key) clientInfo.subscribedUsers.add(msg.key);
+        const rawKey = msg.userId || msg.key || "streamer";
+        const user = getUser(rawKey);
+        clientInfo.subscribedUsers.add(user.userId);
+        if (msg.userId) clientInfo.subscribedUsers.add(msg.userId.trim());
+        if (msg.key) clientInfo.subscribedUsers.add(msg.key.trim());
+        if (user.streamKey) clientInfo.subscribedUsers.add(user.streamKey);
 
-        const user = getUser(userId);
         ws.send(JSON.stringify({
           type: "score_init",
           userId: user.userId,
@@ -1700,12 +1818,8 @@ wss.on("connection", (ws) => {
           }
         }));
       } else if (msg.type === "score_action") {
-        let userId = msg.userId || "streamer";
-        if (msg.key) {
-          const u = findUserByStreamKey(msg.key);
-          if (u) userId = u.userId;
-        }
-        const user = getUser(userId);
+        const rawKey = msg.userId || msg.key || "streamer";
+        const user = getUser(rawKey);
         if (user) {
           const s = user.scoreData;
           const act = mutateScoreData(s, msg.action);
