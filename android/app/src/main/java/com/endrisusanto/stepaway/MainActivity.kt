@@ -370,27 +370,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         bleManager.onSlotConnectionStateChanged = { slotId, isConnected, deviceName ->
-            if (slotId != "slot_1") {
-                val stateStr = if (isConnected) "terhubung" else "terputus"
-                Toast.makeText(this, "Smartband $slotId ($deviceName) $stateStr", Toast.LENGTH_SHORT).show()
-                syncGroupHeartRateToServer()
-            }
+            val stateStr = if (isConnected) "terhubung" else "terputus"
+            Toast.makeText(this, "Smartband $slotId ($deviceName) $stateStr", Toast.LENGTH_SHORT).show()
+            updateConnectedDevicesSummary()
+            syncGroupHeartRateToServer()
         }
 
         bleManager.onConnectionStateChanged = { isConnected, deviceName ->
+            updateConnectedDevicesSummary()
             if (isConnected) {
-                tvBleStatusBadge.text = "● CONNECTED"
-                tvBleStatusBadge.setTextColor(0xFF10B981.toInt())
-                tvConnectedBleDevice.text = "Terhubung: ${deviceName ?: "Smartband BLE"}"
-                btnDisconnectBle.visibility = View.VISIBLE
-                btnScanBle.text = "Ganti Device"
                 Toast.makeText(this, "Smartband terhubung!", Toast.LENGTH_SHORT).show()
             } else {
-                tvBleStatusBadge.text = "● DISCONNECTED"
-                tvBleStatusBadge.setTextColor(0xFF9E9EA7.toInt())
-                tvConnectedBleDevice.text = "Tidak ada smartband terhubung"
-                btnDisconnectBle.visibility = View.GONE
-                btnScanBle.text = "Scan Smartband"
                 updateHeartRateUI(0)
                 syncHeartRateToServer(0)
                 StepAwayWidgetProvider.sendUpdateBroadcast(
@@ -565,23 +555,44 @@ class MainActivity : AppCompatActivity() {
         bleManager.startScan()
     }
 
+    private fun updateConnectedDevicesSummary() {
+        val connectedSlots = bleManager.getSlots().filter { it.isConnected }
+        if (connectedSlots.isNotEmpty()) {
+            tvBleStatusBadge.text = "● ${connectedSlots.size} BAND CONNECTED"
+            tvBleStatusBadge.setTextColor(0xFF10B981.toInt())
+            val summary = connectedSlots.joinToString(" | ") { "${it.slotName}: ${it.deviceName ?: it.deviceAddress}" }
+            tvConnectedBleDevice.text = summary
+            btnDisconnectBle.visibility = View.VISIBLE
+            btnScanBle.text = "+ Tambah Smartband Lain"
+        } else {
+            tvBleStatusBadge.text = "● DISCONNECTED"
+            tvBleStatusBadge.setTextColor(0xFF9E9EA7.toInt())
+            tvConnectedBleDevice.text = "Tidak ada smartband terhubung"
+            btnDisconnectBle.visibility = View.GONE
+            btnScanBle.text = "Scan Smartband"
+        }
+    }
+
     private fun showSlotChooserDialog(device: BluetoothDevice) {
         val devName = device.name ?: device.address
-        val slotOptions = arrayOf(
-            "Slot 1: Streamer (Host Utama)",
-            "Slot 2: Player 2 (Co-Host)",
-            "Slot 3: Player 3 (Guest)",
-            "Slot 4: Player 4 (Guest)"
-        )
         val slotIds = arrayOf("slot_1", "slot_2", "slot_3", "slot_4")
+        val defaultSlotNames = arrayOf("Host / Streamer", "Player 2 (Co-Host)", "Player 3 (Guest)", "Player 4 (Guest)")
+
+        val slotOptions = slotIds.mapIndexed { idx, id ->
+            val slot = bleManager.getSlot(id)
+            val isOccupied = slot?.isConnected == true
+            val statusTag = if (isOccupied) " [Terhubung: ${slot.deviceName}]" else " [Kosong]"
+            "Slot ${idx + 1}: ${defaultSlotNames[idx]}$statusTag"
+        }.toTypedArray()
 
         AlertDialog.Builder(this)
             .setTitle("Pilih Slot untuk $devName")
             .setItems(slotOptions) { _, which ->
                 val slotId = slotIds[which]
-                val slotLabel = slotOptions[which].substringAfter(": ").substringBefore(" (")
+                val slotLabel = defaultSlotNames[which]
                 bleManager.connectSlot(slotId, device, slotLabel)
-                Toast.makeText(this, "Menghubungkan $devName ke $slotLabel...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Menghubungkan $devName ke Slot ${which + 1} ($slotLabel)...", Toast.LENGTH_SHORT).show()
+                updateConnectedDevicesSummary()
             }
             .setNegativeButton("Batal", null)
             .show()
