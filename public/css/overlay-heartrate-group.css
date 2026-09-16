@@ -1,103 +1,96 @@
-:root {
-  --bg-alpha: 0.94;
-  --panel-bg: rgba(15, 23, 42, var(--bg-alpha));
-  --card-bg: rgba(30, 41, 59, 0.75);
-  --border-color: rgba(255, 255, 255, 0.1);
-  --text-primary: #f8fafc;
-  --text-muted: #94a3b8;
-  --accent-blue: #38bdf8;
-  --accent-red: #f43f5e;
-  --zone-disconnected: #64748b;
-  --zone-warmup: #10b981;
-  --zone-aerobic: #06b6d4;
-  --zone-anaerobic: #f59e0b;
-  --zone-peak: #f43f5e;
-}
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap');
 
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+}
+
+:root {
+  --bg-alpha: 1;
 }
 
 body {
+  background: transparent;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  background-color: transparent;
-  color: var(--text-primary);
+  color: #f8fafc;
+  overflow: hidden;
+  padding: 12px;
   width: 100vw;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
-  padding: 12px;
-  overflow: hidden;
   user-select: none;
 }
 
-.group-container {
+/* Stack Container for Multi-Row Combo Widgets */
+.group-hr-stack {
   display: flex;
-  gap: 12px;
-  width: fit-content;
+  flex-direction: column;
+  gap: 10px;
+  width: 430px;
   max-width: 100%;
 }
 
-/* Row Layout (Default horizontal squad bar) */
-.group-container.layout-row {
-  flex-direction: row;
-  flex-wrap: nowrap;
-}
+/* Individual HR Combo Widget Row */
+.hr-combo-widget {
+  --theme-color: #10b981;
+  --theme-glow: rgba(16, 185, 129, 0.4);
+  --beat-speed: 1s;
 
-/* Grid Layout (2x2 or multi-card) */
-.group-container.layout-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-  width: 100%;
-  max-width: 800px;
-}
-
-/* VS Layout (1v1 duel mode) */
-.group-container.layout-vs {
-  flex-direction: row;
-  align-items: center;
-  gap: 16px;
-}
-
-/* Member Card */
-.member-card {
   position: relative;
-  background: var(--panel-bg);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-  padding: 12px 14px;
-  min-width: 170px;
+  display: flex;
+  align-items: center;
+  background: rgba(12, 14, 20, var(--bg-alpha, 1));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, calc(0.12 * var(--bg-alpha, 1)));
+  border-radius: 16px;
+  padding: 10px 14px;
+  width: 100%;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, calc(0.55 * var(--bg-alpha, 1))), inset 0 1px 0 rgba(255, 255, 255, calc(0.1 * var(--bg-alpha, 1)));
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Zone Color Themes */
+.hr-combo-widget.zone-rest {
+  --theme-color: #10b981;
+  --theme-glow: rgba(16, 185, 129, 0.4);
+}
+
+.hr-combo-widget.zone-aerobic {
+  --theme-color: #06b6d4;
+  --theme-glow: rgba(6, 182, 212, 0.4);
+}
+
+.hr-combo-widget.zone-anaerobic {
+  --theme-color: #f59e0b;
+  --theme-glow: rgba(245, 158, 11, 0.4);
+}
+
+.hr-combo-widget.zone-peak {
+  --theme-color: #f43f5e;
+  --theme-glow: rgba(244, 63, 94, 0.4);
+}
+
+.hr-combo-widget.zone-disconnected {
+  --theme-color: #64748b;
+  --theme-glow: rgba(100, 116, 139, 0.2);
+  opacity: 0.75;
+}
+
+/* Left Column: Member Tag & Big BPM Telemetry */
+.hr-left-col {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.45);
-  transition: transform 0.2s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  gap: 6px;
+  min-width: 145px;
+  flex-shrink: 0;
 }
 
-.member-card.leader {
-  border-color: rgba(244, 63, 94, 0.6);
-  box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.25);
-}
-
-.member-card.disconnected {
-  opacity: 0.7;
-}
-
-/* Card Header */
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.member-info {
+.member-header-row {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -105,191 +98,221 @@ body {
 }
 
 .status-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--zone-warmup);
-  box-shadow: 0 0 8px var(--zone-warmup);
+  background: var(--theme-color);
+  box-shadow: 0 0 6px var(--theme-glow);
   flex-shrink: 0;
 }
 
 .status-dot.offline {
-  background: var(--zone-disconnected);
+  background: #64748b;
   box-shadow: none;
 }
 
 .member-name {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 800;
+  color: #e2e8f0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 110px;
+  max-width: 120px;
 }
 
-.slot-tag {
-  font-size: 0.65rem;
-  font-weight: 800;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* Body / BPM Value */
-.card-body {
+.hr-main-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
 }
 
-.heart-wrap {
-  position: relative;
+.heart-pulse-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  flex-shrink: 0;
 }
 
-.heart-icon {
-  width: 22px;
-  height: 22px;
-  color: var(--accent-red);
-  transform-origin: center;
-  transition: transform 0.15s ease;
+.heart-icon-svg {
+  width: 20px;
+  height: 20px;
+  fill: var(--theme-color);
+  filter: drop-shadow(0 0 6px var(--theme-glow));
 }
 
-.heart-icon.beating {
-  animation: heartPulse 0.8s infinite ease-in-out;
+.heart-icon-svg.beating {
+  animation: comboPulse var(--beat-speed) infinite cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
-.bpm-display {
+@keyframes comboPulse {
+  0% { transform: scale(1); }
+  15% { transform: scale(1.24); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.12); }
+  60% { transform: scale(1); }
+}
+
+.bpm-text-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.bpm-num-row {
   display: flex;
   align-items: baseline;
   gap: 3px;
 }
 
-.bpm-number {
-  font-size: 1.85rem;
+.combo-bpm-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 26px;
   font-weight: 900;
   line-height: 1;
-  letter-spacing: -0.03em;
   color: #ffffff;
-  font-variant-numeric: tabular-nums;
-  transition: color 0.3s ease;
+  text-shadow: 0 0 12px var(--theme-glow);
 }
 
-.bpm-unit {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: var(--text-muted);
+.combo-bpm-sub {
+  font-size: 9px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.combo-zone-pill {
+  font-size: 8.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--theme-color);
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: fit-content;
+  margin-top: 2px;
+}
+
+/* Divider */
+.hr-combo-divider {
+  width: 1px;
+  height: 48px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0) 100%);
+  flex-shrink: 0;
+}
+
+/* Right Column: Trend Chart */
+.hr-right-col {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+  height: 100%;
+}
+
+.chart-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.chart-title-tag {
+  font-size: 9px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-/* Gauge Bar */
-.gauge-track {
+.chart-minmax-tags {
+  display: flex;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #94a3b8;
+}
+
+.chart-minmax-tags strong {
+  color: #f1f5f9;
+  font-weight: 800;
+}
+
+.combo-chart-viewport {
+  position: relative;
   width: 100%;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
+  height: 44px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   overflow: hidden;
 }
 
-.gauge-fill {
+.combo-svg {
+  width: 100%;
   height: 100%;
-  width: 0%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--zone-warmup), var(--zone-aerobic));
-  transition: width 0.35s ease, background 0.35s ease;
+  display: block;
 }
 
-/* Zone Pill */
-.zone-pill {
-  font-size: 0.68rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-muted);
-  width: fit-content;
-  align-self: flex-start;
-  transition: all 0.3s ease;
+.combo-grid-line {
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-dasharray: 3 3;
+  stroke-width: 1;
 }
 
-/* Zone Themes */
-.zone-warmup .zone-pill {
-  background: rgba(16, 185, 129, 0.18);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-.zone-warmup .gauge-fill {
-  background: #10b981;
-}
-
-.zone-aerobic .zone-pill {
-  background: rgba(6, 182, 212, 0.18);
-  color: #22d3ee;
-  border: 1px solid rgba(6, 182, 212, 0.3);
-}
-.zone-aerobic .gauge-fill {
-  background: #06b6d4;
+.combo-stroke {
+  fill: none;
+  stroke: var(--theme-color);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px var(--theme-glow));
+  transition: stroke 0.3s ease;
 }
 
-.zone-anaerobic .zone-pill {
-  background: rgba(245, 158, 11, 0.18);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-}
-.zone-anaerobic .gauge-fill {
-  background: #f59e0b;
+.combo-beacon-dot {
+  fill: #ffffff;
+  filter: drop-shadow(0 0 4px var(--theme-color));
 }
 
-.zone-peak .zone-pill {
-  background: rgba(244, 63, 94, 0.22);
-  color: #fb7185;
-  border: 1px solid rgba(244, 63, 94, 0.4);
-}
-.zone-peak .gauge-fill {
-  background: #f43f5e;
+.combo-beacon-pulse {
+  fill: var(--theme-color);
+  opacity: 0.4;
+  animation: beaconPing 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+  transform-origin: center;
 }
 
-/* VS Center Badge */
-.vs-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #f43f5e, #8b5cf6);
-  color: #ffffff;
-  font-weight: 900;
-  font-size: 0.95rem;
+@keyframes beaconPing {
+  0% { transform: scale(0.8); opacity: 0.7; }
+  75%, 100% { transform: scale(2.2); opacity: 0; }
+}
+
+.combo-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #64748b;
   letter-spacing: 0.05em;
-  box-shadow: 0 0 16px rgba(244, 63, 94, 0.5);
-  flex-shrink: 0;
-  z-index: 10;
-}
-
-@keyframes heartPulse {
-  0% { transform: scale(1); }
-  18% { transform: scale(1.24); }
-  32% { transform: scale(1.04); }
-  46% { transform: scale(1.18); }
-  68% { transform: scale(1); }
-  100% { transform: scale(1); }
+  text-transform: uppercase;
 }
 
 .bpm-bump {
-  animation: valueBump 0.25s ease-out;
+  animation: numBump 0.22s ease-out;
 }
 
-@keyframes valueBump {
+@keyframes numBump {
   0% { transform: scale(1); }
-  50% { transform: scale(1.15); color: #38bdf8; }
+  50% { transform: scale(1.14); color: var(--theme-color); }
   100% { transform: scale(1); }
 }

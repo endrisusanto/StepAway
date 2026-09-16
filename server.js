@@ -895,11 +895,20 @@ app.post("/api/heartrate/group-sync", (req, res) => {
     const slotId = m.slotId || m.userId || "slot_1";
     const bpm = Math.max(0, Math.round(Number(m.bpm) || 0));
     const zone = bpm > 0 ? getBpmZone(bpm) : "DISCONNECTED";
+    
+    const existing = roomMap.get(slotId);
+    const history = existing && Array.isArray(existing.bpmHistory) ? existing.bpmHistory : [];
+    if (bpm > 0) {
+      history.push(bpm);
+      if (history.length > 60) history.shift();
+    }
+
     const item = {
       slotId,
-      name: m.name || slotId,
+      name: m.name || (existing ? existing.name : slotId),
       bpm,
       zone,
+      bpmHistory: history,
       device: m.device || "",
       lastUpdated: Date.now()
     };

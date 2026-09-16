@@ -1,70 +1,129 @@
-// StepAway Group Heart Rate Overlay Logic
+// StepAway Group HR Combo Overlay (Multi-Row Stacked with Real-time Charts)
 (() => {
+  'use strict';
+
   const params = new URLSearchParams(window.location.search);
   const roomId = params.get('room') || 'global';
-  const layoutMode = params.get('layout') || 'row'; // 'row', 'grid', 'vs'
-  const bgAlpha = params.get('bg_alpha');
+  const paramOpacity = params.get('opacity') || params.get('bg_alpha');
   const isTest = params.get('test') === 'true';
 
-  if (bgAlpha !== null && !isNaN(parseFloat(bgAlpha))) {
-    document.documentElement.style.setProperty('--bg-alpha', Math.max(0, Math.min(1, parseFloat(bgAlpha))));
+  const stackEl = document.getElementById('groupStack');
+  if (stackEl) {
+    if (typeof makeDraggable === 'function') makeDraggable(stackEl);
+    if (paramOpacity !== null) {
+      const alpha = (Math.max(0, Math.min(100, parseFloat(paramOpacity) <= 1 ? parseFloat(paramOpacity) * 100 : parseFloat(paramOpacity) || 100)) / 100).toFixed(2);
+      document.documentElement.style.setProperty('--bg-alpha', alpha);
+    }
   }
 
-  const container = document.getElementById('groupContainer');
-  if (container) {
-    container.className = `group-container layout-${layoutMode}`;
-  }
-
-  const memberCards = new Map();
+  const memberRows = new Map();
   let ws = null;
 
-  function getZoneClass(bpm) {
-    if (!bpm || bpm <= 0) return { cls: 'zone-disconnected', label: 'NO SIGNAL' };
-    if (bpm < 100) return { cls: 'zone-warmup', label: 'WARM UP' };
-    if (bpm < 140) return { cls: 'zone-aerobic', label: 'AEROBIC' };
-    if (bpm < 170) return { cls: 'zone-anaerobic', label: 'ANAEROBIC' };
-    return { cls: 'zone-peak', label: 'PEAK' };
+  const ZONES = {
+    REST: { label: 'REST', class: 'zone-rest' },
+    AEROBIC: { label: 'AEROBIC', class: 'zone-aerobic' },
+    ANAEROBIC: { label: 'ANAEROBIC', class: 'zone-anaerobic' },
+    PEAK: { label: 'PEAK', class: 'zone-peak' },
+    DISCONNECTED: { label: 'NO SIGNAL', class: 'zone-disconnected' }
+  };
+
+  function getZone(bpm) {
+    if (!bpm || bpm <= 0) return 'DISCONNECTED';
+    if (bpm < 100) return 'REST';
+    if (bpm < 140) return 'AEROBIC';
+    if (bpm < 170) return 'ANAEROBIC';
+    return 'PEAK';
   }
 
-  function createMemberCard(slotId, name) {
+  function generateSplinePath(points, closeArea = false, width = 210, height = 44) {
+    if (points.length < 2) return '';
+
+    let d = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[Math.max(0, i - 1)];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[Math.min(points.length - 1, i + 2)];
+
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+      d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+    }
+
+    if (closeArea) {
+      const lastX = points[points.length - 1].x.toFixed(1);
+      const firstX = points[0].x.toFixed(1);
+      d += ` L ${lastX} ${height} L ${firstX} ${height} Z`;
+    }
+
+    return d;
+  }
+
+  function createMemberRow(slotId, name) {
     const card = document.createElement('div');
-    card.className = 'member-card';
-    card.id = `card-${slotId}`;
+    card.className = 'hr-combo-widget zone-disconnected';
+    card.id = `hrCombo-${slotId}`;
 
     card.innerHTML = `
-      <div class="card-header">
-        <div class="member-info">
+      <!-- Left Column: Member Name & Big BPM -->
+      <div class="hr-left-col">
+        <div class="member-header-row">
           <div id="dot-${slotId}" class="status-dot offline"></div>
           <span id="name-${slotId}" class="member-name">${name || slotId}</span>
         </div>
-        <span class="slot-tag">${slotId.replace('_', ' ')}</span>
+        <div class="hr-main-row">
+          <div class="heart-pulse-box">
+            <svg viewBox="0 0 24 24" id="heart-${slotId}" class="heart-icon-svg">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+          </div>
+          <div class="bpm-text-group">
+            <div class="bpm-num-row">
+              <span id="bpm-${slotId}" class="combo-bpm-number">--</span>
+              <span class="combo-bpm-sub">BPM</span>
+            </div>
+            <span id="zone-${slotId}" class="combo-zone-pill">NO SIGNAL</span>
+          </div>
+        </div>
       </div>
-      <div class="card-body">
-        <div class="heart-wrap">
-          <svg id="heart-${slotId}" class="heart-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+
+      <!-- Divider -->
+      <div class="hr-combo-divider"></div>
+
+      <!-- Right Column: Real-time SVG Trend Chart -->
+      <div class="hr-right-col">
+        <div class="chart-meta-row">
+          <span class="chart-title-tag">HR TREND</span>
+          <div class="chart-minmax-tags">
+            <span>MIN: <strong id="min-${slotId}">--</strong></span>
+            <span>MAX: <strong id="max-${slotId}">--</strong></span>
+          </div>
+        </div>
+
+        <div class="combo-chart-viewport">
+          <svg id="svg-${slotId}" class="combo-svg" preserveAspectRatio="none" viewBox="0 0 210 44">
+            <defs>
+              <linearGradient id="grad-${slotId}" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--theme-color)" stop-opacity="0.45" />
+                <stop offset="100%" stop-color="var(--theme-color)" stop-opacity="0.0" />
+              </linearGradient>
+            </defs>
+            <line x1="0" y1="14" x2="210" y2="14" class="combo-grid-line" />
+            <line x1="0" y1="28" x2="210" y2="28" class="combo-grid-line" />
+            <path id="area-${slotId}" fill="url(#grad-${slotId})" d="" />
+            <path id="stroke-${slotId}" class="combo-stroke" d="" />
+            <circle id="beaconDot-${slotId}" class="combo-beacon-dot" cx="-10" cy="-10" r="3.5" />
+            <circle id="beaconPulse-${slotId}" class="combo-beacon-pulse" cx="-10" cy="-10" r="7" />
           </svg>
-        </div>
-        <div class="bpm-display">
-          <span id="bpm-${slotId}" class="bpm-number">--</span>
-          <span class="bpm-unit">BPM</span>
+          <div id="ph-${slotId}" class="combo-placeholder">Listening...</div>
         </div>
       </div>
-      <div class="gauge-track">
-        <div id="gauge-${slotId}" class="gauge-fill"></div>
-      </div>
-      <div id="zone-${slotId}" class="zone-pill">NO SIGNAL</div>
     `;
 
-    // Handle VS Mode divider
-    if (layoutMode === 'vs' && memberCards.size === 1) {
-      const divider = document.createElement('div');
-      divider.className = 'vs-divider';
-      divider.textContent = 'VS';
-      container.appendChild(divider);
-    }
-
-    container.appendChild(card);
+    stackEl.appendChild(card);
 
     const elements = {
       card,
@@ -72,83 +131,128 @@
       dotEl: card.querySelector(`#dot-${slotId}`),
       heartEl: card.querySelector(`#heart-${slotId}`),
       bpmEl: card.querySelector(`#bpm-${slotId}`),
-      gaugeEl: card.querySelector(`#gauge-${slotId}`),
-      zoneEl: card.querySelector(`#zone-${slotId}`)
+      zoneEl: card.querySelector(`#zone-${slotId}`),
+      minEl: card.querySelector(`#min-${slotId}`),
+      maxEl: card.querySelector(`#max-${slotId}`),
+      areaPath: card.querySelector(`#area-${slotId}`),
+      strokePath: card.querySelector(`#stroke-${slotId}`),
+      beaconDot: card.querySelector(`#beaconDot-${slotId}`),
+      beaconPulse: card.querySelector(`#beaconPulse-${slotId}`),
+      placeholderEl: card.querySelector(`#ph-${slotId}`),
+      bpmHistory: []
     };
 
-    memberCards.set(slotId, elements);
+    memberRows.set(slotId, elements);
     return elements;
+  }
+
+  function renderMemberChart(rowObj) {
+    const { bpmHistory, placeholderEl, areaPath, strokePath, beaconDot, beaconPulse, minEl, maxEl } = rowObj;
+    const validPoints = bpmHistory.filter(v => typeof v === 'number' && v > 0);
+
+    if (validPoints.length === 0) {
+      if (placeholderEl) placeholderEl.style.display = 'block';
+      if (strokePath) strokePath.setAttribute('d', '');
+      if (areaPath) areaPath.setAttribute('d', '');
+      if (beaconDot) { beaconDot.setAttribute('cx', '-10'); beaconDot.setAttribute('cy', '-10'); }
+      if (beaconPulse) { beaconPulse.setAttribute('cx', '-10'); beaconPulse.setAttribute('cy', '-10'); }
+      if (minEl) minEl.textContent = '--';
+      if (maxEl) maxEl.textContent = '--';
+      return;
+    }
+
+    if (placeholderEl) placeholderEl.style.display = 'none';
+
+    const minBpm = Math.min(...validPoints);
+    const maxBpm = Math.max(...validPoints);
+    if (minEl) minEl.textContent = minBpm;
+    if (maxEl) maxEl.textContent = maxBpm;
+
+    const width = 210;
+    const height = 44;
+    const paddingY = 5;
+
+    let range = maxBpm - minBpm;
+    if (range < 10) range = 10;
+    const baseMin = Math.max(0, minBpm - 5);
+    const baseRange = range + 10;
+
+    const count = validPoints.length;
+    const stepX = count > 1 ? width / (count - 1) : width;
+
+    const coords = validPoints.map((val, idx) => {
+      const x = idx * stepX;
+      const normalized = (val - baseMin) / baseRange;
+      const y = height - paddingY - normalized * (height - paddingY * 2);
+      return { x, y };
+    });
+
+    const strokeD = generateSplinePath(coords, false, width, height);
+    const areaD = generateSplinePath(coords, true, width, height);
+
+    if (strokePath) strokePath.setAttribute('d', strokeD);
+    if (areaPath) areaPath.setAttribute('d', areaD);
+
+    const last = coords[coords.length - 1];
+    if (beaconDot) {
+      beaconDot.setAttribute('cx', last.x.toFixed(1));
+      beaconDot.setAttribute('cy', last.y.toFixed(1));
+    }
+    if (beaconPulse) {
+      beaconPulse.setAttribute('cx', last.x.toFixed(1));
+      beaconPulse.setAttribute('cy', last.y.toFixed(1));
+    }
   }
 
   function updateMember(member) {
     const slotId = member.slotId || member.userId || 'slot_1';
-    let cardObj = memberCards.get(slotId);
-    if (!cardObj) {
-      cardObj = createMemberCard(slotId, member.name);
+    let rowObj = memberRows.get(slotId);
+    if (!rowObj) {
+      rowObj = createMemberRow(slotId, member.name);
     }
 
-    const { card, nameEl, dotEl, heartEl, bpmEl, gaugeEl, zoneEl } = cardObj;
+    const { card, nameEl, dotEl, heartEl, bpmEl, zoneEl } = rowObj;
     if (member.name && nameEl) nameEl.textContent = member.name;
 
     const bpm = Math.max(0, Number(member.bpm) || 0);
     const prevBpm = parseInt(bpmEl.textContent, 10) || 0;
 
-    const { cls, label } = getZoneClass(bpm);
+    const zoneKey = getZone(bpm);
+    const zoneInfo = ZONES[zoneKey] || ZONES.DISCONNECTED;
 
     // Reset zone classes
-    card.classList.remove('zone-disconnected', 'zone-warmup', 'zone-aerobic', 'zone-anaerobic', 'zone-peak', 'disconnected');
-    card.classList.add(cls);
+    card.className = `hr-combo-widget ${zoneInfo.class}`;
 
     if (bpm > 0) {
       dotEl.className = 'status-dot';
       bpmEl.textContent = bpm;
-      zoneEl.textContent = member.zone || label;
+      zoneEl.textContent = member.zone || zoneInfo.label;
 
-      // Pulse animation rate
-      const beatRate = (60 / bpm).toFixed(3);
-      heartEl.style.animationDuration = `${beatRate}s`;
+      const beatSpeed = (60 / bpm).toFixed(3);
+      card.style.setProperty('--beat-speed', `${beatSpeed}s`);
       heartEl.classList.add('beating');
-
-      // Gauge progress (50 to 190 range)
-      const pct = Math.min(100, Math.max(0, Math.round(((bpm - 50) / 140) * 100)));
-      gaugeEl.style.width = `${pct}%`;
 
       if (bpm !== prevBpm) {
         bpmEl.classList.remove('bpm-bump');
         void bpmEl.offsetWidth;
         bpmEl.classList.add('bpm-bump');
       }
+
+      // Update history buffer
+      if (Array.isArray(member.bpmHistory) && member.bpmHistory.length > 0) {
+        rowObj.bpmHistory = member.bpmHistory.map(v => (typeof v === 'object' ? v.bpm : Number(v)) || bpm);
+      } else {
+        rowObj.bpmHistory.push(bpm);
+        if (rowObj.bpmHistory.length > 30) rowObj.bpmHistory.shift();
+      }
     } else {
       dotEl.className = 'status-dot offline';
-      card.classList.add('disconnected');
       bpmEl.textContent = '--';
       zoneEl.textContent = 'NO SIGNAL';
       heartEl.classList.remove('beating');
-      gaugeEl.style.width = '0%';
     }
 
-    // Update VS leader highlight
-    if (layoutMode === 'vs') {
-      updateVsLeader();
-    }
-  }
-
-  function updateVsLeader() {
-    let highestBpm = 0;
-    let leaderSlot = null;
-
-    memberCards.forEach((obj, slotId) => {
-      const bpm = parseInt(obj.bpmEl.textContent, 10) || 0;
-      obj.card.classList.remove('leader');
-      if (bpm > highestBpm) {
-        highestBpm = bpm;
-        leaderSlot = slotId;
-      }
-    });
-
-    if (leaderSlot && highestBpm > 0) {
-      memberCards.get(leaderSlot)?.card.classList.add('leader');
-    }
+    renderMemberChart(rowObj);
   }
 
   async function fetchInitialData() {
@@ -170,7 +274,7 @@
     ws = new WebSocket(`${protocol}//${window.location.host}`);
 
     ws.onopen = () => {
-      console.log('[Group HR Overlay] WebSocket Connected');
+      console.log('[Group HR Combo Overlay] WebSocket Connected');
     };
 
     ws.onmessage = (event) => {
@@ -196,12 +300,41 @@
   // Test Simulation Mode
   if (isTest) {
     const testMembers = [
-      { slotId: 'slot_1', name: 'Streamer (Host)', bpm: 132, zone: 'AEROBIC' },
-      { slotId: 'slot_2', name: 'Player 2', bpm: 154, zone: 'ANAEROBIC' },
-      { slotId: 'slot_3', name: 'Player 3', bpm: 95, zone: 'WARM UP' },
-      { slotId: 'slot_4', name: 'Player 4', bpm: 172, zone: 'PEAK' }
+      {
+        slotId: 'slot_1',
+        name: 'Streamer (Host)',
+        bpm: 134,
+        zone: 'AEROBIC',
+        bpmHistory: [118, 120, 122, 125, 128, 130, 132, 134, 133, 134]
+      },
+      {
+        slotId: 'slot_2',
+        name: 'Player 2 (Co-Host)',
+        bpm: 152,
+        zone: 'ANAEROBIC',
+        bpmHistory: [130, 135, 140, 144, 148, 150, 153, 155, 151, 152]
+      },
+      {
+        slotId: 'slot_3',
+        name: 'Player 3 (Guest)',
+        bpm: 96,
+        zone: 'REST',
+        bpmHistory: [88, 90, 92, 91, 94, 95, 93, 96, 95, 96]
+      }
     ];
+
     testMembers.forEach(updateMember);
+
+    // Dynamic wave simulation
+    setInterval(() => {
+      testMembers.forEach(m => {
+        const delta = Math.floor(Math.random() * 5) - 2;
+        m.bpm = Math.max(60, Math.min(190, m.bpm + delta));
+        m.bpmHistory.push(m.bpm);
+        if (m.bpmHistory.length > 25) m.bpmHistory.shift();
+        updateMember(m);
+      });
+    }, 1800);
   } else {
     fetchInitialData();
     connectWs();
