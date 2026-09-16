@@ -17,6 +17,7 @@
   }
 
   const memberRows = new Map();
+  let customSlotNames = {};
   let ws = null;
   let emptyStateEl = null;
 
@@ -250,7 +251,8 @@
 
     const slotNum = slotId.replace(/\D/g, '');
     const urlOverride = params.get(`name_${slotId}`) || params.get(`name${slotNum}`) || params.get(slotId);
-    const finalName = urlOverride || member.name || member.displayName || `Player ${slotNum || slotId}`;
+    const customName = customSlotNames[slotId];
+    const finalName = urlOverride || customName || member.name || member.displayName || `Player ${slotNum || slotId}`;
 
     if (nameEl) {
       nameEl.textContent = finalName;
@@ -296,7 +298,10 @@
     updateEmptyState();
   }
 
-  function handleGroupUpdate(members) {
+  function handleGroupUpdate(members, slotNames) {
+    if (slotNames && typeof slotNames === 'object') {
+      customSlotNames = { ...customSlotNames, ...slotNames };
+    }
     if (!Array.isArray(members)) return;
     const activeSlotIds = new Set();
 
@@ -325,8 +330,11 @@
       const res = await fetch(`/api/heartrate/group?room=${encodeURIComponent(roomId)}`);
       if (res.ok) {
         const data = await res.json();
+        if (data.slotNames && typeof data.slotNames === 'object') {
+          customSlotNames = { ...customSlotNames, ...data.slotNames };
+        }
         if (data.members && data.members.length > 0) {
-          handleGroupUpdate(data.members);
+          handleGroupUpdate(data.members, data.slotNames);
         } else {
           updateEmptyState();
         }
@@ -355,14 +363,17 @@
         const msg = JSON.parse(event.data);
         if (msg.type === 'group_heartrate_update') {
           if (!msg.roomId || msg.roomId === roomId || roomId === 'global') {
-            handleGroupUpdate(msg.members);
+            if (msg.slotNames) {
+              customSlotNames = { ...customSlotNames, ...msg.slotNames };
+            }
+            handleGroupUpdate(msg.members, msg.slotNames);
           }
         } else if (msg.type === 'step_update' && msg.data) {
           const d = msg.data;
           if (d.bpm && d.bpm > 0) {
             updateMember({
               slotId: 'slot_1',
-              name: d.name || d.userId || 'Streamer (Host)',
+              name: customSlotNames['slot_1'] || d.name || d.userId || 'Streamer (Host)',
               bpm: d.bpm || 0,
               zone: d.bpmZone || 'DISCONNECTED',
               bpmHistory: d.bpmHistory || []
@@ -373,7 +384,7 @@
           if (d.bpm && d.bpm > 0) {
             updateMember({
               slotId: 'slot_1',
-              name: d.name || d.userId || 'Streamer (Host)',
+              name: customSlotNames['slot_1'] || d.name || d.userId || 'Streamer (Host)',
               bpm: d.bpm || 0,
               zone: d.bpmZone || 'DISCONNECTED',
               bpmHistory: d.bpmHistory || []

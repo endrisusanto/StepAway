@@ -104,42 +104,9 @@ let db = {
       members: ["streamer"],
       createdAt: new Date().toISOString()
     }
-  }
+  },
+  slotNames: {}
 };
-
-if (fs.existsSync(DATA_FILE)) {
-  try {
-    const raw = fs.readFileSync(DATA_FILE, "utf-8");
-    const parsed = JSON.parse(raw);
-    db.accounts = parsed.accounts || {};
-    db.sessions = parsed.sessions || {};
-    db.users = { ...db.users, ...(parsed.users || {}) };
-    db.rooms = { ...db.rooms, ...(parsed.rooms || {}) };
-  } catch (err) {
-    console.error("[Storage] Failed to read storage.json, using defaults:", err.message);
-  }
-}
-
-// Clean up expired sessions periodically (every 1 hour)
-setInterval(() => {
-  const now = Date.now();
-  let changed = false;
-  for (const token in db.sessions) {
-    if (db.sessions[token].expiresAt && db.sessions[token].expiresAt < now) {
-      delete db.sessions[token];
-      changed = true;
-    }
-  }
-  if (changed) saveDB();
-}, 3600000);
-
-function saveDB() {
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2), "utf-8");
-  } catch (err) {
-    console.error("[Storage] Failed to write storage.json:", err.message);
-  }
-}
 
 function resolveCanonicalUserId(userId) {
   if (!userId || typeof userId !== "string") return "streamer";
@@ -166,7 +133,7 @@ function resolveCanonicalUserId(userId) {
   const clean = raw.toLowerCase().replace(/[^a-z0-9]/g, "");
   if (!clean) return "streamer";
 
-  // 4. Specifically for endri / endrisusanto -> map to Endri Susanto account
+  // Specifically for endri / endrisusanto -> map to Endri Susanto account
   if (clean === "endri" || clean === "endrisusanto") {
     for (const accId in db.accounts) {
       const acc = db.accounts[accId];
@@ -246,6 +213,27 @@ if (fs.existsSync(DATA_FILE)) {
     cleanupStaleUsers();
   } catch (err) {
     console.error("[Storage] Failed to read storage.json, using defaults:", err.message);
+  }
+}
+
+// Clean up expired sessions periodically (every 1 hour)
+setInterval(() => {
+  const now = Date.now();
+  let changed = false;
+  for (const token in db.sessions) {
+    if (db.sessions[token].expiresAt && db.sessions[token].expiresAt < now) {
+      delete db.sessions[token];
+      changed = true;
+    }
+  }
+  if (changed) saveDB();
+}, 3600000);
+
+function saveDB() {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2), "utf-8");
+  } catch (err) {
+    console.error("[Storage] Failed to write storage.json:", err.message);
   }
 }
 
@@ -1023,6 +1011,7 @@ app.post("/api/heartrate/group-sync", (req, res) => {
     groupHeartrates.set(roomId, new Map());
   }
   const roomMap = groupHeartrates.get(roomId);
+  const customSlotNames = (db.slotNames && db.slotNames[roomId]) ? db.slotNames[roomId] : {};
 
   const activeSlotIds = new Set(members.map(m => m.slotId || m.userId || "slot_1"));
 
@@ -1032,6 +1021,7 @@ app.post("/api/heartrate/group-sync", (req, res) => {
     const zone = bpm > 0 ? getBpmZone(bpm) : "DISCONNECTED";
     
     const existing = roomMap.get(slotId);
+    const customName = customSlotNames[slotId] || null;
     const history = existing && Array.isArray(existing.bpmHistory) ? existing.bpmHistory : [];
     if (bpm > 0) {
       history.push(bpm);
@@ -1040,7 +1030,7 @@ app.post("/api/heartrate/group-sync", (req, res) => {
 
     const item = {
       slotId,
-      name: m.name || (existing ? existing.name : slotId),
+      name: customName || m.name || (existing ? existing.name : slotId),
       bpm,
       zone,
       bpmHistory: history,
@@ -1065,6 +1055,7 @@ app.post("/api/heartrate/group-sync", (req, res) => {
     type: "group_heartrate_update",
     roomId,
     members: allMembers,
+    slotNames: customSlotNames,
     timestamp: Date.now()
   });
 
@@ -1074,7 +1065,7 @@ app.post("/api/heartrate/group-sync", (req, res) => {
     }
   });
 
-  res.json({ success: true, roomId, count: allMembers.length, members: allMembers });
+  res.json({ success: true, roomId, count: allMembers.length, members: allMembers, slotNames: customSlotNames });
 });
 
 app.get("/api/heartrate/group", (req, res) => {
