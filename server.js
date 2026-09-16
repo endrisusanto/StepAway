@@ -948,7 +948,78 @@ app.get("/api/heartrate/group", (req, res) => {
   const roomId = (req.query.room || "global").trim();
   const roomMap = groupHeartrates.get(roomId);
   const members = roomMap ? Array.from(roomMap.values()) : [];
-  res.json({ success: true, roomId, members });
+  const customSlotNames = (db.slotNames && db.slotNames[roomId]) ? db.slotNames[roomId] : {};
+  res.json({ success: true, roomId, members, slotNames: customSlotNames });
+});
+
+// Update slot display names from Web Dashboard
+app.post("/api/heartrate/group/rename", (req, res) => {
+  const roomId = (req.body.roomId || "global").trim();
+  const { slotId, name, slots } = req.body;
+
+  if (!groupHeartrates.has(roomId)) {
+    groupHeartrates.set(roomId, new Map());
+  }
+  const roomMap = groupHeartrates.get(roomId);
+
+  if (!db.slotNames) db.slotNames = {};
+  if (!db.slotNames[roomId]) db.slotNames[roomId] = {};
+
+  if (Array.isArray(slots)) {
+    slots.forEach(s => {
+      if (s.slotId && s.name) {
+        const cleanName = s.name.trim();
+        db.slotNames[roomId][s.slotId] = cleanName;
+        const existing = roomMap.get(s.slotId);
+        if (existing) {
+          existing.name = cleanName;
+        } else {
+          roomMap.set(s.slotId, {
+            slotId: s.slotId,
+            name: cleanName,
+            bpm: 0,
+            zone: "DISCONNECTED",
+            bpmHistory: [],
+            device: "",
+            lastUpdated: Date.now()
+          });
+        }
+      }
+    });
+  } else if (slotId && name) {
+    const cleanName = name.trim();
+    db.slotNames[roomId][slotId] = cleanName;
+    const existing = roomMap.get(slotId);
+    if (existing) {
+      existing.name = cleanName;
+    } else {
+      roomMap.set(slotId, {
+        slotId,
+        name: cleanName,
+        bpm: 0,
+        zone: "DISCONNECTED",
+        bpmHistory: [],
+        device: "",
+        lastUpdated: Date.now()
+      });
+    }
+  }
+
+  saveDB();
+
+  const allMembers = Array.from(roomMap.values());
+  const payload = JSON.stringify({
+    type: "group_heartrate_update",
+    roomId,
+    members: allMembers,
+    timestamp: Date.now()
+  });
+
+  wss.clients.forEach(client => {
+    if (client.readyState === 1) client.send(payload);
+  });
+
+  res.json({ success: true, roomId, members: allMembers, slotNames: db.slotNames[roomId] });
 });
 
 // Periodic Heart Rate Timeout Watcher (7s without BLE packet => disconnects HR to 0)

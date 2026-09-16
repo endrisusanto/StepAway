@@ -667,6 +667,10 @@ document.addEventListener('DOMContentLoaded', () => {
               }
             }
           }
+        } else if (msg.type === 'group_heartrate_update') {
+          if (typeof updateDashboardBandSlots === 'function' && Array.isArray(msg.members)) {
+            updateDashboardBandSlots(msg.members);
+          }
         } else if (msg.type === 'donation_alert') {
           const isTargetUser = msg.userId === currentUserId ||
             msg.userId === currentStreamKey ||
@@ -1650,8 +1654,138 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Smartband Slot Names & Squad Manager
+  const inputSlot1Name = document.getElementById('inputSlot1Name');
+  const inputSlot2Name = document.getElementById('inputSlot2Name');
+  const inputSlot3Name = document.getElementById('inputSlot3Name');
+  const inputSlot4Name = document.getElementById('inputSlot4Name');
+  const badgeSlot1 = document.getElementById('badgeSlot1');
+  const badgeSlot2 = document.getElementById('badgeSlot2');
+  const badgeSlot3 = document.getElementById('badgeSlot3');
+  const badgeSlot4 = document.getElementById('badgeSlot4');
+  const bandSyncStatusBadge = document.getElementById('bandSyncStatusBadge');
+  const btnSaveBandNames = document.getElementById('btnSaveBandNames');
+
+  const slotMap = {
+    slot_1: { input: inputSlot1Name, badge: badgeSlot1, defaultName: 'Host / Streamer' },
+    slot_2: { input: inputSlot2Name, badge: badgeSlot2, defaultName: 'Player 2 (Co-Host)' },
+    slot_3: { input: inputSlot3Name, badge: badgeSlot3, defaultName: 'Player 3 (Guest)' },
+    slot_4: { input: inputSlot4Name, badge: badgeSlot4, defaultName: 'Player 4 (Guest)' }
+  };
+
+  function updateDashboardBandSlots(members) {
+    if (!Array.isArray(members)) return;
+    const activeSlots = new Map();
+
+    members.forEach(m => {
+      const sId = m.slotId || m.userId;
+      if (sId) activeSlots.set(sId, m);
+    });
+
+    Object.keys(slotMap).forEach(sId => {
+      const def = slotMap[sId];
+      const member = activeSlots.get(sId);
+
+      if (member && (member.bpm > 0)) {
+        if (def.badge) {
+          def.badge.className = 'activity-badge activity-running';
+          def.badge.textContent = `● ${member.bpm} BPM (${member.zone || 'ACTIVE'})`;
+          def.badge.style.color = '#10b981';
+        }
+        if (def.input && document.activeElement !== def.input && member.name) {
+          def.input.value = member.name;
+        }
+      } else {
+        if (def.badge) {
+          def.badge.className = 'activity-badge activity-idle';
+          def.badge.textContent = 'Offline';
+          def.badge.style.color = '#94a3b8';
+        }
+      }
+    });
+
+    const activeCount = members.filter(m => m.bpm > 0).length;
+    if (bandSyncStatusBadge) {
+      if (activeCount > 0) {
+        bandSyncStatusBadge.className = 'activity-badge activity-running';
+        bandSyncStatusBadge.textContent = `${activeCount} Smartband Aktif`;
+      } else {
+        bandSyncStatusBadge.className = 'activity-badge activity-idle';
+        bandSyncStatusBadge.textContent = 'Standby (0 Aktif)';
+      }
+    }
+  }
+
+  async function fetchBandSlotData() {
+    try {
+      const res = await fetch('/api/heartrate/group?room=global');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.slotNames) {
+          if (data.slotNames.slot_1 && inputSlot1Name && document.activeElement !== inputSlot1Name) {
+            inputSlot1Name.value = data.slotNames.slot_1;
+          }
+          if (data.slotNames.slot_2 && inputSlot2Name && document.activeElement !== inputSlot2Name) {
+            inputSlot2Name.value = data.slotNames.slot_2;
+          }
+          if (data.slotNames.slot_3 && inputSlot3Name && document.activeElement !== inputSlot3Name) {
+            inputSlot3Name.value = data.slotNames.slot_3;
+          }
+          if (data.slotNames.slot_4 && inputSlot4Name && document.activeElement !== inputSlot4Name) {
+            inputSlot4Name.value = data.slotNames.slot_4;
+          }
+        }
+        if (data.members) {
+          updateDashboardBandSlots(data.members);
+        }
+      }
+    } catch (e) {
+      console.warn('Gagal memuat data slot smartband:', e);
+    }
+  }
+
+  if (btnSaveBandNames) {
+    btnSaveBandNames.addEventListener('click', async () => {
+      const slotsPayload = [
+        { slotId: 'slot_1', name: (inputSlot1Name?.value || 'Host / Streamer').trim() },
+        { slotId: 'slot_2', name: (inputSlot2Name?.value || 'Player 2 (Co-Host)').trim() },
+        { slotId: 'slot_3', name: (inputSlot3Name?.value || 'Player 3 (Guest)').trim() },
+        { slotId: 'slot_4', name: (inputSlot4Name?.value || 'Player 4 (Guest)').trim() }
+      ];
+
+      btnSaveBandNames.disabled = true;
+      btnSaveBandNames.textContent = 'Menyimpan...';
+
+      try {
+        const res = await fetch('/api/heartrate/group/rename', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomId: 'global', slots: slotsPayload })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          btnSaveBandNames.textContent = '✓ Nama Tersimpan Realtime!';
+          setTimeout(() => {
+            btnSaveBandNames.disabled = false;
+            btnSaveBandNames.textContent = 'Simpan Nama Smartband';
+          }, 2000);
+        } else {
+          alert('Gagal menyimpan nama: ' + (data.message || 'Error'));
+          btnSaveBandNames.disabled = false;
+          btnSaveBandNames.textContent = 'Simpan Nama Smartband';
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi: ' + err.message);
+        btnSaveBandNames.disabled = false;
+        btnSaveBandNames.textContent = 'Simpan Nama Smartband';
+      }
+    });
+  }
+
   // Init
   checkAuthSession();
+  fetchBandSlotData();
 
   // ponytail: periodic sync fallback (every 4s) to ensure resilience
   setInterval(fetchUserStats, 4000);

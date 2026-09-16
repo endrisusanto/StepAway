@@ -243,6 +243,57 @@
 
           <button id="btnSaveSettings" class="btn btn-primary" style="width: 100%; margin-top: 6px;">Simpan Pengaturan</button>
         </section>
+
+        <!-- Squad / Multi-Smartband Name Manager -->
+        <section class="card" style="grid-column: 1 / -1; margin-top: 6px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <h2 class="card-title" style="margin: 0;">Nama Tampilan Smartband (Multi-Band / Squad)</h2>
+            <span id="bandSyncStatusBadge" class="activity-badge activity-idle">Sync Ready</span>
+          </div>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+            Ubah nama streamer / pemain untuk tiap slot smartband BLE yang terhubung ke Group Heart Rate Overlay secara realtime.
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 14px;">
+            <!-- Slot 1 -->
+            <div class="band-slot-card" style="background: var(--bg-card-alt); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin: 0; font-weight: 700; color: var(--accent-cyan);">Slot 1 (Host / Streamer)</label>
+                <span id="badgeSlot1" class="activity-badge" style="font-size: 10px; padding: 2px 6px;">Offline</span>
+              </div>
+              <input type="text" id="inputSlot1Name" class="input-text" value="Host / Streamer" placeholder="Nama Slot 1">
+            </div>
+
+            <!-- Slot 2 -->
+            <div class="band-slot-card" style="background: var(--bg-card-alt); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin: 0; font-weight: 700; color: var(--accent-cyan);">Slot 2 (Co-Host)</label>
+                <span id="badgeSlot2" class="activity-badge" style="font-size: 10px; padding: 2px 6px;">Offline</span>
+              </div>
+              <input type="text" id="inputSlot2Name" class="input-text" value="Player 2 (Co-Host)" placeholder="Nama Slot 2">
+            </div>
+
+            <!-- Slot 3 -->
+            <div class="band-slot-card" style="background: var(--bg-card-alt); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin: 0; font-weight: 700; color: var(--accent-cyan);">Slot 3 (Guest)</label>
+                <span id="badgeSlot3" class="activity-badge" style="font-size: 10px; padding: 2px 6px;">Offline</span>
+              </div>
+              <input type="text" id="inputSlot3Name" class="input-text" value="Player 3 (Guest)" placeholder="Nama Slot 3">
+            </div>
+
+            <!-- Slot 4 -->
+            <div class="band-slot-card" style="background: var(--bg-card-alt); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin: 0; font-weight: 700; color: var(--accent-cyan);">Slot 4 (Guest)</label>
+                <span id="badgeSlot4" class="activity-badge" style="font-size: 10px; padding: 2px 6px;">Offline</span>
+              </div>
+              <input type="text" id="inputSlot4Name" class="input-text" value="Player 4 (Guest)" placeholder="Nama Slot 4">
+            </div>
+          </div>
+
+          <button id="btnSaveBandNames" class="btn btn-primary" style="margin-top: 14px; width: 100%;">Simpan Nama Smartband</button>
+        </section>
       </div>
     </div>
 
