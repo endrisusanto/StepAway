@@ -341,10 +341,11 @@
 
   function connectWs() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    ws = new WebSocket(`${protocol}//${window.location.host}`);
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-      console.log('[Group HR Combo Overlay] WebSocket Connected');
+      console.log('[Group HR Combo Overlay] WebSocket Connected to', wsUrl);
       ws.send(JSON.stringify({ type: 'subscribe_room', roomId }));
       ws.send(JSON.stringify({ type: 'subscribe', userId: '*' }));
     };
@@ -385,7 +386,11 @@
     };
 
     ws.onclose = () => {
-      setTimeout(connectWs, 3000);
+      setTimeout(connectWs, 2000);
+    };
+
+    ws.onerror = (err) => {
+      console.warn('[Group HR WebSocket Error]', err);
     };
   }
 
@@ -431,5 +436,7 @@
     updateEmptyState();
     fetchInitialData();
     connectWs();
+    // Periodic resilient sync fallback every 3s
+    setInterval(fetchInitialData, 3000);
   }
 })();

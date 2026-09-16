@@ -186,7 +186,7 @@ function authMiddleware(req, res, next) {
 app.use(authMiddleware);
 
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server, path: "/ws" });
+const wss = new WebSocketServer({ server });
 
 const clients = new Map();
 let clientCounter = 0;
