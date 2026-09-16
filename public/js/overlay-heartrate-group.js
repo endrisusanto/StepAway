@@ -63,6 +63,10 @@
   }
 
   function createMemberRow(slotId, name) {
+    if (memberRows.has(slotId)) {
+      return memberRows.get(slotId);
+    }
+
     const card = document.createElement('div');
     card.className = 'hr-combo-widget zone-disconnected';
     card.id = `hrCombo-${slotId}`;
@@ -205,14 +209,17 @@
   }
 
   function updateMember(member) {
+    if (!member) return;
     const slotId = member.slotId || member.userId || 'slot_1';
     let rowObj = memberRows.get(slotId);
     if (!rowObj) {
-      rowObj = createMemberRow(slotId, member.name);
+      rowObj = createMemberRow(slotId, member.name || member.displayName);
     }
 
     const { card, nameEl, dotEl, heartEl, bpmEl, zoneEl } = rowObj;
-    if (member.name && nameEl) nameEl.textContent = member.name;
+    if ((member.name || member.displayName) && nameEl) {
+      nameEl.textContent = member.name || member.displayName;
+    }
 
     const bpm = Math.max(0, Number(member.bpm) || 0);
     const prevBpm = parseInt(bpmEl.textContent, 10) || 0;
@@ -226,7 +233,7 @@
     if (bpm > 0) {
       dotEl.className = 'status-dot';
       bpmEl.textContent = bpm;
-      zoneEl.textContent = member.zone || zoneInfo.label;
+      zoneEl.textContent = member.zone || member.bpmZone || zoneInfo.label;
 
       const beatSpeed = (60 / bpm).toFixed(3);
       card.style.setProperty('--beat-speed', `${beatSpeed}s`);
@@ -255,6 +262,10 @@
     renderMemberChart(rowObj);
   }
 
+  // 1. Initialize default placeholder rows immediately on screen load
+  createMemberRow('slot_1', 'Streamer (Host)');
+  createMemberRow('slot_2', 'Player 2 (Co-Host)');
+
   async function fetchInitialData() {
     try {
       const res = await fetch(`/api/heartrate/group?room=${encodeURIComponent(roomId)}`);
@@ -275,6 +286,8 @@
 
     ws.onopen = () => {
       console.log('[Group HR Combo Overlay] WebSocket Connected');
+      ws.send(JSON.stringify({ type: 'subscribe_room', roomId }));
+      ws.send(JSON.stringify({ type: 'subscribe', userId: '*' }));
     };
 
     ws.onmessage = (event) => {
@@ -286,6 +299,25 @@
               msg.members.forEach(updateMember);
             }
           }
+        } else if (msg.type === 'step_update' && msg.data) {
+          // Keep slot_1 in sync if single user telemetry is broadcasting
+          const d = msg.data;
+          updateMember({
+            slotId: 'slot_1',
+            name: d.name || d.userId || 'Streamer (Host)',
+            bpm: d.bpm || 0,
+            zone: d.bpmZone || 'DISCONNECTED',
+            bpmHistory: d.bpmHistory || []
+          });
+        } else if (msg.type === 'init' && msg.data) {
+          const d = msg.data;
+          updateMember({
+            slotId: 'slot_1',
+            name: d.name || d.userId || 'Streamer (Host)',
+            bpm: d.bpm || 0,
+            zone: d.bpmZone || 'DISCONNECTED',
+            bpmHistory: d.bpmHistory || []
+          });
         }
       } catch (err) {
         console.error('Error processing group HR message:', err);
