@@ -407,72 +407,47 @@
                 android:textSize="11sp"
                 android:fontFamily="sans-serif-rounded" />
 
-            <!-- Live BPM Display -->
+            <!-- Dynamic Multiple Smartband Cards Container -->
             <LinearLayout
+                android:id="@+id/layoutBleCardsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                android:gravity="bottom">
-
-                <TextView
-                    android:id="@+id/tvLiveBpm"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="--"
-                    android:textColor="#F43F5E"
-                    android:textSize="44sp"
-                    android:fontFamily="sans-serif-rounded"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:layout_marginBottom="6dp"
-                    android:text="BPM"
-                    android:textColor="#9E9EA7"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif-rounded"
-                    android:textStyle="bold" />
-
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
-
-                <TextView
-                    android:id="@+id/tvBleZoneBadge"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="6dp"
-                    android:background="@drawable/widget_tier_bg"
-                    android:paddingStart="10dp"
-                    android:paddingTop="3dp"
-                    android:paddingEnd="10dp"
-                    android:paddingBottom="3dp"
-                    android:text="Idle"
-                    android:textColor="#9E9EA7"
-                    android:textSize="11sp"
-                    android:fontFamily="sans-serif-rounded"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                android:layout_marginTop="10dp"
+                android:orientation="vertical" />
 
             <TextView
-                android:id="@+id/tvConnectedBleDevice"
+                android:id="@+id/tvBleEmptyHint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="Tidak ada smartband terhubung"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="6dp"
+                android:text="Belum ada smartband terhubung. Klik tombol di bawah untuk scan dan menghubungkan smartband BLE."
                 android:textColor="#71717A"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-rounded" />
+
+            <!-- Hidden for backward compat references -->
+            <TextView
+                android:id="@+id/tvLiveBpm"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/tvBleZoneBadge"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/tvConnectedBleDevice"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
 
             <!-- BLE Action Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:orientation="horizontal">
 
                 <Button
@@ -500,7 +475,7 @@
                     android:layout_height="44dp"
                     android:layout_marginStart="8dp"
                     android:backgroundTint="#26262B"
-                    android:text="Putus"
+                    android:text="Putus Semua"
                     android:textAllCaps="false"
                     android:textColor="#F43F5E"
                     android:textSize="12sp"

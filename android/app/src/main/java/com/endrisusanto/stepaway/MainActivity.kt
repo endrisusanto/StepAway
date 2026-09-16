@@ -88,6 +88,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvLiveBpm: TextView
     private lateinit var tvBleZoneBadge: TextView
     private lateinit var tvConnectedBleDevice: TextView
+    private lateinit var layoutBleCardsContainer: LinearLayout
+    private lateinit var tvBleEmptyHint: TextView
     private lateinit var btnScanBle: Button
     private lateinit var btnDisconnectBle: Button
 
@@ -215,6 +217,8 @@ class MainActivity : AppCompatActivity() {
         tvLiveBpm = findViewById(R.id.tvLiveBpm)
         tvBleZoneBadge = findViewById(R.id.tvBleZoneBadge)
         tvConnectedBleDevice = findViewById(R.id.tvConnectedBleDevice)
+        layoutBleCardsContainer = findViewById(R.id.layoutBleCardsContainer)
+        tvBleEmptyHint = findViewById(R.id.tvBleEmptyHint)
         btnScanBle = findViewById(R.id.btnScanBle)
         btnDisconnectBle = findViewById(R.id.btnDisconnectBle)
 
@@ -366,6 +370,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         bleManager.onSlotBpmUpdated = { slotId, bpm ->
+            updateConnectedDevicesSummary()
             syncGroupHeartRateToServer()
         }
 
@@ -557,20 +562,99 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateConnectedDevicesSummary() {
         val connectedSlots = bleManager.getSlots().filter { it.isConnected }
+        layoutBleCardsContainer.removeAllViews()
+
         if (connectedSlots.isNotEmpty()) {
             tvBleStatusBadge.text = "● ${connectedSlots.size} BAND CONNECTED"
             tvBleStatusBadge.setTextColor(0xFF10B981.toInt())
-            val summary = connectedSlots.joinToString(" | ") { "${it.slotName}: ${it.deviceName ?: it.deviceAddress}" }
-            tvConnectedBleDevice.text = summary
+            tvBleEmptyHint.visibility = View.GONE
             btnDisconnectBle.visibility = View.VISIBLE
             btnScanBle.text = "+ Tambah Smartband"
+
+            connectedSlots.forEach { slot ->
+                val cardView = layoutInflater.inflate(R.layout.item_smartband_card, layoutBleCardsContainer, false)
+                val tvCardSlotTitle = cardView.findViewById<TextView>(R.id.tvCardSlotTitle)
+                val tvCardSlotZoneBadge = cardView.findViewById<TextView>(R.id.tvCardSlotZoneBadge)
+                val tvCardSlotBpm = cardView.findViewById<TextView>(R.id.tvCardSlotBpm)
+                val tvCardSlotDeviceName = cardView.findViewById<TextView>(R.id.tvCardSlotDeviceName)
+                val tvCardSlotDeviceAddr = cardView.findViewById<TextView>(R.id.tvCardSlotDeviceAddr)
+                val btnCardEditName = cardView.findViewById<Button>(R.id.btnCardEditName)
+                val btnCardDisconnect = cardView.findViewById<Button>(R.id.btnCardDisconnect)
+
+                val slotNum = slot.slotId.replace("slot_", "")
+                tvCardSlotTitle.text = "Slot $slotNum: ${slot.slotName}"
+
+                if (slot.bpm > 0) {
+                    val zone = when {
+                        slot.bpm >= 170 -> "PEAK"
+                        slot.bpm >= 140 -> "ANAEROBIC"
+                        slot.bpm >= 100 -> "AEROBIC"
+                        else -> "REST"
+                    }
+                    val zoneColor = when {
+                        slot.bpm >= 170 -> 0xFFF43F5E.toInt()
+                        slot.bpm >= 140 -> 0xFFF97316.toInt()
+                        slot.bpm >= 100 -> 0xFFF59E0B.toInt()
+                        else -> 0xFF10B981.toInt()
+                    }
+                    tvCardSlotBpm.text = slot.bpm.toString()
+                    tvCardSlotZoneBadge.text = "● $zone"
+                    tvCardSlotZoneBadge.setTextColor(zoneColor)
+                } else {
+                    tvCardSlotBpm.text = "--"
+                    tvCardSlotZoneBadge.text = "● CONNECTED"
+                    tvCardSlotZoneBadge.setTextColor(0xFF00E5FF.toInt())
+                }
+
+                tvCardSlotDeviceName.text = slot.deviceName ?: "Smartband BLE"
+                tvCardSlotDeviceAddr.text = slot.deviceAddress ?: "-"
+
+                btnCardEditName.setOnClickListener {
+                    showEditSlotNameDialog(slot)
+                }
+
+                btnCardDisconnect.setOnClickListener {
+                    bleManager.disconnectSlot(slot.slotId)
+                    Toast.makeText(this, "Smartband ${slot.slotName} diputus", Toast.LENGTH_SHORT).show()
+                    updateConnectedDevicesSummary()
+                    syncGroupHeartRateToServer()
+                }
+
+                layoutBleCardsContainer.addView(cardView)
+            }
         } else {
             tvBleStatusBadge.text = "● DISCONNECTED"
             tvBleStatusBadge.setTextColor(0xFF9E9EA7.toInt())
-            tvConnectedBleDevice.text = "Tidak ada smartband terhubung"
+            tvBleEmptyHint.visibility = View.VISIBLE
             btnDisconnectBle.visibility = View.GONE
             btnScanBle.text = "Scan Smartband"
         }
+    }
+
+    private fun showEditSlotNameDialog(slot: BleSlot) {
+        val input = EditText(this).apply {
+            setText(slot.slotName)
+            setSelection(text.length)
+            setSingleLine(true)
+        }
+        val container = android.widget.FrameLayout(this).apply {
+            setPadding(50, 20, 50, 10)
+            addView(input)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Ubah Nama (${slot.slotName})")
+            .setMessage("Masukkan nama baru untuk overlay live stream:")
+            .setView(container)
+            .setPositiveButton("Simpan") { _, _ ->
+                val newName = input.text.toString().trim().ifEmpty { slot.slotName }
+                bleManager.updateSlotName(slot.slotId, newName)
+                Toast.makeText(this, "Nama berhasil diubah: $newName", Toast.LENGTH_SHORT).show()
+                updateConnectedDevicesSummary()
+                syncGroupHeartRateToServer()
+            }
+            .setNegativeButton("Batal", null)
+            .show()
     }
 
     private fun showSlotChooserDialog(device: BluetoothDevice) {
