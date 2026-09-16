@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StepAway - Trio Step Counter &amp; Heart Rate Chart Overlay</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/overlay-trio.css">
+</head>
+<body>
+
+  <!-- Trio All-In-One Widget -->
+  <div id="trioWidget" class="trio-widget zone-rest">
+    <!-- Milestone Celebration Banner -->
+    <div id="milestoneBanner" class="trio-milestone-banner">
+      <div class="milestone-title">MILESTONE REACHED</div>
+      <div id="milestoneValue" class="milestone-val">1,000 STEPS</div>
+    </div>
+
+    <!-- Top Header: User Info & Pace Status -->
+    <div class="trio-header">
+      <div class="user-group">
+        <span id="statusDot" class="status-dot"></span>
+        <span id="userName" class="user-name">Streamer</span>
+      </div>
+      <div id="activityTag" class="activity-tag activity-idle">REST</div>
+    </div>
+
+    <!-- Step Counter & Progress Section -->
+    <div class="trio-step-section">
+      <div class="step-main-row">
+        <div class="step-count-group">
+          <span id="currentStepVal" class="current-step-val">0</span>
+          <span class="step-unit">STEPS</span>
+        </div>
+        <div class="goal-group">
+          <span class="goal-label">GOAL</span>
+          <span id="targetVal" class="goal-val">5,000</span>
+        </div>
+      </div>
+
+      <div class="trio-progress-row">
+        <div class="trio-track">
+          <div id="progressFill" class="trio-fill"></div>
+        </div>
+        <span id="percentDisplay" class="trio-pct">0%</span>
+      </div>
+    </div>
+
+    <!-- Heart Rate Telemetry & Real-Time ECG Sparkline Section -->
+    <div class="trio-hr-section">
+      <!-- HR Value Column -->
+      <div class="trio-hr-info">
+        <div class="hr-icon-pulse">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </div>
+        <div class="hr-values">
+          <div class="hr-bpm-row">
+            <span id="bpmVal" class="bpm-num">--</span>
+            <span class="bpm-sub">BPM</span>
+          </div>
+          <span id="bpmZoneLabel" class="bpm-zone-pill">REST</span>
+        </div>
+      </div>
+
+      <!-- ECG Sparkline Chart Viewport -->
+      <div class="trio-chart-viewport">
+        <svg id="trioSvg" class="trio-svg" preserveAspectRatio="none" viewBox="0 0 240 46">
+          <defs>
+            <linearGradient id="trioGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" class="trio-grad-top" stop-color="#10b981" stop-opacity="0.45" />
+              <stop offset="100%" class="trio-grad-bot" stop-color="#10b981" stop-opacity="0.0" />
+            </linearGradient>
+          </defs>
+          <line x1="0" y1="15" x2="240" y2="15" class="trio-grid-line" />
+          <line x1="0" y1="31" x2="240" y2="31" class="trio-grid-line" />
+          <path id="trioAreaPath" class="trio-area" d="" fill="url(#trioGrad)" />
+          <path id="trioStrokePath" class="trio-stroke" d="" />
+          <circle id="trioBeaconDot" class="trio-beacon-dot" cx="-10" cy="-10" r="3.5" />
+          <circle id="trioBeaconPulse" class="trio-beacon-pulse" cx="-10" cy="-10" r="7.5" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/draggable.js"></script>
+  <script src="/js/overlay-trio.js"></script>
+</body>
+</html>

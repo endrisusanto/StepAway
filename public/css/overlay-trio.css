@@ -1,0 +1,375 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-alpha: 1;
+  --theme-color: #10b981;
+  --theme-glow: rgba(16, 185, 129, 0.4);
+  --beat-speed: 1s;
+}
+
+body {
+  background: transparent;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  color: #f8fafc;
+  overflow: hidden;
+  padding: 12px;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+/* Trio Widget Container */
+.trio-widget {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: rgba(12, 14, 20, var(--bg-alpha, 1));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, calc(0.12 * var(--bg-alpha, 1)));
+  border-radius: 16px;
+  padding: 12px 16px;
+  width: 420px;
+  max-width: 460px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, calc(0.55 * var(--bg-alpha, 1))), inset 0 1px 0 rgba(255, 255, 255, calc(0.1 * var(--bg-alpha, 1)));
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* Top Header */
+.trio-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.user-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.user-name {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.activity-tag {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.activity-tag.activity-running {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.activity-tag.activity-walking {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+/* Step Section */
+.trio-step-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.step-main-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.step-count-group {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.current-step-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.step-unit {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #64748b;
+}
+
+.goal-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.goal-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.goal-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 800;
+  color: #cbd5e1;
+}
+
+.trio-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trio-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.trio-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #10b981, #06b6d4);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  transition: width 0.4s ease;
+}
+
+.trio-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 800;
+  color: #10b981;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* Bottom Heart Rate + Chart Section */
+.trio-hr-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.trio-hr-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.hr-icon-pulse {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hr-icon-pulse svg {
+  width: 22px;
+  height: 22px;
+  fill: var(--theme-color);
+  filter: drop-shadow(0 0 8px var(--theme-glow));
+  animation: trioPulse var(--beat-speed) infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+@keyframes trioPulse {
+  0% { transform: scale(1); }
+  15% { transform: scale(1.24); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.12); }
+  60% { transform: scale(1); }
+}
+
+.hr-values {
+  display: flex;
+  flex-direction: column;
+}
+
+.hr-bpm-row {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.bpm-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 0 10px var(--theme-glow);
+}
+
+.bpm-sub {
+  font-size: 9px;
+  font-weight: 800;
+  color: #94a3b8;
+}
+
+.bpm-zone-pill {
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--theme-color);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 2px;
+}
+
+.trio-chart-viewport {
+  flex: 1;
+  height: 46px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  position: relative;
+}
+
+.trio-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.trio-grid-line {
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-dasharray: 4 4;
+  stroke-width: 1;
+}
+
+.trio-stroke {
+  fill: none;
+  stroke: var(--theme-color);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px var(--theme-glow));
+}
+
+.trio-beacon-dot {
+  fill: #ffffff;
+  stroke: var(--theme-color);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 6px var(--theme-color));
+}
+
+.trio-beacon-pulse {
+  fill: none;
+  stroke: var(--theme-color);
+  stroke-width: 1.5;
+  opacity: 0.8;
+  animation: beaconWave 1.4s infinite ease-out;
+}
+
+@keyframes beaconWave {
+  0% { r: 3.5; opacity: 0.9; }
+  100% { r: 10; opacity: 0; }
+}
+
+/* Zone Theme Colors */
+.trio-widget.zone-rest {
+  --theme-color: #10b981;
+  --theme-glow: rgba(16, 185, 129, 0.45);
+}
+
+.trio-widget.zone-aerobic {
+  --theme-color: #06b6d4;
+  --theme-glow: rgba(6, 182, 212, 0.45);
+}
+
+.trio-widget.zone-anaerobic {
+  --theme-color: #8b5cf6;
+  --theme-glow: rgba(139, 92, 246, 0.45);
+}
+
+.trio-widget.zone-peak {
+  --theme-color: #f43f5e;
+  --theme-glow: rgba(244, 63, 94, 0.55);
+}
+
+/* Milestone Celebration Banner */
+.trio-milestone-banner {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(6, 182, 212, 0.95));
+  z-index: 50;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.milestone-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #000;
+}
+
+.milestone-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 24px;
+  font-weight: 900;
+  color: #000;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

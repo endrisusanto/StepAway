@@ -3,7 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Primary Meta Tags -->
   <title>StepAway - Streamer Control Panel</title>
+  <meta name="title" content="StepAway - Streamer Control Panel">
+  <meta name="description" content="Panel kontrol streamer StepAway untuk konfigurasi widget telemetri OBS, manajemen target subathon, filter donasi, dan sinkronisasi Android.">
+  <meta name="theme-color" content="#0c0e14">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://stepaway.endrisusanto.my.id/dashboard">
+  <meta property="og:site_name" content="StepAway">
+  <meta property="og:title" content="StepAway - Streamer Control Panel">
+  <meta property="og:description" content="Panel kontrol streamer StepAway untuk konfigurasi widget telemetri OBS, manajemen target subathon, filter donasi, dan sinkronisasi Android.">
+  <meta property="og:image" content="https://stepaway.endrisusanto.my.id/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="StepAway - Streamer Control Panel">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://stepaway.endrisusanto.my.id/dashboard">
+  <meta name="twitter:title" content="StepAway - Streamer Control Panel">
+  <meta name="twitter:description" content="Panel kontrol streamer StepAway untuk konfigurasi widget telemetri OBS, manajemen target subathon, filter donasi, dan sinkronisasi Android.">
+  <meta name="twitter:image" content="https://stepaway.endrisusanto.my.id/og-image.png">
+
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="/css/dashboard.css">
 </head>
@@ -58,15 +82,21 @@
 
         <!-- SaaS Auth User State -->
         <div id="authGuestBox">
-          <button id="btnOpenLoginModal" class="btn btn-primary btn-header">Masuk Akun</button>
+          <button id="btnOpenLoginModal" class="btn-header btn-header-primary">Masuk Akun</button>
         </div>
-        <div id="authUserBox" class="user-auth-bar" style="display: none;">
-          <div class="user-info-col">
+        <div id="authUserBox" class="user-auth-group" style="display: none;">
+          <div class="user-chip">
             <span id="headerUserName" class="user-info-text">Streamer</span>
             <span id="headerPlanBadge" class="plan-badge">Creator Free</span>
           </div>
-          <button id="btnOpenQrModal" class="btn btn-secondary btn-header-small" title="Scan QR Code Android">QR App</button>
-          <button id="btnLogout" class="btn btn-danger btn-header-small">Keluar</button>
+          <button id="btnOpenQrModal" class="btn-header btn-header-secondary" title="Scan QR Code Android">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>QR App</span>
+          </button>
+          <button id="btnLogout" class="btn-header btn-header-danger" title="Keluar dari akun">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            <span>Keluar</span>
+          </button>
         </div>
       </div>
     </header>
@@ -136,6 +166,10 @@
       <button class="dash-tab-btn" data-tab="pane-rooms">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
         <span>Multi-Room Squad</span>
+      </button>
+      <button class="dash-tab-btn" data-tab="pane-extra-overlays">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        <span>Overlay Tambahan</span>
       </button>
     </nav>
 
@@ -347,7 +381,31 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">3. Combo Step + Heart Rate (420 x 140 px)</label>
+            <label class="form-label">3. Graphic Chart Heart Rate History (360 x 140 px)</label>
+            <div class="url-box">
+              <span id="urlHrChart" class="url-text">Loading...</span>
+              <button class="btn btn-secondary copy-btn" data-target="urlHrChart">Salin</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">4. Combo Heart Rate &amp; Graphic Chart (420 x 120 px)</label>
+            <div class="url-box">
+              <span id="urlHrCombo" class="url-text">Loading...</span>
+              <button class="btn btn-secondary copy-btn" data-target="urlHrCombo">Salin</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">5. Trio Step Counter + HR + Graphic Chart (440 x 180 px)</label>
+            <div class="url-box">
+              <span id="urlTrio" class="url-text">Loading...</span>
+              <button class="btn btn-secondary copy-btn" data-target="urlTrio">Salin</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">6. Combo Step + Heart Rate Badge (420 x 140 px)</label>
             <div class="url-box">
               <span id="urlCombo" class="url-text">Loading...</span>
               <button class="btn btn-secondary copy-btn" data-target="urlCombo">Salin</button>
@@ -355,7 +413,15 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">4. Multi-User Room Overlay (420 x 360 px)</label>
+            <label class="form-label">7. Group / Squad Heart Rate Overlay (Multi-Smartband)</label>
+            <div class="url-box">
+              <span id="urlGroupHr" class="url-text">Loading...</span>
+              <button class="btn btn-secondary copy-btn" data-target="urlGroupHr">Salin</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">8. Multi-User Room Leaderboard (420 x 360 px)</label>
             <div class="url-box">
               <span id="urlRoom" class="url-text">Loading...</span>
               <button class="btn btn-secondary copy-btn" data-target="urlRoom">Salin</button>
@@ -363,7 +429,7 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">5. Live Test Demo Link</label>
+            <label class="form-label">9. Live Test Demo Link</label>
             <div class="url-box">
               <span id="urlTest" class="url-text">Loading...</span>
               <button id="btnOpenTest" class="btn btn-primary">Buka Tab Baru</button>
@@ -379,6 +445,10 @@
               <div class="preview-switcher">
                 <button id="tabPreviewStep" class="preview-tab active">Step</button>
                 <button id="tabPreviewHr" class="preview-tab">Heart Rate</button>
+                <button id="tabPreviewHrChart" class="preview-tab">HR Chart</button>
+                <button id="tabPreviewHrCombo" class="preview-tab">HR Combo</button>
+                <button id="tabPreviewTrio" class="preview-tab">Trio All-In-One</button>
+                <button id="tabPreviewGroupHr" class="preview-tab">Group HR</button>
                 <button id="tabPreviewCombo" class="preview-tab">Combo</button>
               </div>
               <div class="preview-size-controls">
@@ -479,6 +549,266 @@
           </div>
         </div>
       </section>
+    </div>
+
+    <!-- Tab 6: Overlay Tambahan & Win/Lose Hotkey Counter -->
+    <div id="pane-extra-overlays" class="tab-pane">
+      <div class="tab-grid-2">
+        
+        <!-- Card 1: Win / Lose & Streak Counter (with Live Preview inside) -->
+        <section class="card">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <h2 class="card-title" style="margin: 0;">Win / Lose &amp; Streak Counter</h2>
+            <span id="scoreSyncBadge" class="activity-badge activity-idle">Ready</span>
+          </div>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+            Overlay hitungan Menang/Kalah dan Win-Streak otomatis untuk gaming, challenge live stream, atau subathon match.
+          </p>
+
+          <!-- Interactive Quick Counter Controller -->
+          <div class="score-ctrl-container">
+            <!-- Win Control Box -->
+            <div class="score-ctrl-box ctrl-win">
+              <span class="ctrl-box-label" id="dispLabelWin">WIN</span>
+              <div class="ctrl-val-row">
+                <button id="btnDecWin" class="score-step-btn" title="Kurangi Win (-1)">-</button>
+                <span id="ctrlScoreWins" class="ctrl-score-number">0</span>
+                <button id="btnIncWin" class="score-step-btn" title="Tambah Win (+1)">+</button>
+              </div>
+              <button id="btnQuickWin" class="btn btn-primary" style="width: 100%; margin-top: 8px; font-size: 13px; min-height: 38px; height: 38px;">+1 WIN</button>
+            </div>
+
+            <!-- VS / Streak Center Divider -->
+            <div class="score-ctrl-center">
+              <span class="ctrl-vs-text">VS</span>
+              <div class="ctrl-streak-display">
+                <span class="streak-mini-label">STREAK</span>
+                <span id="ctrlScoreStreak" class="streak-mini-val">0</span>
+              </div>
+            </div>
+
+            <!-- Lose Control Box -->
+            <div class="score-ctrl-box ctrl-lose">
+              <span class="ctrl-box-label" id="dispLabelLoss">LOSE</span>
+              <div class="ctrl-val-row">
+                <button id="btnDecLoss" class="score-step-btn" title="Kurangi Lose (-1)">-</button>
+                <span id="ctrlScoreLosses" class="ctrl-score-number">0</span>
+                <button id="btnIncLoss" class="score-step-btn" title="Tambah Lose (+1)">+</button>
+              </div>
+              <button id="btnQuickLose" class="btn btn-danger" style="width: 100%; margin-top: 8px; font-size: 13px; min-height: 38px; height: 38px;">+1 LOSE</button>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="score-action-row">
+            <button id="btnResetScore" class="btn btn-secondary" style="flex: 1; font-size: 12px; height: 36px; min-height: 36px;">Reset Skor (0 - 0)</button>
+            <button id="btnResetStreak" class="btn btn-secondary" style="flex: 1; font-size: 12px; height: 36px; min-height: 36px;">Reset Streak (0)</button>
+          </div>
+
+          <!-- Match History Breadcrumb Preview in Dashboard -->
+          <div class="score-dash-history-row">
+            <span class="dash-history-title">MATCH HISTORY:</span>
+            <div id="dashScoreBreadcrumbs" class="dash-breadcrumbs-container">
+              <span class="dash-empty-history">Belum ada riwayat match</span>
+            </div>
+          </div>
+
+          <!-- Live Overlay Preview (Inside Counter Card) -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 14px;">
+            <div class="preview-header-wrap" style="margin-bottom: 8px;">
+              <label class="form-label" style="margin: 0; font-weight: 800;">Live Overlay Preview</label>
+              <div class="preview-header-actions">
+                <div class="preview-switcher">
+                  <button id="tabScoreThemeNeon" class="preview-tab score-theme-tab active" data-score-theme="neon">Neon</button>
+                  <button id="tabScoreThemeCyber" class="preview-tab score-theme-tab" data-score-theme="cyber">Cyber</button>
+                  <button id="tabScoreThemeMinimal" class="preview-tab score-theme-tab" data-score-theme="minimal">Minimal</button>
+                  <button id="tabScoreThemePill" class="preview-tab score-theme-tab" data-score-theme="pill">Pill</button>
+                </div>
+                <div class="preview-size-controls">
+                  <button class="preview-size-btn score-size-btn active" data-height="160">160px</button>
+                  <button class="preview-size-btn score-size-btn" data-height="240">240px</button>
+                  <button class="preview-size-btn score-size-btn" data-height="320">320px</button>
+                </div>
+                <button id="btnFullscreenScorePreview" class="preview-btn-icon" title="Fullscreen Preview">
+                  Fullscreen
+                </button>
+              </div>
+            </div>
+
+            <div id="scorePreviewContainer" class="preview-container" style="height: 160px; min-height: 140px;">
+              <iframe id="iframePreviewScore" src="/overlay/score?user=streamer" title="Live Win/Lose Overlay Preview" class="preview-frame"></iframe>
+            </div>
+
+            <div class="preview-resize-hint" style="margin-top: 4px;">
+              <span>Ukuran OBS: <strong>440 x 140 px</strong> (Drag sudut kanan bawah)</span>
+              <span id="scorePreviewHeightLabel" class="preview-current-size">Tinggi: 160px</span>
+            </div>
+          </div>
+
+          <!-- OBS Browser Source URL -->
+          <div class="form-group" style="margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+            <label class="form-label">OBS Browser Source URL (Win/Lose Overlay)</label>
+            <div class="url-box">
+              <span id="urlOverlayScore" class="url-text">Loading...</span>
+              <button class="btn btn-secondary copy-btn" data-target="urlOverlayScore">Salin</button>
+            </div>
+          </div>
+
+          <!-- Overlay Settings Form -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 12px;">
+            <label class="form-label" style="margin-bottom: 8px;">Kustomisasi Tampilan Overlay</label>
+            
+            <div class="form-group">
+              <label class="form-label" for="inputScoreTitle">Judul Header Overlay</label>
+              <input type="text" id="inputScoreTitle" class="input-text" value="MATCH SCORE" placeholder="Contoh: RANKED GRIND / MATCH SCORE">
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label" for="inputScoreLabelWin">Label Menang</label>
+                <input type="text" id="inputScoreLabelWin" class="input-text" value="WIN" placeholder="WIN / W / VICTORY">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="inputScoreLabelLoss">Label Kalah</label>
+                <input type="text" id="inputScoreLabelLoss" class="input-text" value="LOSE" placeholder="LOSE / L / DEFEAT">
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label" for="selectScoreTheme">Preset Tema</label>
+                <select id="selectScoreTheme" class="input-text" style="height: 38px; cursor: pointer;">
+                  <option value="neon">Neon Emerald &amp; Rose (Default)</option>
+                  <option value="cyber">Cyberpunk Cyan &amp; Magenta</option>
+                  <option value="minimal">Minimalist Dark Glass</option>
+                  <option value="pill">Compact Rounded Pill</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <label class="form-label" for="rangeScoreOpacity" style="margin: 0;">Transparansi Background</label>
+                  <span id="labelScoreOpacityVal" style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: var(--accent-green);">100%</span>
+                </div>
+                <input type="range" id="rangeScoreOpacity" min="0" max="100" step="5" value="100" style="width: 100%; height: 32px; cursor: pointer; accent-color: var(--accent-green);">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 6px;">
+              <div style="display: flex; flex-direction: column; justify-content: center; gap: 8px;">
+                <label style="font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" id="chkScoreShowStreak" checked> Tampilkan Win/Loss Streak
+                </label>
+                <label style="font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" id="chkScoreShowHistory" checked> Tampilkan Line Breadcrumb History
+                </label>
+                <label style="font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" id="chkScoreSoundAlert" checked> Efek Suara Audio Web
+                </label>
+              </div>
+            </div>
+
+            <button id="btnSaveScoreSettings" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Simpan Pengaturan Overlay Skor</button>
+          </div>
+        </section>
+
+        <!-- Card 2: Hotkey OBS & Stream Deck Automation -->
+        <section class="card">
+          <h2 class="card-title">Program Hotkey OBS &amp; Stream Deck</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: -6px;">
+            Hubungkan tombol keyboard, Stream Deck, Touch Portal, atau OBS Advanced Scene Switcher untuk mengubah skor secara instan saat siaran.
+          </p>
+
+          <!-- Hotkey Method 1: Webhook Action URLs -->
+          <div style="margin-top: 10px;">
+            <label class="form-label">Metode 1: Webhook Action URLs (Stream Deck / Macro / Browser Dock)</label>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: -4px; margin-bottom: 8px;">
+              Kirim HTTP GET / POST ke URL ini untuk otomatis mengubah skor tanpa membuka tab dashboard.
+            </p>
+
+            <div class="hotkey-url-list">
+              <!-- Win +1 -->
+              <div class="hotkey-url-row">
+                <span class="hotkey-action-badge hotkey-win">+1 WIN</span>
+                <span id="urlActionWin" class="hotkey-url-text">/api/users/:user/score/action?action=win&amp;key=...</span>
+                <button class="btn btn-secondary copy-btn" data-target="urlActionWin" style="padding: 2px 8px; font-size: 11px; height: 28px; min-height: 28px;">Salin URL</button>
+              </div>
+
+              <!-- Lose +1 -->
+              <div class="hotkey-url-row">
+                <span class="hotkey-action-badge hotkey-lose">+1 LOSE</span>
+                <span id="urlActionLose" class="hotkey-url-text">/api/users/:user/score/action?action=lose&amp;key=...</span>
+                <button class="btn btn-secondary copy-btn" data-target="urlActionLose" style="padding: 2px 8px; font-size: 11px; height: 28px; min-height: 28px;">Salin URL</button>
+              </div>
+
+              <!-- Win -1 -->
+              <div class="hotkey-url-row">
+                <span class="hotkey-action-badge hotkey-sub">-1 WIN</span>
+                <span id="urlActionWinDec" class="hotkey-url-text">/api/users/:user/score/action?action=win_dec&amp;key=...</span>
+                <button class="btn btn-secondary copy-btn" data-target="urlActionWinDec" style="padding: 2px 8px; font-size: 11px; height: 28px; min-height: 28px;">Salin URL</button>
+              </div>
+
+              <!-- Lose -1 -->
+              <div class="hotkey-url-row">
+                <span class="hotkey-action-badge hotkey-sub">-1 LOSE</span>
+                <span id="urlActionLoseDec" class="hotkey-url-text">/api/users/:user/score/action?action=lose_dec&amp;key=...</span>
+                <button class="btn btn-secondary copy-btn" data-target="urlActionLoseDec" style="padding: 2px 8px; font-size: 11px; height: 28px; min-height: 28px;">Salin URL</button>
+              </div>
+
+              <!-- Reset -->
+              <div class="hotkey-url-row">
+                <span class="hotkey-action-badge hotkey-reset">RESET</span>
+                <span id="urlActionReset" class="hotkey-url-text">/api/users/:user/score/action?action=reset&amp;key=...</span>
+                <button class="btn btn-secondary copy-btn" data-target="urlActionReset" style="padding: 2px 8px; font-size: 11px; height: 28px; min-height: 28px;">Salin URL</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hotkey Method 2: Global Keyboard Hotkey Handler -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 14px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <label class="form-label" style="margin: 0;">Metode 2: Keyboard Shortcut (Saat Dashboard Terbuka)</label>
+              <label style="font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="checkbox" id="chkEnableKeyboardHotkeys" checked> Aktifkan Shortcut
+              </label>
+            </div>
+
+            <div class="keybind-grid" style="margin-top: 8px;">
+              <div class="keybind-item">
+                <kbd class="keybind-kbd">Alt + W</kbd>
+                <span class="keybind-desc">Tambah Win (+1)</span>
+              </div>
+              <div class="keybind-item">
+                <kbd class="keybind-kbd">Alt + L</kbd>
+                <span class="keybind-desc">Tambah Lose (+1)</span>
+              </div>
+              <div class="keybind-item">
+                <kbd class="keybind-kbd">Alt + Shift + W</kbd>
+                <span class="keybind-desc">Kurangi Win (-1)</span>
+              </div>
+              <div class="keybind-item">
+                <kbd class="keybind-kbd">Alt + Shift + L</kbd>
+                <span class="keybind-desc">Kurangi Lose (-1)</span>
+              </div>
+              <div class="keybind-item">
+                <kbd class="keybind-kbd">Alt + R</kbd>
+                <span class="keybind-desc">Reset Skor (0 - 0)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hotkey Method 3: OBS Custom Browser Dock Guide -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 14px;">
+            <label class="form-label">Metode 3: Pasang Panel di OBS Studio (Custom Browser Dock)</label>
+            <ol style="font-size: 12px; color: var(--text-muted); line-height: 1.6; padding-left: 18px; margin-top: 6px;">
+              <li>Di OBS Studio, buka menu bar atas: <strong>Docks &rarr; Custom Browser Docks...</strong></li>
+              <li>Beri nama dock: <code>StepAway Controller</code>.</li>
+              <li>Masukkan URL: <code id="dockSampleUrl">https://stepaway.endrisusanto.my.id/dashboard</code></li>
+              <li>Klik <strong>Apply</strong>, lalu tempel panel controller langsung ke samping jendela preview OBS Studio Anda.</li>
+            </ol>
+          </div>
+        </section>
+
+      </div>
     </div>
 
   </div>

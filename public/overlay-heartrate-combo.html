@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StepAway - Combo Heart Rate &amp; Chart Overlay</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/overlay-heartrate-combo.css">
+</head>
+<body>
+
+  <!-- Combo Heart Rate + Chart Widget -->
+  <div id="hrComboWidget" class="hr-combo-widget zone-rest">
+    <!-- Left Column: Big BPM Telemetry -->
+    <div class="hr-left-col">
+      <div class="heart-pulse-box">
+        <svg viewBox="0 0 24 24" class="heart-icon-svg">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </div>
+      <div class="bpm-text-group">
+        <div class="bpm-num-row">
+          <span id="comboBpmVal" class="combo-bpm-number">--</span>
+          <span class="combo-bpm-sub">BPM</span>
+        </div>
+        <span id="comboBpmZone" class="combo-zone-pill">REST</span>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="hr-combo-divider"></div>
+
+    <!-- Right Column: Real-time ECG / Sparkline Chart -->
+    <div class="hr-right-col">
+      <div class="chart-meta-row">
+        <span class="chart-title-tag">HR TREND</span>
+        <div class="chart-minmax-tags">
+          <span>MIN: <strong id="comboMinBpm">--</strong></span>
+          <span>MAX: <strong id="comboMaxBpm">--</strong></span>
+        </div>
+      </div>
+
+      <div class="combo-chart-viewport">
+        <svg id="comboSvg" class="combo-svg" preserveAspectRatio="none" viewBox="0 0 220 54">
+          <defs>
+            <linearGradient id="comboGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" class="combo-grad-top" stop-color="#10b981" stop-opacity="0.45" />
+              <stop offset="100%" class="combo-grad-bot" stop-color="#10b981" stop-opacity="0.0" />
+            </linearGradient>
+          </defs>
+          <line x1="0" y1="18" x2="220" y2="18" class="combo-grid-line" />
+          <line x1="0" y1="36" x2="220" y2="36" class="combo-grid-line" />
+          <path id="comboAreaPath" class="combo-area" d="" fill="url(#comboGrad)" />
+          <path id="comboStrokePath" class="combo-stroke" d="" />
+          <circle id="comboBeaconDot" class="combo-beacon-dot" cx="-10" cy="-10" r="4" />
+          <circle id="comboBeaconPulse" class="combo-beacon-pulse" cx="-10" cy="-10" r="8" />
+        </svg>
+        <div id="comboPlaceholder" class="combo-placeholder">Listening...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/draggable.js"></script>
+  <script src="/js/overlay-heartrate-combo.js"></script>
+</body>
+</html>

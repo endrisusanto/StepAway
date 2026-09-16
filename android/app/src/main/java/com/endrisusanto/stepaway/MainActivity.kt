@@ -31,6 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -354,6 +355,7 @@ class MainActivity : AppCompatActivity() {
             StepSensorService.liveBpm = bpm
             updateHeartRateUI(bpm)
             syncHeartRateToServer(bpm)
+            syncGroupHeartRateToServer()
             StepAwayWidgetProvider.sendUpdateBroadcast(
                 this,
                 prefs.getInt("widget_steps", 0),
@@ -361,6 +363,18 @@ class MainActivity : AppCompatActivity() {
                 prefs.getString("activity_status", "IDLE") ?: "IDLE",
                 bpm
             )
+        }
+
+        bleManager.onSlotBpmUpdated = { slotId, bpm ->
+            syncGroupHeartRateToServer()
+        }
+
+        bleManager.onSlotConnectionStateChanged = { slotId, isConnected, deviceName ->
+            if (slotId != "slot_1") {
+                val stateStr = if (isConnected) "terhubung" else "terputus"
+                Toast.makeText(this, "Smartband $slotId ($deviceName) $stateStr", Toast.LENGTH_SHORT).show()
+                syncGroupHeartRateToServer()
+            }
         }
 
         bleManager.onConnectionStateChanged = { isConnected, deviceName ->
@@ -539,8 +553,7 @@ class MainActivity : AppCompatActivity() {
             .setAdapter(scanListAdapter) { _, which ->
                 if (which < discoveredDevices.size) {
                     val selectedDevice = discoveredDevices[which]
-                    bleManager.connectToDevice(selectedDevice)
-                    Toast.makeText(this, "Menghubungkan ke ${selectedDevice.name ?: selectedDevice.address}...", Toast.LENGTH_SHORT).show()
+                    showSlotChooserDialog(selectedDevice)
                 }
             }
             .setNegativeButton("Batal") { dialog, _ ->
@@ -550,6 +563,28 @@ class MainActivity : AppCompatActivity() {
             .show()
 
         bleManager.startScan()
+    }
+
+    private fun showSlotChooserDialog(device: BluetoothDevice) {
+        val devName = device.name ?: device.address
+        val slotOptions = arrayOf(
+            "Slot 1: Streamer (Host Utama)",
+            "Slot 2: Player 2 (Co-Host)",
+            "Slot 3: Player 3 (Guest)",
+            "Slot 4: Player 4 (Guest)"
+        )
+        val slotIds = arrayOf("slot_1", "slot_2", "slot_3", "slot_4")
+
+        AlertDialog.Builder(this)
+            .setTitle("Pilih Slot untuk $devName")
+            .setItems(slotOptions) { _, which ->
+                val slotId = slotIds[which]
+                val slotLabel = slotOptions[which].substringAfter(": ").substringBefore(" (")
+                bleManager.connectSlot(slotId, device, slotLabel)
+                Toast.makeText(this, "Menghubungkan $devName ke $slotLabel...", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Batal", null)
+            .show()
     }
 
     private fun hasBlePermissions(): Boolean {
@@ -588,6 +623,44 @@ class MainActivity : AppCompatActivity() {
                 val payload = JSONObject().apply {
                     put("userId", userId)
                     put("bpm", bpm)
+                }
+                OutputStreamWriter(conn.outputStream).use { it.write(payload.toString()); it.flush() }
+                conn.responseCode
+                conn.disconnect()
+            } catch (e: Exception) {}
+        }
+    }
+
+    private fun syncGroupHeartRateToServer() {
+        val serverUrl = etServerUrl.text.toString().trim()
+        val roomId = etRoomId.text.toString().trim().ifEmpty { "global" }
+        if (serverUrl.isEmpty()) return
+
+        val connectedSlots = bleManager.getSlots().filter { it.isConnected && it.bpm > 0 }
+        if (connectedSlots.isEmpty()) return
+
+        scope.launch {
+            try {
+                val endpoint = "$serverUrl/api/heartrate/group-sync"
+                val conn = (URL(endpoint).openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    setRequestProperty("Content-Type", "application/json")
+                    connectTimeout = 3000
+                    readTimeout = 3000
+                    doOutput = true
+                }
+                val membersArr = JSONArray()
+                connectedSlots.forEach { slot ->
+                    membersArr.put(JSONObject().apply {
+                        put("slotId", slot.slotId)
+                        put("name", slot.slotName)
+                        put("bpm", slot.bpm)
+                        put("device", slot.deviceName ?: slot.deviceAddress)
+                    })
+                }
+                val payload = JSONObject().apply {
+                    put("roomId", roomId)
+                    put("members", membersArr)
                 }
                 OutputStreamWriter(conn.outputStream).use { it.write(payload.toString()); it.flush() }
                 conn.responseCode

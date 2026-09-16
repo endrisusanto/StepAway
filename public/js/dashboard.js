@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const urlSingle = document.getElementById('urlSingle');
   const urlHeartrate = document.getElementById('urlHeartrate');
+  const urlHrChart = document.getElementById('urlHrChart');
+  const urlHrCombo = document.getElementById('urlHrCombo');
+  const urlTrio = document.getElementById('urlTrio');
+  const urlGroupHr = document.getElementById('urlGroupHr');
   const urlCombo = document.getElementById('urlCombo');
   const urlRoom = document.getElementById('urlRoom');
   const urlTest = document.getElementById('urlTest');
@@ -59,6 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const previewIframe = document.getElementById('previewIframe');
   const tabPreviewStep = document.getElementById('tabPreviewStep');
   const tabPreviewHr = document.getElementById('tabPreviewHr');
+  const tabPreviewHrChart = document.getElementById('tabPreviewHrChart');
+  const tabPreviewHrCombo = document.getElementById('tabPreviewHrCombo');
+  const tabPreviewTrio = document.getElementById('tabPreviewTrio');
+  const tabPreviewGroupHr = document.getElementById('tabPreviewGroupHr');
   const tabPreviewCombo = document.getElementById('tabPreviewCombo');
   const btnFullscreenPreview = document.getElementById('btnFullscreenPreview');
   const previewSizeBtns = document.querySelectorAll('.preview-size-btn');
@@ -84,6 +92,46 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnLogout = document.getElementById('btnLogout');
   const btnOpenQrModal = document.getElementById('btnOpenQrModal');
   const btnOpenQrModalTab = document.getElementById('btnOpenQrModalTab');
+
+  // Win/Lose Score Elements & Hotkey Controls
+  const ctrlScoreWins = document.getElementById('ctrlScoreWins');
+  const ctrlScoreLosses = document.getElementById('ctrlScoreLosses');
+  const ctrlScoreStreak = document.getElementById('ctrlScoreStreak');
+  const dispLabelWin = document.getElementById('dispLabelWin');
+  const dispLabelLoss = document.getElementById('dispLabelLoss');
+  const btnIncWin = document.getElementById('btnIncWin');
+  const btnDecWin = document.getElementById('btnDecWin');
+  const btnQuickWin = document.getElementById('btnQuickWin');
+  const btnIncLoss = document.getElementById('btnIncLoss');
+  const btnDecLoss = document.getElementById('btnDecLoss');
+  const btnQuickLose = document.getElementById('btnQuickLose');
+  const btnResetScore = document.getElementById('btnResetScore');
+  const btnResetStreak = document.getElementById('btnResetStreak');
+  const btnSaveScoreSettings = document.getElementById('btnSaveScoreSettings');
+  const inputScoreTitle = document.getElementById('inputScoreTitle');
+  const inputScoreLabelWin = document.getElementById('inputScoreLabelWin');
+  const inputScoreLabelLoss = document.getElementById('inputScoreLabelLoss');
+  const selectScoreTheme = document.getElementById('selectScoreTheme');
+  const rangeScoreOpacity = document.getElementById('rangeScoreOpacity');
+  const labelScoreOpacityVal = document.getElementById('labelScoreOpacityVal');
+  const chkScoreShowStreak = document.getElementById('chkScoreShowStreak');
+  const chkScoreShowHistory = document.getElementById('chkScoreShowHistory');
+  const chkScoreSoundAlert = document.getElementById('chkScoreSoundAlert');
+  const chkEnableKeyboardHotkeys = document.getElementById('chkEnableKeyboardHotkeys');
+  const dashScoreBreadcrumbs = document.getElementById('dashScoreBreadcrumbs');
+  const urlOverlayScore = document.getElementById('urlOverlayScore');
+  const iframePreviewScore = document.getElementById('iframePreviewScore');
+  const scorePreviewContainer = document.getElementById('scorePreviewContainer');
+  const scoreThemeTabs = document.querySelectorAll('.score-theme-tab');
+  const scoreSizeBtns = document.querySelectorAll('.score-size-btn');
+  const scorePreviewHeightLabel = document.getElementById('scorePreviewHeightLabel');
+  const btnFullscreenScorePreview = document.getElementById('btnFullscreenScorePreview');
+  const urlActionWin = document.getElementById('urlActionWin');
+  const urlActionLose = document.getElementById('urlActionLose');
+  const urlActionWinDec = document.getElementById('urlActionWinDec');
+  const urlActionLoseDec = document.getElementById('urlActionLoseDec');
+  const urlActionReset = document.getElementById('urlActionReset');
+  const dockSampleUrl = document.getElementById('dockSampleUrl');
 
   // Theme Toggle Elements
   const btnThemeToggle = document.getElementById('btnThemeToggle');
@@ -176,17 +224,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const keyParam = currentStreamKey ? `key=${encodeURIComponent(currentStreamKey)}` : `user=${encodeURIComponent(currentUserId)}`;
     const single = `${origin}/overlay?${keyParam}`;
     const heartrate = `${origin}/overlay/heartrate?${keyParam}`;
+    const hrChart = `${origin}/overlay/heartrate-chart?${keyParam}`;
+    const hrCombo = `${origin}/overlay/heartrate-combo?${keyParam}`;
+    const trio = `${origin}/overlay/trio?${keyParam}`;
+    const groupHr = `${origin}/overlay/heartrate-group?room=${encodeURIComponent(activeRoomId)}`;
     const combo = `${origin}/overlay?${keyParam}&show_hr=true`;
     const room = `${origin}/overlay/multi?room=${encodeURIComponent(activeRoomId)}`;
     const test = `${origin}/overlay?${keyParam}&test=true`;
     const webhook = `${origin}/api/webhooks/tiptap?key=${encodeURIComponent(currentStreamKey || currentUserId)}`;
+    const scoreOverlay = `${origin}/overlay/score?${keyParam}`;
 
     urlSingle.textContent = single;
     urlHeartrate.textContent = heartrate;
+    if (urlHrChart) urlHrChart.textContent = hrChart;
+    if (urlHrCombo) urlHrCombo.textContent = hrCombo;
+    if (urlTrio) urlTrio.textContent = trio;
+    if (urlGroupHr) urlGroupHr.textContent = groupHr;
     urlCombo.textContent = combo;
     urlRoom.textContent = room;
     urlTest.textContent = test;
     if (urlWebhookTipTap) urlWebhookTipTap.textContent = webhook;
+    if (urlOverlayScore) urlOverlayScore.textContent = scoreOverlay;
+    if (iframePreviewScore) iframePreviewScore.src = `/overlay/score?${keyParam}`;
+    if (dockSampleUrl) dockSampleUrl.textContent = `${origin}/dashboard`;
+
+    const keyVal = currentStreamKey || currentUserId;
+    if (urlActionWin) urlActionWin.textContent = `${origin}/api/users/${encodeURIComponent(currentUserId)}/score/action?action=win&key=${encodeURIComponent(keyVal)}`;
+    if (urlActionLose) urlActionLose.textContent = `${origin}/api/users/${encodeURIComponent(currentUserId)}/score/action?action=lose&key=${encodeURIComponent(keyVal)}`;
+    if (urlActionWinDec) urlActionWinDec.textContent = `${origin}/api/users/${encodeURIComponent(currentUserId)}/score/action?action=win_dec&key=${encodeURIComponent(keyVal)}`;
+    if (urlActionLoseDec) urlActionLoseDec.textContent = `${origin}/api/users/${encodeURIComponent(currentUserId)}/score/action?action=lose_dec&key=${encodeURIComponent(keyVal)}`;
+    if (urlActionReset) urlActionReset.textContent = `${origin}/api/users/${encodeURIComponent(currentUserId)}/score/action?action=reset&key=${encodeURIComponent(keyVal)}`;
+
     if (displayStreamKey) displayStreamKey.textContent = currentStreamKey || 'sk_live_demo_streamer';
     if (qrStreamKeyVal) qrStreamKeyVal.textContent = currentStreamKey || 'sk_live_demo_streamer';
     if (qrServerUrl) qrServerUrl.textContent = origin;
@@ -215,6 +283,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const keyParam = currentStreamKey ? `key=${encodeURIComponent(currentStreamKey)}` : `user=${encodeURIComponent(currentUserId)}`;
     if (activePreviewMode === 'hr') {
       previewIframe.src = `/overlay/heartrate?${keyParam}`;
+    } else if (activePreviewMode === 'hr_chart') {
+      previewIframe.src = `/overlay/heartrate-chart?${keyParam}`;
+    } else if (activePreviewMode === 'hr_combo') {
+      previewIframe.src = `/overlay/heartrate-combo?${keyParam}`;
+    } else if (activePreviewMode === 'trio') {
+      previewIframe.src = `/overlay/trio?${keyParam}`;
+    } else if (activePreviewMode === 'group_hr') {
+      previewIframe.src = `/overlay/heartrate-group?room=${encodeURIComponent(activeRoomId)}&test=true`;
     } else if (activePreviewMode === 'combo') {
       previewIframe.src = `/overlay?${keyParam}&show_hr=true`;
     } else {
@@ -290,6 +366,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const bpm = json.user.bpm;
             liveBpmZone.textContent = bpm >= 170 ? 'Peak' : (bpm >= 140 ? 'Anaerobic' : (bpm >= 100 ? 'Aerobic' : (bpm > 0 ? 'Rest' : 'Idle')));
           }
+        }
+
+        if (json.user.scoreData) {
+          updateDashboardScoreUI(json.user.scoreData);
         }
       }
     } catch (e) {
@@ -532,6 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ws.onopen = () => {
       setWsStatus(true, 'LIVE SYNC');
       ws.send(JSON.stringify({ type: 'subscribe', userId: currentUserId, key: currentStreamKey }));
+      ws.send(JSON.stringify({ type: 'subscribe_score', userId: currentUserId, key: currentStreamKey }));
     };
 
     ws.onmessage = (event) => {
@@ -603,6 +684,13 @@ document.addEventListener('DOMContentLoaded', () => {
             livePercent.textContent = `${pct}%`;
             if (metricProgressBar) metricProgressBar.style.width = `${Math.min(100, pct)}%`;
             fetchDonations();
+          }
+        } else if ((msg.type === 'score_init' || msg.type === 'score_update') && msg.data) {
+          const isTargetUser = msg.userId === currentUserId ||
+            msg.userId === currentStreamKey ||
+            (currentUserAccount && (msg.userId === currentUserAccount.id || msg.userId === currentUserAccount.streamKey));
+          if (isTargetUser && msg.data.score) {
+            updateDashboardScoreUI(msg.data.score);
           }
         }
       } catch (e) {}
@@ -1032,6 +1120,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (tabPreviewStep) tabPreviewStep.addEventListener('click', () => switchPreviewTab('step', tabPreviewStep));
   if (tabPreviewHr) tabPreviewHr.addEventListener('click', () => switchPreviewTab('hr', tabPreviewHr));
+  if (tabPreviewHrChart) tabPreviewHrChart.addEventListener('click', () => switchPreviewTab('hr_chart', tabPreviewHrChart));
+  if (tabPreviewHrCombo) tabPreviewHrCombo.addEventListener('click', () => switchPreviewTab('hr_combo', tabPreviewHrCombo));
+  if (tabPreviewTrio) tabPreviewTrio.addEventListener('click', () => switchPreviewTab('trio', tabPreviewTrio));
+  if (tabPreviewGroupHr) tabPreviewGroupHr.addEventListener('click', () => switchPreviewTab('group_hr', tabPreviewGroupHr));
   if (tabPreviewCombo) tabPreviewCombo.addEventListener('click', () => switchPreviewTab('combo', tabPreviewCombo));
 
   // Quick Preview Height Buttons
@@ -1130,8 +1222,233 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  document.getElementById('btnOpenTest').addEventListener('click', () => {
-    window.open(urlTest.textContent, '_blank');
+  // Win / Lose Score Controller Logic
+  function updateDashboardScoreUI(score) {
+    if (!score) return;
+    if (ctrlScoreWins) ctrlScoreWins.textContent = typeof score.wins === 'number' ? score.wins : 0;
+    if (ctrlScoreLosses) ctrlScoreLosses.textContent = typeof score.losses === 'number' ? score.losses : 0;
+    if (ctrlScoreStreak) {
+      const s = typeof score.streak === 'number' ? score.streak : 0;
+      ctrlScoreStreak.textContent = s > 0 ? `+${s} W` : (s < 0 ? `${s} L` : '0');
+      ctrlScoreStreak.style.color = s > 0 ? 'var(--accent-green)' : (s < 0 ? 'var(--accent-rose)' : 'var(--accent-amber)');
+    }
+    if (dispLabelWin) dispLabelWin.textContent = score.labelWin || 'WIN';
+    if (dispLabelLoss) dispLabelLoss.textContent = score.labelLoss || 'LOSE';
+    if (inputScoreTitle && document.activeElement !== inputScoreTitle) inputScoreTitle.value = score.title || 'MATCH SCORE';
+    if (inputScoreLabelWin && document.activeElement !== inputScoreLabelWin) inputScoreLabelWin.value = score.labelWin || 'WIN';
+    if (inputScoreLabelLoss && document.activeElement !== inputScoreLabelLoss) inputScoreLabelLoss.value = score.labelLoss || 'LOSE';
+    if (selectScoreTheme && document.activeElement !== selectScoreTheme) selectScoreTheme.value = score.theme || 'neon';
+    if (typeof score.opacity === 'number' && rangeScoreOpacity && document.activeElement !== rangeScoreOpacity) {
+      rangeScoreOpacity.value = score.opacity;
+      if (labelScoreOpacityVal) labelScoreOpacityVal.textContent = `${score.opacity}%`;
+    }
+    if (chkScoreShowStreak) chkScoreShowStreak.checked = score.showStreak !== false;
+    if (chkScoreShowHistory) chkScoreShowHistory.checked = score.showHistory !== false;
+    if (chkScoreSoundAlert) chkScoreSoundAlert.checked = score.soundAlert !== false;
+
+    // Render Dashboard Match History Breadcrumbs
+    if (dashScoreBreadcrumbs) {
+      const historyList = Array.isArray(score.history) ? score.history : [];
+      if (historyList.length === 0) {
+        dashScoreBreadcrumbs.innerHTML = '<span class="dash-empty-history">Belum ada riwayat match</span>';
+      } else {
+        dashScoreBreadcrumbs.innerHTML = '';
+        historyList.forEach((item) => {
+          const pill = document.createElement('span');
+          const isWin = item === 'W' || item === 'w';
+          pill.className = `dash-pill-history ${isWin ? 'pill-w' : 'pill-l'}`;
+          pill.textContent = isWin ? 'W' : 'L';
+          pill.title = isWin ? 'Victory' : 'Defeat';
+          dashScoreBreadcrumbs.appendChild(pill);
+        });
+      }
+    }
+  }
+
+  // Live Opacity Slider Drag Handler
+  if (rangeScoreOpacity && labelScoreOpacityVal) {
+    rangeScoreOpacity.addEventListener('input', () => {
+      const val = rangeScoreOpacity.value;
+      labelScoreOpacityVal.textContent = `${val}%`;
+      if (iframePreviewScore) {
+        try {
+          const previewDoc = iframePreviewScore.contentDocument || iframePreviewScore.contentWindow?.document;
+          const widget = previewDoc ? previewDoc.getElementById('scoreWidget') : null;
+          if (widget) {
+            widget.style.setProperty('--bg-alpha', (val / 100).toString());
+            widget.style.opacity = '1';
+          }
+        } catch (e) {}
+      }
+    });
+  }
+
+  function sendScoreAction(action) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({
+        type: 'score_action',
+        userId: currentUserId,
+        key: currentStreamKey,
+        action
+      }));
+    } else {
+      fetch(`/api/users/${encodeURIComponent(currentUserId)}/score/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, key: currentStreamKey })
+      }).then(r => r.json()).then(d => {
+        if (d.success && d.score) updateDashboardScoreUI(d.score);
+      }).catch(e => console.error('[Score Action Error]', e));
+    }
+  }
+
+  async function saveScoreSettings() {
+    const title = inputScoreTitle ? inputScoreTitle.value.trim() : 'MATCH SCORE';
+    const labelWin = inputScoreLabelWin ? inputScoreLabelWin.value.trim() : 'WIN';
+    const labelLoss = inputScoreLabelLoss ? inputScoreLabelLoss.value.trim() : 'LOSE';
+    const theme = selectScoreTheme ? selectScoreTheme.value : 'neon';
+    const opacity = rangeScoreOpacity ? parseInt(rangeScoreOpacity.value, 10) : 100;
+    const showStreak = chkScoreShowStreak ? chkScoreShowStreak.checked : true;
+    const showHistory = chkScoreShowHistory ? chkScoreShowHistory.checked : true;
+    const soundAlert = chkScoreSoundAlert ? chkScoreSoundAlert.checked : true;
+
+    try {
+      const res = await fetch(`/api/users/${encodeURIComponent(currentUserId)}/score`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          labelWin,
+          labelLoss,
+          theme,
+          opacity,
+          showStreak,
+          showHistory,
+          soundAlert,
+          key: currentStreamKey
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (btnSaveScoreSettings) {
+          const orig = btnSaveScoreSettings.textContent;
+          btnSaveScoreSettings.textContent = 'Tersimpan!';
+          btnSaveScoreSettings.style.background = '#059669';
+          setTimeout(() => {
+            btnSaveScoreSettings.textContent = orig;
+            btnSaveScoreSettings.style.background = '';
+          }, 1500);
+        }
+        if (data.score) updateDashboardScoreUI(data.score);
+        updateUrls();
+      }
+    } catch (err) {
+      console.error('[Save Score Settings Error]', err);
+      alert('Gagal menyimpan pengaturan skor: ' + err.message);
+    }
+  }
+
+  // Score Button Event Listeners
+  if (btnIncWin) btnIncWin.addEventListener('click', () => sendScoreAction('win_inc'));
+  if (btnDecWin) btnDecWin.addEventListener('click', () => sendScoreAction('win_dec'));
+  if (btnQuickWin) btnQuickWin.addEventListener('click', () => sendScoreAction('win'));
+  if (btnIncLoss) btnIncLoss.addEventListener('click', () => sendScoreAction('lose_inc'));
+  if (btnDecLoss) btnDecLoss.addEventListener('click', () => sendScoreAction('lose_dec'));
+  if (btnQuickLose) btnQuickLose.addEventListener('click', () => sendScoreAction('lose'));
+  if (btnResetScore) btnResetScore.addEventListener('click', () => {
+    if (confirm('Reset skor pertandingan kembali ke 0 - 0?')) sendScoreAction('reset');
+  });
+  if (btnResetStreak) btnResetStreak.addEventListener('click', () => sendScoreAction('reset_streak'));
+  if (btnSaveScoreSettings) btnSaveScoreSettings.addEventListener('click', saveScoreSettings);
+
+  // Score Preview Theme Tabs
+  let activeScoreTheme = 'neon';
+  scoreThemeTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      scoreThemeTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeScoreTheme = tab.dataset.scoreTheme || 'neon';
+      if (selectScoreTheme) selectScoreTheme.value = activeScoreTheme;
+      if (iframePreviewScore) {
+        const keyParam = currentStreamKey ? `key=${encodeURIComponent(currentStreamKey)}` : `user=${encodeURIComponent(currentUserId)}`;
+        iframePreviewScore.src = `/overlay/score?${keyParam}&theme=${activeScoreTheme}`;
+      }
+    });
+  });
+
+  // Score Preview Height Controls
+  scoreSizeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      scoreSizeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const h = btn.dataset.height;
+      if (scorePreviewContainer) {
+        scorePreviewContainer.style.height = `${h}px`;
+      }
+      if (scorePreviewHeightLabel) {
+        scorePreviewHeightLabel.textContent = `Tinggi: ${h}px`;
+      }
+    });
+  });
+
+  // Score Preview ResizeObserver
+  if (window.ResizeObserver && scorePreviewContainer) {
+    const observer = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const height = Math.round(entry.contentRect.height);
+        if (scorePreviewHeightLabel && !document.fullscreenElement) {
+          scorePreviewHeightLabel.textContent = `Tinggi: ${height}px`;
+        }
+      }
+    });
+    observer.observe(scorePreviewContainer);
+  }
+
+  // Score Preview Fullscreen
+  if (btnFullscreenScorePreview && scorePreviewContainer) {
+    btnFullscreenScorePreview.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        if (scorePreviewContainer.requestFullscreen) {
+          scorePreviewContainer.requestFullscreen();
+        } else if (scorePreviewContainer.webkitRequestFullscreen) {
+          scorePreviewContainer.webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    });
+  }
+
+  // Global Keyboard Shortcuts (Alt + W = Win, Alt + L = Lose, Alt + R = Reset)
+  window.addEventListener('keydown', (e) => {
+    const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+    if (!chkEnableKeyboardHotkeys || !chkEnableKeyboardHotkeys.checked) return;
+
+    if (e.altKey) {
+      const key = e.key.toLowerCase();
+      if (key === 'w') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          sendScoreAction('win_dec');
+        } else {
+          sendScoreAction('win');
+        }
+      } else if (key === 'l') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          sendScoreAction('lose_dec');
+        } else {
+          sendScoreAction('lose');
+        }
+      } else if (key === 'r') {
+        e.preventDefault();
+        sendScoreAction('reset');
+      }
+    }
   });
 
   // SaaS Authentication & Account Management

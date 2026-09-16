@@ -78,6 +78,19 @@ let db = {
         minAmount: 1000
       },
       donations: [],
+      scoreData: {
+        wins: 0,
+        losses: 0,
+        streak: 0,
+        labelWin: "WIN",
+        labelLoss: "LOSE",
+        title: "MATCH SCORE",
+        showStreak: true,
+        theme: "neon",
+        soundAlert: true,
+        lastAction: null,
+        lastUpdated: new Date().toISOString()
+      },
       lastUpdated: new Date().toISOString()
     }
   },
@@ -193,6 +206,7 @@ function getUser(userId) {
       activityStatus: "IDLE",
       lastStepTimestamp: Date.now(),
       recentPaces: [],
+      bpmHistory: [],
       donationSettings: {
         enabled: true,
         secretToken: "",
@@ -201,6 +215,19 @@ function getUser(userId) {
         minAmount: 1000
       },
       donations: [],
+      scoreData: {
+        wins: 0,
+        losses: 0,
+        streak: 0,
+        labelWin: "WIN",
+        labelLoss: "LOSE",
+        title: "MATCH SCORE",
+        showStreak: true,
+        theme: "neon",
+        soundAlert: true,
+        lastAction: null,
+        lastUpdated: new Date().toISOString()
+      },
       lastUpdated: new Date().toISOString()
     };
     saveDB();
@@ -217,6 +244,37 @@ function getUser(userId) {
     }
     if (!Array.isArray(db.users[userId].donations)) {
       db.users[userId].donations = [];
+    }
+    if (!db.users[userId].scoreData) {
+      db.users[userId].scoreData = {
+        wins: 0,
+        losses: 0,
+        streak: 0,
+        history: [],
+        showHistory: true,
+        opacity: 100,
+        labelWin: "WIN",
+        labelLoss: "LOSE",
+        title: "MATCH SCORE",
+        showStreak: true,
+        theme: "neon",
+        soundAlert: true,
+        lastAction: null,
+        lastUpdated: new Date().toISOString()
+      };
+    } else {
+      if (!Array.isArray(db.users[userId].scoreData.history)) {
+        db.users[userId].scoreData.history = [];
+      }
+      if (db.users[userId].scoreData.showHistory === undefined) {
+        db.users[userId].scoreData.showHistory = true;
+      }
+      if (typeof db.users[userId].scoreData.opacity !== "number") {
+        db.users[userId].scoreData.opacity = 100;
+      }
+    }
+    if (!Array.isArray(db.users[userId].bpmHistory)) {
+      db.users[userId].bpmHistory = [];
     }
   }
   return db.users[userId];
@@ -282,6 +340,7 @@ function broadcastUserUpdate(user, delta = 0, milestone = null) {
       targetSteps: user.targetSteps,
       bpm: user.bpm || 0,
       bpmZone: user.bpmZone || "REST",
+      bpmHistory: user.bpmHistory || [],
       activityStatus: user.activityStatus || "IDLE",
       percentage,
       delta,
@@ -330,6 +389,33 @@ function broadcastDonationAlert(user, donationData) {
   for (const [, client] of clients) {
     if (client.ws.readyState === WebSocket.OPEN) {
       if (client.subscribedUsers.has(user.userId) || client.subscribedUsers.has("*")) {
+        client.ws.send(payload);
+      }
+    }
+  }
+}
+
+// ponytail: broadcast real-time win/lose score update with minimal payload
+function broadcastScoreUpdate(user, action = null) {
+  const payload = JSON.stringify({
+    type: "score_update",
+    userId: user.userId,
+    action,
+    data: {
+      userId: user.userId,
+      name: user.name,
+      score: user.scoreData,
+      lastUpdated: user.scoreData.lastUpdated
+    }
+  });
+
+  for (const [, client] of clients) {
+    if (client.ws.readyState === WebSocket.OPEN) {
+      if (
+        client.subscribedUsers.has(user.userId) ||
+        (user.streamKey && client.subscribedUsers.has(user.streamKey)) ||
+        client.subscribedUsers.has("*")
+      ) {
         client.ws.send(payload);
       }
     }
@@ -722,6 +808,11 @@ app.post("/api/steps/sync", (req, res) => {
     user.bpm = Math.max(0, Math.round(bpm));
     user.bpmZone = getBpmZone(user.bpm);
     user.lastBpmTimestamp = Date.now();
+    if (user.bpm > 0) {
+      if (!Array.isArray(user.bpmHistory)) user.bpmHistory = [];
+      user.bpmHistory.push({ time: Date.now(), bpm: user.bpm });
+      if (user.bpmHistory.length > 60) user.bpmHistory.shift();
+    }
   }
 
   const effectiveDelta = user.currentSteps - prevSteps;
@@ -748,6 +839,7 @@ app.post("/api/steps/sync", (req, res) => {
       targetSteps: user.targetSteps,
       bpm: user.bpm,
       bpmZone: user.bpmZone,
+      bpmHistory: user.bpmHistory || [],
       activityStatus: user.activityStatus,
       milestone: reachedMilestone
     }
@@ -772,13 +864,73 @@ app.post("/api/heartrate/sync", (req, res) => {
     user.bpm = Math.max(0, Math.round(bpm));
     user.bpmZone = user.bpm > 0 ? getBpmZone(user.bpm) : "DISCONNECTED";
     user.lastBpmTimestamp = user.bpm > 0 ? Date.now() : 0;
+    if (user.bpm > 0) {
+      if (!Array.isArray(user.bpmHistory)) user.bpmHistory = [];
+      user.bpmHistory.push({ time: Date.now(), bpm: user.bpm });
+      if (user.bpmHistory.length > 60) user.bpmHistory.shift();
+    }
     user.lastUpdated = new Date().toISOString();
     saveDB();
 
     broadcastUserUpdate(user, 0, null);
   }
 
-  res.json({ success: true, userId: user.userId, bpm: user.bpm, bpmZone: user.bpmZone });
+  res.json({ success: true, userId: user.userId, bpm: user.bpm, bpmZone: user.bpmZone, bpmHistory: user.bpmHistory || [] });
+});
+
+// In-memory Group Heart Rate store: roomId -> Map of slotId -> member data
+const groupHeartrates = new Map();
+
+// Group Heart Rate update endpoint (for multi-smartband connections from 1 or multiple phones)
+app.post("/api/heartrate/group-sync", (req, res) => {
+  const roomId = (req.body.roomId || "global").trim();
+  const members = Array.isArray(req.body.members) ? req.body.members : [];
+
+  if (!groupHeartrates.has(roomId)) {
+    groupHeartrates.set(roomId, new Map());
+  }
+  const roomMap = groupHeartrates.get(roomId);
+
+  const updatedMembers = members.map(m => {
+    const slotId = m.slotId || m.userId || "slot_1";
+    const bpm = Math.max(0, Math.round(Number(m.bpm) || 0));
+    const zone = bpm > 0 ? getBpmZone(bpm) : "DISCONNECTED";
+    const item = {
+      slotId,
+      name: m.name || slotId,
+      bpm,
+      zone,
+      device: m.device || "",
+      lastUpdated: Date.now()
+    };
+    roomMap.set(slotId, item);
+    return item;
+  });
+
+  const allMembers = Array.from(roomMap.values());
+
+  // Broadcast group update to all WebSocket clients
+  const payload = JSON.stringify({
+    type: "group_heartrate_update",
+    roomId,
+    members: allMembers,
+    timestamp: Date.now()
+  });
+
+  wss.clients.forEach(client => {
+    if (client.readyState === 1) { // WebSocket.OPEN
+      client.send(payload);
+    }
+  });
+
+  res.json({ success: true, roomId, count: allMembers.length, members: allMembers });
+});
+
+app.get("/api/heartrate/group", (req, res) => {
+  const roomId = (req.query.room || "global").trim();
+  const roomMap = groupHeartrates.get(roomId);
+  const members = roomMap ? Array.from(roomMap.values()) : [];
+  res.json({ success: true, roomId, members });
 });
 
 // Periodic Heart Rate Timeout Watcher (7s without BLE packet => disconnects HR to 0)
@@ -797,6 +949,16 @@ setInterval(() => {
       broadcastUserUpdate(user, 0, null);
     }
   }
+
+  // Also timeout group members
+  groupHeartrates.forEach((roomMap, rId) => {
+    roomMap.forEach((member, slotId) => {
+      if (member.bpm > 0 && (now - member.lastUpdated > 8000)) {
+        member.bpm = 0;
+        member.zone = "DISCONNECTED";
+      }
+    });
+  });
 
   if (changed) {
     saveDB();
@@ -1120,6 +1282,140 @@ app.post("/api/users/:userId/donations/batch-action", (req, res) => {
   res.status(400).json({ success: false, message: "Action tidak dikenali (gunakan 'delete' atau 'retrigger')" });
 });
 
+// Score mutation helper (ponytail: single source of truth for score state)
+function mutateScoreData(s, action) {
+  if (!s) return null;
+  if (!Array.isArray(s.history)) s.history = [];
+  let act = (action || "").toLowerCase().trim();
+
+  switch (act) {
+    case "win":
+    case "win_inc":
+      s.wins += 1;
+      s.streak = s.streak > 0 ? s.streak + 1 : 1;
+      s.history.push("W");
+      if (s.history.length > 12) s.history.shift();
+      return "win";
+
+    case "win_dec":
+      s.wins = Math.max(0, s.wins - 1);
+      if (s.history.length > 0) {
+        const lastIdx = s.history.lastIndexOf("W");
+        if (lastIdx !== -1) s.history.splice(lastIdx, 1);
+        else s.history.pop();
+      }
+      return "win_dec";
+
+    case "lose":
+    case "lose_inc":
+      s.losses += 1;
+      s.streak = s.streak < 0 ? s.streak - 1 : -1;
+      s.history.push("L");
+      if (s.history.length > 12) s.history.shift();
+      return "lose";
+
+    case "lose_dec":
+      s.losses = Math.max(0, s.losses - 1);
+      if (s.history.length > 0) {
+        const lastIdx = s.history.lastIndexOf("L");
+        if (lastIdx !== -1) s.history.splice(lastIdx, 1);
+        else s.history.pop();
+      }
+      return "lose_dec";
+
+    case "reset":
+      s.wins = 0;
+      s.losses = 0;
+      s.streak = 0;
+      s.history = [];
+      return "reset";
+
+    case "reset_streak":
+      s.streak = 0;
+      return "reset_streak";
+
+    default:
+      return null;
+  }
+}
+
+// Score & Win/Lose Counter APIs (OBS Hotkey & Dashboard Compatible)
+app.get("/api/users/:userId/score", (req, res) => {
+  const user = getUser(req.params.userId);
+  res.json({ success: true, score: user.scoreData });
+});
+
+app.post("/api/users/:userId/score", (req, res) => {
+  const user = getUser(req.params.userId);
+  if (!user) return res.status(404).json({ success: false, message: "User tidak ditemukan" });
+
+  const { wins, losses, streak, history, showHistory, opacity, labelWin, labelLoss, title, showStreak, theme, soundAlert } = req.body;
+  if (typeof wins === "number") user.scoreData.wins = Math.max(0, wins);
+  if (typeof losses === "number") user.scoreData.losses = Math.max(0, losses);
+  if (typeof streak === "number") user.scoreData.streak = streak;
+  if (Array.isArray(history)) user.scoreData.history = history.slice(-12);
+  if (showHistory !== undefined) user.scoreData.showHistory = Boolean(showHistory);
+  if (typeof opacity === "number") user.scoreData.opacity = Math.max(10, Math.min(100, opacity));
+  if (labelWin !== undefined) user.scoreData.labelWin = String(labelWin).trim() || "WIN";
+  if (labelLoss !== undefined) user.scoreData.labelLoss = String(labelLoss).trim() || "LOSE";
+  if (title !== undefined) user.scoreData.title = String(title).trim() || "MATCH SCORE";
+  if (showStreak !== undefined) user.scoreData.showStreak = Boolean(showStreak);
+  if (theme !== undefined) user.scoreData.theme = String(theme).trim() || "neon";
+  if (soundAlert !== undefined) user.scoreData.soundAlert = Boolean(soundAlert);
+
+  user.scoreData.lastUpdated = new Date().toISOString();
+  user.lastUpdated = user.scoreData.lastUpdated;
+  saveDB();
+  broadcastScoreUpdate(user, "set");
+
+  res.json({ success: true, message: "Pengaturan skor berhasil disimpan", score: user.scoreData });
+});
+
+// Hotkey & Stream Deck Action Endpoint (supports GET & POST for easy macro setup)
+function handleScoreAction(req, res) {
+  const userId = req.params.userId;
+  let user = getUser(userId);
+  if (!user) return res.status(404).json({ success: false, message: "User tidak ditemukan" });
+
+  const action = (req.body?.action || req.query?.action || "").toLowerCase().trim();
+  const streamKey = req.body?.key || req.query?.key;
+
+  // Authorization check
+  const isSelf = req.account && req.account.id === user.userId;
+  const isKeyValid = streamKey && (streamKey === user.streamKey || streamKey === req.account?.streamKey);
+  const isLocalDemo = userId === "streamer" && !user.streamKey;
+
+  if (!isSelf && !isKeyValid && !isLocalDemo) {
+    return res.status(401).json({ success: false, message: "Akses tidak diizinkan. Sertakan param 'key=streamKey' yang valid." });
+  }
+
+  const s = user.scoreData;
+  const actionTriggered = mutateScoreData(s, action);
+
+  if (!actionTriggered) {
+    return res.status(400).json({
+      success: false,
+      message: "Action tidak dikenali. Gunakan: win, lose, win_dec, lose_dec, reset, atau reset_streak"
+    });
+  }
+
+  s.lastAction = actionTriggered;
+  s.lastUpdated = new Date().toISOString();
+  user.lastUpdated = s.lastUpdated;
+  saveDB();
+  broadcastScoreUpdate(user, actionTriggered);
+
+  res.json({
+    success: true,
+    action: actionTriggered,
+    score: s,
+    message: `Aksi '${actionTriggered}' berhasil diproses`
+  });
+}
+
+app.post("/api/users/:userId/score/action", handleScoreAction);
+app.get("/api/users/:userId/score/action", handleScoreAction);
+
 // Room APIs
 app.get("/api/rooms", (req, res) => {
   const publicRooms = Object.values(db.rooms).map(r => ({
@@ -1272,6 +1568,48 @@ wss.on("connection", (ws) => {
           roomName: room ? room.name : roomId,
           data: initData
         }));
+      } else if (msg.type === "subscribe_score") {
+        let userId = msg.userId || "streamer";
+        if (msg.key) {
+          const u = findUserByStreamKey(msg.key);
+          if (u) userId = u.userId;
+        } else if (userId.startsWith("sk_live_")) {
+          const u = findUserByStreamKey(userId);
+          if (u) userId = u.userId;
+        }
+        clientInfo.subscribedUsers.add(userId);
+        if (msg.userId) clientInfo.subscribedUsers.add(msg.userId);
+        if (msg.key) clientInfo.subscribedUsers.add(msg.key);
+
+        const user = getUser(userId);
+        ws.send(JSON.stringify({
+          type: "score_init",
+          userId: user.userId,
+          data: {
+            userId: user.userId,
+            name: user.name,
+            score: user.scoreData,
+            lastUpdated: user.scoreData.lastUpdated
+          }
+        }));
+      } else if (msg.type === "score_action") {
+        let userId = msg.userId || "streamer";
+        if (msg.key) {
+          const u = findUserByStreamKey(msg.key);
+          if (u) userId = u.userId;
+        }
+        const user = getUser(userId);
+        if (user) {
+          const s = user.scoreData;
+          const act = mutateScoreData(s, msg.action);
+          if (act) {
+            s.lastAction = act;
+            s.lastUpdated = new Date().toISOString();
+            user.lastUpdated = s.lastUpdated;
+            saveDB();
+            broadcastScoreUpdate(user, act);
+          }
+        }
       } else if (msg.type === "ping") {
         ws.send(JSON.stringify({ type: "pong", timestamp: Date.now() }));
       }
@@ -1294,8 +1632,48 @@ app.get("/overlay/heartrate", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "overlay-heartrate.html"));
 });
 
+app.get("/overlay/heartrate-chart", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "overlay-heartrate-chart.html"));
+});
+
+app.get("/overlay-heartrate-chart.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "overlay-heartrate-chart.html"));
+});
+
+app.get("/overlay/heartrate-combo", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "overlay-heartrate-combo.html"));
+});
+
+app.get("/overlay-heartrate-combo.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "overlay-heartrate-combo.html"));
+});
+
+app.get("/overlay/trio", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "overlay-trio.html"));
+});
+
+app.get("/overlay-trio.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "overlay-trio.html"));
+});
+
 app.get("/overlay/multi", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "overlay-multi.html"));
+});
+
+app.get("/overlay/heartrate-group", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "overlay-heartrate-group.html"));
+});
+
+app.get("/overlay-heartrate-group.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "overlay-heartrate-group.html"));
+});
+
+app.get("/overlay/score", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "overlay-score.html"));
+});
+
+app.get("/overlay-score.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "overlay-score.html"));
 });
 
 app.get("/dashboard", (req, res) => {

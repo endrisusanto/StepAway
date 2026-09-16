@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StepAway - OBS Win/Lose Score Overlay</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/overlay-score.css">
+</head>
+<body>
+
+  <!-- Main Score Widget Container -->
+  <div id="scoreWidget" class="score-widget theme-neon">
+    <!-- Action Ripple FX on score bump -->
+    <div id="actionFxLayer" class="action-fx-layer"></div>
+
+    <!-- Header / Title Bar -->
+    <div class="score-header">
+      <div class="header-left">
+        <span id="statusDot" class="status-dot"></span>
+        <span id="scoreTitle" class="score-title">MATCH SCORE</span>
+      </div>
+      <div id="streakBadge" class="streak-badge" style="display: none;">
+        <span id="streakIcon" class="streak-icon">🔥</span>
+        <span id="streakVal" class="streak-text">0 STREAK</span>
+      </div>
+    </div>
+
+    <!-- Score Counters Display -->
+    <div class="score-body">
+      <!-- WIN Block -->
+      <div id="winBlock" class="score-block win-block">
+        <span id="labelWin" class="block-label">WIN</span>
+        <div class="number-wrapper">
+          <span id="valWin" class="block-number">0</span>
+        </div>
+      </div>
+
+      <!-- VS / Colon Divider -->
+      <div class="score-divider">
+        <span class="divider-text">VS</span>
+      </div>
+
+      <!-- LOSE Block -->
+      <div id="loseBlock" class="score-block lose-block">
+        <span id="labelLose" class="block-label">LOSE</span>
+        <div class="number-wrapper">
+          <span id="valLose" class="block-number">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Match History Breadcrumb Line -->
+    <div id="scoreHistory" class="score-history" style="display: none;">
+      <div class="history-label">HISTORY</div>
+      <div id="historyBreadcrumbs" class="history-breadcrumbs"></div>
+    </div>
+  </div>
+
+  <script src="/js/overlay-score.js"></script>
+</body>
+</html>

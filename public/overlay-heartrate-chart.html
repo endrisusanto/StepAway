@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StepAway - Live Heart Rate Graphic Chart Overlay</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/overlay-heartrate-chart.css">
+</head>
+<body>
+
+  <!-- Main Standalone Heart Rate Chart Widget -->
+  <div id="hrChartWidget" class="hr-chart-widget zone-rest">
+    <!-- Header Bar: Live BPM, Status, Min/Max/Avg Telemetry -->
+    <div class="chart-header">
+      <div class="header-left">
+        <div class="heart-pulse-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </div>
+        <div class="live-bpm-group">
+          <span id="chartBpmVal" class="chart-bpm-val">--</span>
+          <span class="chart-bpm-unit">BPM</span>
+        </div>
+        <span id="chartBpmZone" class="chart-zone-badge">REST</span>
+      </div>
+
+      <div class="header-stats">
+        <div class="stat-pill">
+          <span class="stat-label">MIN</span>
+          <span id="statMinBpm" class="stat-val">--</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">AVG</span>
+          <span id="statAvgBpm" class="stat-val">--</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">MAX</span>
+          <span id="statMaxBpm" class="stat-val">--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart Canvas / SVG Container -->
+    <div class="chart-viewport">
+      <svg id="sparklineSvg" class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 320 70">
+        <defs>
+          <linearGradient id="chartFillGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" class="grad-stop-top" stop-color="#10b981" stop-opacity="0.45" />
+            <stop offset="100%" class="grad-stop-bot" stop-color="#10b981" stop-opacity="0.0" />
+          </linearGradient>
+        </defs>
+        <!-- Grid lines -->
+        <line x1="0" y1="20" x2="320" y2="20" class="grid-line" />
+        <line x1="0" y1="45" x2="320" y2="45" class="grid-line" />
+        <!-- Area fill path -->
+        <path id="chartAreaPath" class="chart-area" d="" fill="url(#chartFillGrad)" />
+        <!-- Spline stroke line -->
+        <path id="chartStrokePath" class="chart-stroke" d="" />
+        <!-- Beacon pulse dot at newest point -->
+        <circle id="beaconDot" class="beacon-dot" cx="-10" cy="-10" r="4.5" />
+        <circle id="beaconPulse" class="beacon-pulse" cx="-10" cy="-10" r="9" />
+      </svg>
+      <div id="chartPlaceholder" class="chart-empty-state">Menunggu data detak jantung...</div>
+    </div>
+  </div>
+
+  <script src="/js/draggable.js"></script>
+  <script src="/js/overlay-heartrate-chart.js"></script>
+</body>
+</html>
